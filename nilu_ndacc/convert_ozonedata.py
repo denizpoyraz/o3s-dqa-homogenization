@@ -38,7 +38,7 @@ def convert_ozonedata(files: List[Path]) -> None:
     j = 0
     for file in files:
         fileout = file
-
+        print(file)
 
         # this part till "end" section is for the naming convention if there are two launches in one day, in other words
         # if there are two launches with same dates
@@ -64,9 +64,11 @@ def convert_ozonedata(files: List[Path]) -> None:
         # Write data to hdf and metadata to csv
         constants = extract_constants_from_header(header.meta_data)
         filename = str(fileout)
+        print('one', fileout)
         #md stands for metadata
         filenamecsv = filename.split(".")[-2] + ('_md.csv')
         filenamehdf = filename.split(".")[-2] + ('_md.hdf')
+        print('two',filenamehdf)
 
         # metadata written to hdf and csv format, you can choose only one as well
         pd.Series(constants).to_csv(filenamecsv, header=False)

@@ -271,13 +271,10 @@ def ComputeCef(dft):
     """
     sensortype = dft.at[dft.first_valid_index(),'SensorType']
     #
-    # # print('sensortype', sensortype)
-    #
     spctag = (search('SPC', sensortype)) or (search('6A', sensortype)) or (search('5A', sensortype)) or (search('4A', sensortype))
     if spctag: dft['SensorType'] = 'SPC'
     enscitag = (search('DMT-Z', sensortype)) or (search('Z', sensortype)) or (search('ECC6Z', sensortype)) or (search('_Z', sensortype))
     if enscitag: dft['SensorType'] = 'DMT-Z'
-
 
     try: dft['SolutionVolume'] = dft['SolutionVolume'].astype('float')
     except KeyError: dft['SolutionVolume'] = 3.0
@@ -286,7 +283,7 @@ def ComputeCef(dft):
         dft['Cef'] = VecInterpolate(VecP_ECC6A, VecC_ECC6A_30, dft, 0)
     if (dft.at[dft.first_valid_index(), 'SensorType'] == 'SPC') and (dft.at[dft.first_valid_index(), 'SolutionVolume'] < 2.75):
         dft['Cef'] = VecInterpolate(VecP_ECC6A, VecC_ECC6A_25, dft, 0)
-    if (dft.at[dft.first_valid_index(), 'SensorType'] == 'DMT-Z') and (dft.at[dft.first_valid_index(), 'SolutionVolume'] > 2.75):
+    if (dft.at[dft.first_valid_index(), 'SensorType'] == 'DMT-Z'):
         dft['Cef'] = VecInterpolate(VecP_ECCZ, VecC_ECCZ, dft, 0)
 
     return dft['Cef']
@@ -328,10 +325,10 @@ def ComputeIBG(dft, bkg):
   ibg  -- background current used
   :returns corrected background current
     """
-    try: dft.Pcor = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
+    try: dft['Pcor'] = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
     except KeyError:
         dft['Pground'] = 1000
-        dft.Pcor = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
+        dft['Pcor'] = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
 
     if bkg == 'iB0': dft.ibg = dft.Pcor*dft.iB0
     if bkg == 'iB2': dft.ibg = dft.Pcor*dft.iB2
@@ -344,6 +341,6 @@ def ComputeCorP(dft, Pressure):
   A0 = 0.0012250380415
   A1 = 0.000124111475632
   A2 = -0.00000002687066130
-  dft.CorP = A0 + A1*dft[Pressure].astype('float') + A2*dft[Pressure].astype('float')*dft[Pressure].astype('float')
+  dft['CorP'] = A0 + A1*dft[Pressure].astype('float') + A2*dft[Pressure].astype('float')*dft[Pressure].astype('float')
 
-  return dft.CorP
+  return dft['CorP']
