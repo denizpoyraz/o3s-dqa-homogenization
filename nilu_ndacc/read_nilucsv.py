@@ -9,7 +9,7 @@ K = 273.15
 filepath = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/'
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "/*.hdf"))
+allFiles = sorted(glob.glob(filepath + "/so201204*.hdf"))
 
 list_metadata = []
 
@@ -42,19 +42,22 @@ for filename in (allFiles):
 
     # read the metadata file
     try:
-        dfm = pd.read_csv(metafile, index_col=0, names=['Parameter', 'Value'])
-        if (len(dfm)) < 15:
+        dfm_tmp = pd.read_csv(metafile, index_col=0, names=['Parameter', 'Value'])
+        if (len(dfm_tmp)) < 15:
             print('skip this dataset')
             continue
     except FileNotFoundError:
         continue
 
-    dfm = dfm.T
-    dfm['Date'] = datef
+    dfm_tmp = dfm_tmp.T
 
     dfl = pd.DataFrame()
+    dfm = pd.DataFrame()
+
     # using the data and metadata make a new dataframe from them
-    dfl = organize_df(dfd, dfm)
+    dfl, dfm = organize_df(dfd, dfm_tmp)
+    dfm['Date'] = datef
+    # print(dfm.at[dfm.first_valid_index(), 'SensorType'])
 
     if (len(dfl) < 300): continue
 
@@ -68,23 +71,29 @@ for filename in (allFiles):
     #
 
     # convert the partial pressure to current
-    dfl = o3tocurrent(dfl)
+    dfl = o3tocurrent(dfl, dfm)
     # set the date
     dfl['Date'] = datef
+    dfm['Date'] = datef
 
     rawname = filename.split(".")[-2].split("/")[-1] + "_rawcurrent.hdf"
     metaname = filename.split(".")[-2].split("/")[-1] + "_metadata.csv"
     #
+
+    dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
+
     dfl.to_hdf(filepath + '/Current/' + rawname, key = 'df')
     dfm.to_csv(filepath + '/Metadata/' + metaname)
+    print(list(dfl))
+
 
     list_metadata.append(dfm)
 
 # save all the metada in one file, either in hdf format or csv format
-dff = pd.concat(list_metadata, ignore_index=True)
-hdfall = filepath + "All_metadata.hdf"
-csvall = filepath + "All_metadata.csv"
-
-dff.to_hdf(hdfall, key = 'df')
-dff.to_csv(csvall)
-
+# dff = pd.concat(list_metadata, ignore_index=True)
+# hdfall = filepath + "All_metadata.hdf"
+# csvall = filepath + "All_metadata.csv"
+#
+# dff.to_hdf(hdfall, key = 'df')
+# dff.to_csv(csvall)
+#

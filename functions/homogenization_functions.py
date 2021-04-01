@@ -55,32 +55,27 @@ RS_alt = [i * 1000 for i in RS_alt]
 
 k = 273.15
 
-def organize_metadata(dfm):
-
-    dfm['rhlab'] = dfm['Relative humidity in laboratory during sonde flow rate calibration'].astype('float')
-    dfm['plab'] = dfm['Background surface pressure (hPa)'].astype('float')
-    dfm['tlab'] = dfm['Temperature in laboratory during sonde flow rate calibration'].astype('float')
-    dfm['iB2'] = dfm['Background sensor current before cell is exposed to ozone (microamperes)'].astype('float')
-
-    dfm = dfm[(dfm.tlab < 30) & (dfm.tlab > 10)]
-
-    return dfm
-
 
 def calculate_cph(dfmeta):
+    '''
+    O3S-DQA Section 8.4
+    '''
 
-    dfmeta['x'] = ((7.5 * dfmeta['tlab']) / (dfmeta['tlab'] + 237.3)) + 0.7858
+    dfmeta['x'] = ((7.5 * dfmeta['TLab'].astype('float')) / (dfmeta['TLab'].astype('float') + 237.3)) + 0.7858
     dfmeta['psaturated'] = 10 ** (dfmeta['x'])
-    dfmeta['cph'] = (1 - dfmeta['rhlab']/100) \
-                    * dfmeta['psaturated']/dfmeta['plab']
-    dfmeta['cpl'] = 2/(dfmeta['tlab'] + k)
+    # Eq.17
+    dfmeta['cph'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
+    # Eq.16
+    dfmeta['cpl'] = 2/(dfmeta['TLab'].astype('float') + k)
 
     return dfmeta
 
 
-def pf_groundcorrection(df, phim, unc_phim, tlab, plab, rhlab):
+def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab):
+    (df, dfm, 'Phip', 'unc_Phip', 'TLab', 'Pground', 'ULab')
     """
     :param df:
+    :param dfm:  metadata df
     :param phim:
     :param unc_phip:
     :param tlab:
@@ -88,21 +83,22 @@ def pf_groundcorrection(df, phim, unc_phim, tlab, plab, rhlab):
     :param rhlab:
     :return:
     """
-    df['TLab'] = df['TLab'].astype('float')
+    df['TLab'] = dfm.at[0,tlab].astype('float')
+    df['ULab'] = dfm.at[0,tlab].astype('float')
+    df['Pground'] = dfm.at[0,plab].astype('float')
 
     df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
     df['psaturated'] = 10 ** (df['x'])
-    df['cph'] = (1 - df['ULab'].astype('float') / 100) \
-                    * df['psaturated'] / df['Pground'].astype('float')
+    df['cph'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['Pground']
 
-    df['tlabK'] = df[tlab] + k
-    df['cPL'] = 2/df['tlabK']
-    cPH = 0 ## for now
+    df['TLabK'] = df[tlab] + k
+    df['cPL'] = 2/df['TLabK']
     unc_cPL = df.at[df.first_valid_index(),'unc_cpl']
     unc_cPH = df.at[df.first_valid_index(),'unc_cph']
-
+    # Eq. 15
     df['Phip_ground'] = (1 + df['cPL'] - df['cph']) * df[phim]
-    df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt((0.02)**2 + (unc_cPL)**2 + (unc_cPH)**2)
+    df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt((df[unc_phim]/df[phim])**2 + (unc_cPL)**2 + (unc_cPH)**2)
+
 
     return df['Phip_ground'], df['unc_Phip_ground']
 
@@ -134,6 +130,13 @@ def VecInterpolate(XValues, YValues, unc_YValues, dft, Pair, LOG):
     return dft['Cpf'], dft['unc_Cpf']
 
 def RS_pressurecorrection(dft, height, radiosondetype):
+    '''
+    correction of "Propagation of radiosonde pressure sensor errors to ozonesonde measurements" https://doi.org/10.5194/amt-7-65-2014
+    :param dft:
+    :param height:
+    :param radiosondetype:
+    :return:
+    '''
 
     dft = dft.reset_index()
 
@@ -146,9 +149,9 @@ def RS_pressurecorrection(dft, height, radiosondetype):
             RS_cor = RS80_cor
             RS_cor_err = RS80_cor_err
 
-        if radiosondetype == 'RS92':
-            RS_cor = RS92_cor
-            RS_cor_err = RS92_cor_err
+        # if radiosondetype == 'RS92':
+        #     RS_cor = RS92_cor
+        #     RS_cor_err = RS92_cor_err
 
         for i in range(len(RS_alt) - 1):
             # just check that value is in between xvalues
@@ -165,7 +168,6 @@ def RS_pressurecorrection(dft, height, radiosondetype):
 
                 dft.at[k, 'Crs'] = float(y1 + (dft.at[k, height] - x1) * (y2 - y1) / (x2 - x1))
                 dft.at[k, 'unc_Crs'] = float(unc_y1 + (dft.at[k, height] - x1) * (unc_y2 - unc_y1) / (x2 - x1))
-
 
     return dft['Crs'], dft['unc_Crs']
 
@@ -204,9 +206,11 @@ def return_phipcor(df,phip_grd, unc_phip_grd, cpf, unc_cpf):
 
 
 
-def background_correction(df, dfmeta, ib,):
+def background_correction(df, dfmeta, dfm, ib,):
     """
-    :param df:
+    :param df: data df
+    :param dfmeta: all metadata df
+    :param dfm: corresponding metadata df
     :param ib2:
     :return: df[ib]
     """
@@ -217,11 +221,12 @@ def background_correction(df, dfmeta, ib,):
     mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
     std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
 
-    df.loc[(df[ib] > mean + 2 * std) | (df[ib] < mean - 2 * std), 'iBc'] = mean
-    df.loc[(df[ib] <= mean + 2 * std) & (df[ib] >= mean - 2 * std), 'iBc'] = df.loc[(df[ib] <= mean + 2 * std) & (df[ib] >= mean - 2 * std), ib]
-
-    df.loc[(df[ib] > mean + 2 * std) | (df[ib] < mean - 2 * std), 'unc_iBc'] = 2 * std
-    df.loc[(df[ib] <= mean + 2 * std) & (df[ib] >= mean - 2 * std), 'unc_iBc'] = std
+    if (dfm.at[0,ib] > mean + 2 * std) | (dfm.at[0,ib] < mean - 2 * std):
+        df['iBc'] = mean
+        df['unc_iBc'] = 2 * std
+    if (dfm.at[0,ib] <= mean + 2 * std) & (dfm.at[0,ib] >= mean - 2 * std):
+        df['iBc'] = dfm.at[0,ib]
+        df['unc_iBc'] = std
 
     return df['iBc'], df['unc_iBc']
 
