@@ -1,6 +1,8 @@
 import pandas as pd
 import glob
 from datetime import datetime
+from re import search
+
 
 from nilu_ndacc.read_nilu_functions import organize_df, o3tocurrent
 
@@ -9,7 +11,9 @@ K = 273.15
 filepath = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/'
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "/so201204*.hdf"))
+allFiles = sorted(glob.glob(filepath + "/*.hdf"))
+
+print(allFiles)
 
 list_metadata = []
 
@@ -20,8 +24,8 @@ for filename in (allFiles):
 
     name = filename.split(".")[-2].split("/")[-1][2:8]
     fname = filename.split(".")[-2].split("/")[-1]
-    # to not to read metada files with _md extension that has a length of more than 8
-    if len(fname) > 8: continue
+    # not to read metada files with _md extension
+    if (search("md", fname)) or (search("metadata", fname)): continue
     print(fname)
 
     metafile = filepath + fname + "_md.csv"
@@ -78,22 +82,19 @@ for filename in (allFiles):
 
     rawname = filename.split(".")[-2].split("/")[-1] + "_rawcurrent.hdf"
     metaname = filename.split(".")[-2].split("/")[-1] + "_metadata.csv"
-    #
 
     dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
 
     dfl.to_hdf(filepath + '/Current/' + rawname, key = 'df')
     dfm.to_csv(filepath + '/Metadata/' + metaname)
-    print(list(dfl))
-
 
     list_metadata.append(dfm)
 
 # save all the metada in one file, either in hdf format or csv format
-# dff = pd.concat(list_metadata, ignore_index=True)
-# hdfall = filepath + "All_metadata.hdf"
-# csvall = filepath + "All_metadata.csv"
-#
-# dff.to_hdf(hdfall, key = 'df')
-# dff.to_csv(csvall)
-#
+dff = pd.concat(list_metadata, ignore_index=True)
+hdfall = filepath + "All_metadata.hdf"
+csvall = filepath + "All_metadata.csv"
+
+dff.to_hdf(hdfall, key = 'df')
+dff.to_csv(csvall)
+

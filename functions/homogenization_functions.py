@@ -72,8 +72,8 @@ def calculate_cph(dfmeta):
 
 
 def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab):
-    (df, dfm, 'Phip', 'unc_Phip', 'TLab', 'Pground', 'ULab')
     """
+    O3S-DQA 8.4
     :param df:
     :param dfm:  metadata df
     :param phim:
@@ -89,29 +89,26 @@ def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab):
 
     df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
     df['psaturated'] = 10 ** (df['x'])
-    df['cph'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['Pground']
+    df['cph'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['Pground'] #Eq. 17
 
     df['TLabK'] = df[tlab] + k
-    df['cPL'] = 2/df['TLabK']
+    df['cPL'] = 2/df['TLabK'] #Eq. 16
     unc_cPL = df.at[df.first_valid_index(),'unc_cpl']
     unc_cPH = df.at[df.first_valid_index(),'unc_cph']
-    # Eq. 15
-    df['Phip_ground'] = (1 + df['cPL'] - df['cph']) * df[phim]
-    df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt((df[unc_phim]/df[phim])**2 + (unc_cPL)**2 + (unc_cPH)**2)
-
+    df['Phip_ground'] = (1 + df['cPL'] - df['cph']) * df[phim]  # Eq. 15
+    df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt((df[unc_phim]/df[phim])**2 + (unc_cPL)**2 + (unc_cPH)**2) #Eq. 21
 
     return df['Phip_ground'], df['unc_Phip_ground']
 
 
 def VecInterpolate(XValues, YValues, unc_YValues, dft, Pair, LOG):
 
-
     dft = dft.reset_index()
 
     for k in range(len(dft)):
 
         for i in range(len(XValues)-1):
-            # just check that value is in between xvalues
+            # check that value is in between xvalues
             if (XValues[i] >= dft.at[k, Pair] >= XValues[i + 1]):
 
                 x1 = float(XValues[i])
@@ -135,7 +132,7 @@ def RS_pressurecorrection(dft, height, radiosondetype):
     :param dft:
     :param height:
     :param radiosondetype:
-    :return:
+    :return: correction factors and their uncertainties
     '''
 
     dft = dft.reset_index()
@@ -172,6 +169,14 @@ def RS_pressurecorrection(dft, height, radiosondetype):
     return dft['Crs'], dft['unc_Crs']
 
 def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
+    '''
+    O3S-DQA 8.5 based on Table 6
+    :param df:
+    :param pair:
+    :param pumpcorrectiontag:
+    :param effmethod:
+    :return:
+    '''
 
     if effmethod == 'polyfit':
 
@@ -198,16 +203,16 @@ def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
     return df['Cpf'], df['unc_Cpf']
 
 def return_phipcor(df,phip_grd, unc_phip_grd, cpf, unc_cpf):
+    #O3S-DQA 8.5
 
-    df['Phip_cor'] = df[phip_grd]/df[cpf]
-    df['unc_Phip_cor'] = df['Phip_cor'] * np.sqrt( df[unc_phip_grd]**2/df[phip_grd]**2 + df[unc_cpf]**2/df[cpf]**2 )
+    df['Phip_cor'] = df[phip_grd]/df[cpf] #Eq. 22
+    df['unc_Phip_cor'] = df['Phip_cor'] * np.sqrt( df[unc_phip_grd]**2/df[phip_grd]**2 + df[unc_cpf]**2/df[cpf]**2 ) #Eq. 23
 
     return df['Phip_cor'], df['unc_Phip_cor']
 
-
-
 def background_correction(df, dfmeta, dfm, ib,):
     """
+    O3S-DQA 8.2
     :param df: data df
     :param dfmeta: all metadata df
     :param dfm: corresponding metadata df
@@ -272,6 +277,7 @@ def currenttopo3(df, im, tpump, ib, etac, phip, boolcorrection):
 
 def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
     '''
+    O3S-DQA 8.3
     :param df: dataframe
     :param boxlocation: location of the temperature measurement
     :param temp: temp. of the pump that was measured at boxlocation
@@ -307,12 +313,12 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
         df.loc[filt,'deltat'] = 0  # units in K
         df.loc[filt,'unc_deltat'] = 0  # units in K
 
-    df.loc[(df[pair] > 3), 'deltat_ppi'] = 3.9 - 0.8 * np.log10(df.loc[(df[pair] > 3), pair])
+    df.loc[(df[pair] > 3), 'deltat_ppi'] = 3.9 - 0.8 * np.log10(df.loc[(df[pair] > 3), pair]) #Eq. 12
     df.loc[(df[pair] > 3), 'unc_deltat_ppi'] = 0.5
 
-    df.loc[filt, 'Tpump_cor'] = df.loc[filt, temp] + df.loc[filt, 'deltat'] + df.loc[filt, 'deltat_ppi']
+    df.loc[filt, 'Tpump_cor'] = df.loc[filt, temp] + df.loc[filt, 'deltat'] + df.loc[filt, 'deltat_ppi'] #Eq. 13
     df.loc[filt, 'unc_Tpump_cor'] = (df.loc[filt, unc_temp] ** 2 / df.loc[filt, temp] ** 2) + \
-                            (df.loc[filt, 'unc_deltat'] ** 2 / df.loc[filt, temp] ** 2)+ (df.loc[filt, 'unc_deltat_ppi'] ** 2 / df.loc[filt, temp] ** 2)
+                            (df.loc[filt, 'unc_deltat'] ** 2 / df.loc[filt, temp] ** 2)+ (df.loc[filt, 'unc_deltat_ppi'] ** 2 / df.loc[filt, temp] ** 2) #Eq. 14
 
     df = df.drop(['deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi'], axis=1)
 
@@ -321,6 +327,7 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
 
 def absorption_efficiency (df, pair, solvolume):
     '''
+    O3S-DQA 8.1.1
     :param df: dataframe
     :param pair: air pressure column
     :param solvolume: volume of the cathode solution in mls
@@ -328,10 +335,11 @@ def absorption_efficiency (df, pair, solvolume):
     '''
     df['unc_alpha_o3'] = 0.01
     df['alpha_o3'] = 1
-
+    # Eq. 6A-6B
     if solvolume == 2.5:
         df.loc[(df[pair] > 100) & (df[pair] < 1050), 'alpha_o3'] = 1.0044 - 4.4 * 10 ** -5 * df.loc[(df[pair] > 100) & (df[pair] < 1050), pair]
         df.loc[(df[pair] <= 100), 'alpha_o3'] = 1.0
+    # Eq. 6C
     if solvolume == 3.0:
         df.loc[(df[pair] <= 1050), 'alpha_o3'] = 1.0
 
@@ -340,6 +348,7 @@ def absorption_efficiency (df, pair, solvolume):
 
 def stoichmetry_conversion(df, pair, sensortype, solutionconcentration, reference):
     '''
+    O3S-DQA 8.1.2
     :param pair: Pressure of the air
     :param sondesstone: an array of the Sonde type and SST i.e: ['SPC', '0.5'] that was in use
     :param sondessttwo: an array of the Sonde type and SST to be changed to i.e: ['SP', '1.0']
@@ -351,8 +360,8 @@ def stoichmetry_conversion(df, pair, sensortype, solutionconcentration, referenc
     solutionconcentration = float(solutionconcentration)
 
     if (reference == 'ENSCI05') & (sensortype == 'DMT-Z') & (solutionconcentration == 10):
-        df.loc[df[pair] >= 30, 'stoich'] = 0.96
-        df.loc[df[pair] < 30, 'stoich'] = 0.90 + 0.041 * np.log10(df[df[pair] < 30][pair])
+        df.loc[df[pair] >= 30, 'stoich'] = 0.96 #Eq 7A
+        df.loc[df[pair] < 30, 'stoich'] = 0.90 + 0.041 * np.log10(df[df[pair] < 30][pair]) #Eq 7B
 
     if (reference == 'ENSCI05') & (sensortype == 'DMT-Z') & (solutionconcentration == 5.0):
         df['stoich'] = 1
@@ -362,20 +371,20 @@ def stoichmetry_conversion(df, pair, sensortype, solutionconcentration, referenc
         df['stoich'] = 1
         df['unc_stoich'] = 0.03
 
-    if (reference == 'SPC10') & (sensortype == 'DMT-Z') & (solutionconcentration == 5):
-        df.loc[df[pair] >= 30, 'stoich'] = 0.96
-        df.loc[df[pair] < 30, 'stoich'] = 0.764 + 0.133 * np.log10(df[df[pair] < 30])
+    if (reference == 'SPC10') & (sensortype == 'DMT-Z') & (solutionconcentration == 10):
+        df.loc[df[pair] >= 30, 'stoich'] = 0.96 #Eq 7C
+        df.loc[df[pair] < 30, 'stoich'] = 0.764 + 0.133 * np.log10(df[df[pair] < 30]) #Eq 7D
 
     if (reference == 'SPC10') & (sensortype == 'SPC') & (solutionconcentration == 5):
-        df.loc[df[pair] >= 30, 'stoich'] = 1/0.96
-        df.loc[df[pair] < 30, 'stoich'] = 1/(0.90 + 0.041 * np.log10(df[df[pair] < 30][pair]))
+        df.loc[df[pair] >= 30, 'stoich'] = 1/0.96 #inverse of Eq. 7A
+        df.loc[df[pair] < 30, 'stoich'] = 1/(0.90 + 0.041 * np.log10(df[df[pair] < 30][pair])) #inverse of Eq. 7B
 
     return df['stoich'], df['unc_stoich']
 
 
 def conversion_efficiency(df, alpha_o3, alpha_unc_o3, stoich, stoich_unc):
     '''
-
+    O3S-DQA 8.1
     :param alpha: absorption efficiency obtained by conversion_absorption
     :param alpha_unc: absorption efficiency unc. obtained by conversion_alpha
     :param rstoich: transfer functions obtained by conversion_stoichemtry

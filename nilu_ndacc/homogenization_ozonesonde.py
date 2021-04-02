@@ -32,10 +32,10 @@ dfmeta = filter_metadata(dfmeta)
 dfmeta = calculate_cph(dfmeta)
 dfmeta['unc_cph'] = dfmeta['cph'].std()
 dfmeta['unc_cpl'] = dfmeta['cpl'].std()
-print('cph std', dfmeta['cph'].std(), 'cpl std', dfmeta['cpl'].std())
+# print('cph std', dfmeta['cph'].std(), 'cpl std', dfmeta['cpl'].std())
 
-allFiles = sorted(glob.glob(path + "Current/so201204*rawcurrent.hdf"))
-mdFiles = sorted(glob.glob(path + "Metadata/so201204*metadata.csv"))
+allFiles = sorted(glob.glob(path + "Current/SO0504*rawcurrent.hdf"))
+# mdFiles = sorted(glob.glob(path + "Metadata/*metadata.csv"))
 
 size = len(allFiles)
 datelist = [0] * size
@@ -43,26 +43,24 @@ j = 0
 
 bool_rscorrection = True
 
-for (filename, mdfilename) in zip(allFiles, mdFiles):
-
+for (filename) in (allFiles):
+    print(filename)
     file = open(filename, 'r')
-    mdfile = open(mdfilename, 'r')
 
     date_tmp = filename.split('/')[-1].split('.')[0][2:8]
+    fname = filename.split('/')[-1].split('.')[0][0:8]
+    fullname = filename.split('/')[-1].split('.')[0]
+    metaname = path + 'Metadata/' + fname + "_metadata.csv"
 
-    print(filename)
+    if search("2nd", fullname): metaname = path + 'Metadata/' + fname + "_2nd_metadata.csv"
+
     date = datetime.strptime(date_tmp, '%y%m%d')
-
     datef = date.strftime('%Y%m%d')
     datestr = str(datef)
-    datelist[j] = datestr
-    if (j > 0) and (j < (size - 1)):
-        if (datelist[j] == datelist[j - 1]):
-            datestr = str(datef) + "_2nd"
-    j = j + 1
+
 
     df = pd.read_hdf(filename)
-    dfm = pd.read_csv(mdfilename)
+    dfm = pd.read_csv(metaname)
 
     # to deal with data that is not complete
     if (len(df) < 300): continue
@@ -77,7 +75,6 @@ for (filename, mdfilename) in zip(allFiles, mdFiles):
     # if datef < date_change: string_bkg_used = 'ib0'
     # the string options for pump temperature can be seen in homogenisation_functions -> pumptemp_corr
     # see boxlocation strings
-
 
 
     # input variables for hom.
@@ -147,7 +144,7 @@ for (filename, mdfilename) in zip(allFiles, mdFiles):
     for j in range(len(md_clist)):
         dfm[md_clist[j]] = df.at[df.first_valid_index(), md_clist[j]]
 
-    dfm.to_csv(path + datestr + "_o3smetadata.csv")
+    dfm.to_csv(path + '/DQA/'+ datestr + "_o3smetadata.csv")
 
     df = df.drop(
         ['Datedt', 'Phip', 'Eta', 'unc_Phip', 'unc_Tpump', 'unc_cph', 'TboxK',
@@ -156,19 +153,19 @@ for (filename, mdfilename) in zip(allFiles, mdFiles):
      'ULab', 'Pground', 'x', 'psaturated', 'cph', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground',
      'dI', 'dIall', 'dEta', 'dTpump_cor'], axis=1)
 
-    # data file that has uncertainities that depend on Pair or Height or Temperature
-    df.to_hdf(path + datestr + "_all_hom.hdf", key = 'df')
+    # data file that has data and uncertainties that depend on Pair or Height or Temperature
+    df.to_hdf(path + '/DQA/' + datestr + "_all_hom.hdf", key = 'df')
 
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
-    df = df.drop(['TboxC',  'Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor', 'dO3'], axis = 1)
+    df = df.drop(['TboxC', 'Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor', 'dO3'], axis = 1)
     # df to be converted to WOUDC format together with the metadata
-    df.to_hdf(path + datestr + "_o3sdqa.hdf", key = 'df')
+    df.to_hdf(path + '/DQA/' + datestr + "_o3sdqa.hdf", key = 'df')
 
-
-
-
-
-
-
+    #
+    #
+    #
+    #
+    #
+    #
