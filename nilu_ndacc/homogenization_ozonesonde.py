@@ -52,6 +52,8 @@ for (filename) in (allFiles):
     fullname = filename.split('/')[-1].split('.')[0]
     metaname = path + 'Metadata/' + fname + "_metadata.csv"
 
+    print(metaname)
+
     if search("2nd", fullname): metaname = path + 'Metadata/' + fname + "_2nd_metadata.csv"
 
     date = datetime.strptime(date_tmp, '%y%m%d')
@@ -61,6 +63,8 @@ for (filename) in (allFiles):
 
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
+
+    print(dfm.at[0,'LaunchTime'])
 
     # to deal with data that is not complete
     if (len(df) < 300): continue
@@ -163,9 +167,3 @@ for (filename) in (allFiles):
     # df to be converted to WOUDC format together with the metadata
     df.to_hdf(path + '/DQA/' + datestr + "_o3sdqa.hdf", key = 'df')
 
-    #
-    #
-    #
-    #
-    #
-    #

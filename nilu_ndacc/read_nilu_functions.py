@@ -120,6 +120,7 @@ def organize_df(df1, df2):
 
         if (search('Background', list2[j])) and (search('correction', list2[j])):
             dfm_out.at[0,'BackgroundCorrection'] = df2.at[df2.first_valid_index(), list2[j]]
+            print(df2.at[df2.first_valid_index(), list2[j]])
 
         if (search('Launch time', list2[j])):
             dfm_out.at[0,'LaunchTime'] = df2.at[df2.first_valid_index(), list2[j]]
@@ -219,6 +220,9 @@ def organize_df(df1, df2):
     df_out['O3'] = df1['Ozone partial pressure (mPa)'].astype('float')
     df_out['T'] = df1['Temperature (C)'].astype('float')
     df_out['U'] = df1['Relative humidity (%)'].astype('float')
+    dfm_out['LaunchTime'] = dfm_out['LaunchTime'].astype('str')
+
+
     # in case there is no PF it is written to 9999
     try:
         dfm_out['PF'] = dfm_out['PF'].astype('float')

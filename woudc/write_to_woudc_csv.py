@@ -5,6 +5,8 @@ from woudc_extcsv import load, WOUDCExtCSVReaderError
 import pandas as pd
 import glob
 import numpy as np
+from datetime import datetime
+from re import search
 
 
 #Table Name 	    Field (Column) Names (in order)
@@ -25,18 +27,41 @@ import numpy as np
 #     extcsv.add_data('CONTENT',   'WOUDC,Spectral,1.0,1', field='Class,Category,Level,Form')
 
 def util_func(df, a):
+    '''
+    :param df: metadata sf
+    :param a: column name
+    :return: the corresponding value of the column
+    '''
     try:
-        # print(a)
-        # print(df.at[df.first_valid_index(), a])
-        return df.at[df.first_valid_index(), a]
+        tmp = str(df.at[df.first_valid_index(), a])
+        tmp = df.at[df.first_valid_index(), a]
+
+        if search(",", str(tmp)):
+            tmp = tmp.replace(',', '')
+        return tmp
     except KeyError:
         return 9999
+
+def make_summary(df, column_names):
+    '''
+
+    :param df:
+    :param column_names:
+    :return:
+    '''
+
+    field_summary = [util_func(df, i) for i in column_names]
+    # print(field_summary)
+    field_summary = ",".join(map(str, field_summary))
+    # print(field_summary)
+
+
+    return field_summary
 
 
 path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
 
-data_files = glob.glob(path + "20050406_o3sdqa.hdf")
-meta_files = glob.glob(path + "20050406*o3smetadata.csv")
+data_files = glob.glob(path + "20050406*_o3sdqa.hdf")
 
 for (filename) in(data_files):
 
@@ -49,6 +74,18 @@ for (filename) in(data_files):
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
+    dfm['LaunchTime'] = round(dfm['LaunchTime'],2).astype('str')
+    dfm['Date'] = dfm['Date'].astype('str')
+    dfm['LaunchTime'] = dfm['LaunchTime'].apply(lambda _: datetime.strptime(_, "%H.%M"))
+    dfm['LaunchTime'] = dfm['LaunchTime'].apply(lambda _: datetime.strftime(_, "%H.%M"))
+    # dfm['LaunchTime'] = pd.to_datetime(dfm['LaunchTime'], format='%H%M').dt.time
+    dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strptime(_, "%Y%m%d"))
+    dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strftime(_, '%Y-%m-%d'))
+
+    df = round(df,3)
+    dfm = round(dfm,3)
+
+
     # CONTENT
     extcsv.add_data('CONTENT',
                     'WOUDC,Spectral,1.0,1',
@@ -59,63 +96,56 @@ for (filename) in(data_files):
     extcsv.add_data('PLATFORM',
                     'STN,388,Shenandoah,USA',
                     field='Type,ID,Name,Country,GAW_ID')
-    extcsv.add_data('INSTRUMENT', 'Brewer,MKIV,137', field='Name,Model,Number')
-    extcsv.add_data('LOCATION',
-                    '38.52,-78.44,1073',
-                    field='Latitude,Longitude,Height')
+    # INSTRUMENT
+    dfm['Name'] = 'ECC'
+    instrument_field = 'Name,Model,Number'
+    df_names = 'Name',  'SensorType', 'SerialECC'
+    instrument_summary = make_summary(dfm, df_names)
+    extcsv.add_data('INSTRUMENT', instrument_summary, instrument_field)
 
-    extcsv.add_data('TIMESTAMP',
-                    '-05:27:17,2004-01-31,07:28:49',
-                    field='UTCOffset,Date,Time')
+    # LOCATION
+    location_field = 'Latitude,Longitude,Height'
+    df_names = 'Latitude', 'Longitude', 'Height'
+    location_summary = make_summary(dfm, df_names)
+    extcsv.add_data('LOCATION',   location_summary, field= location_field)
 
-    # PREFLIGHT_SUMMARY
-    ps_field = 'iB0, iB2, SolutionVolume, SolutionConcentration, PumpFlowRate, OzoneSondeResponseTime'
-    df_names = 'iB0', 'iB2',  'SolutionVolume', 'SolutionConcentration', 'PF', 'TimeResponse'
-    preflight_summary = [util_func(dfm,i) for i in df_names]
-    preflight_summary = str(preflight_summary)[1:-1]
-    extcsv.add_data('PREFLIGHT_SUMMARY',   preflight_summary, field= ps_field)
+   # TIMESTAMP
+    time_field = 'UTCOffset,Date,Time'
+    df_names = 'UTCOffset', 'Date', 'LaunchTime'
+    time_summary = make_summary(dfm, df_names)
+    extcsv.add_data('TIMESTAMP', time_summary, time_field)
+
+    # # PREFLIGHT_SUMMARY
+    ps_field = 'Ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime'
+    df_names = 'iB0', 'iB1','iB2', 'SolutionConcentration', 'SolutionVolume', 'PF', 'TimeResponse'
+    preflight_summary = make_summary(dfm, df_names)
+    # AUXILIARY_DATA
+    # extcsv.add_data('PREFLIGHT_SUMMARY', preflight_summary, ps_field)
+    extcsv.add_data('AUXILIARY_DATA', preflight_summary, ps_field)
 
     # RADIOSONDE
-    rs_field = 'Manufacturer, Model, Number'
+    rs_field = 'Manufacturer,Model,Number'
     df_names = 'RadiosondeModel', 'RadiosondeModel', 'RadiosondeSerial'
-    rs_summary = [util_func(dfm,i) for i in df_names]
-    test = [0]*3
-    rs_summary = np.array(rs_summary)
-    print(rs_summary[1])
-    # rs_summary = str(rs_summary)[1:-1]
-    for j in range(len(rs_summary)):
-        print(rs_summary[j])
-        test[j] = rs_summary[j]
-    # print(rs_summary)
-    print(test)
-    print('test', np.array2string(test, separator=',', formatter={'str_kind': lambda x: x}))
-
+    rs_summary = make_summary(dfm,df_names)
     extcsv.add_data('RADIOSONDE',   rs_summary, field= rs_field)
 
     # Interface
-    int_field = 'Manufacturer, Model, Number'
+    int_field = 'Manufacturera,Modela,Numbera'
     df_names = 'InterfaceModel', 'InterfaceModel', 'InterfaceSerial'
-    int_summary = [util_func(dfm,i) for i in df_names]
-    print(int_summary)
-
-    int_summary = str(int_summary)[1:-1]
-    print(int_summary.strip(''))
-    extcsv.add_data('INTERFACE',   int_summary, field= int_field)
+    int_summary = make_summary(dfm, df_names)
+    extcsv.add_data('INTERFACE_CARD', int_summary, field=int_field)
 
     # SAMPLING_METHOD
-    samp_field = 'TypeOzoneFreeAir, CorrectionWettingFlow, SurfaceOzone, DurationSurfaceOzoneExposure, LengthBG, ' \
-                 'WMOTropopausePressure, BurstOzonePressure, GroundEquipment, ProcessingSoftware'
-    df_names = 'TypeOzoneFreeAir', 'CorrectionWettingFlow', 'SurfaceOzone', 'DurationSurfaceOzoneExposure', 'LengthBG',  \
+    samp_field = 'TypeOzoneFreeAir,CorrectionWettingFlow,SurfaceOzone,DurationSurfaceOzoneExposure,LengthBG,WMOTropopausePressure,BurstOzonePressure,GroundEquipment,ProcessingSoftware'
+    df_names = 'TypeOzoneFreeAir', 'CorrectionWettingFlow', 'SurfaceOzone', 'DurationSurfaceOzoneExposure', 'LengthBG',\
                  'WMOTropopausePressure', 'BurstOzonePressure', 'GroundEquipment', 'ProcessingSoftware'
-    samp_summary = [util_func(dfm,i) for i in df_names]
-    samp_summary = str(samp_summary)[1:-1]
+    samp_summary = make_summary(dfm, df_names)
     extcsv.add_data('SAMPLING_METHOD',   samp_summary, field= samp_field)
 
     # PUMP_SETTINGS
-    pump_field = 'MotorCurrent, HeadPressure, VacuumPressure'
+    pump_field = 'MotorCurrent,HeadPressure,VacuumPressure'
     df_names = 'MotorCurrent', 'HeadPressure', 'VacuumPressure'
-    pump_summary = [util_func(df, i) for i in df_names]
-    pump_summary = str(pump_summary)[1:-1]
+    pump_summary = make_summary(dfm, df_names)
     extcsv.add_data('PUMP_SETTINGS', pump_summary, field=pump_field)
 
     # PUMP_CORRECTION
@@ -133,12 +163,22 @@ for (filename) in(data_files):
 
 
     # FLIGHT_SUMMARY 	IntegratedO3, CorrectionCode, SondeTotalO3, NormalizationFactor, BackgroundCorrection,
-
-
-
+    flight_field = 'IntegratedO3,CorrectionCode,SondeTotalO3,NormalizationFactor,BackgroundCorrection'
+    df_names = 'IntegratedO3', 'CorrectionFactor', 'SondeTotalO3', 'NormalizationFactor', 'BackgroundCorrection'
+    flight_summary = make_summary(dfm, df_names)
+    extcsv.add_data('FLIGHT_SUMMARY', flight_summary, field=flight_field)
+    #
+    # OZONE_REFERENCE -> O3Ref
+    ozoneref_field = 'Name, Model, Number, Version, TotalO3, WLCode, ObsType, UTC_Mean'
+    df_names = 'O3Ref_Name', 'O3Ref_Model', 'O3Ref_Number', 'O3Ref_Version', 'TotalO3_Col2A', 'WLCode', 'ObsType', 'UTC_Mean'
+    ozoneref_summary = make_summary(dfm,df_names)
+    extcsv.add_data('OZONE_REFERENCE', ozoneref_summary, field=ozoneref_field)
+    #
+    #
     # PROFILE
     data_names = 'Duration, Height, Pressure, Temperature, Humidity, TemperatureSonde, O3PartialPressure, SondeCurrent'
     df_names = ['Time', 'Height','Pair', 'T', 'U',  'Tbox', 'O3',  'I']
+    df = round(df,3)
 
     size = len(df)
 
@@ -150,6 +190,7 @@ for (filename) in(data_files):
 
 
     out_name = path + str(df.at[df.first_valid_index(),'Date']) + '_testwoudc.csv'
+    print(out_name)
 
     woudc_extcsv.dump(extcsv, out_name)
 

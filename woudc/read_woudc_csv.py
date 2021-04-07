@@ -11,7 +11,10 @@ path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/vers
 efile = open("errorfile.txt", "w")
 
 
-allFiles = sorted(glob.glob(path + "*test*.csv"))
+allFiles = sorted(glob.glob(path + "*06*testwoudc.csv"))
+
+# /home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/20050406_testwoudc.csv
+
 
 list_data = []
 list_udata = []
@@ -48,8 +51,9 @@ for filename in allFiles:
 
     for i in range(msize):
         dict = list(tables)[i]
+        print('dict',dict)
         keys = extcsv_to.sections[dict].keys()
-        print(keys)
+        print('keys', keys)
         ksize = len(keys)
         if ksize == 1:
             test = extcsv_to.sections[dict]['_raw']
@@ -79,7 +83,6 @@ for filename in allFiles:
 
     filenamestr = filename.split('.csv')[0][-8:] + '_out'
     metastr = filename.split('.csv')[0][-8:] + '_metadata'
-    print('filenamestr', filenamestr)
 
     df.to_csv(path + "out/" + filenamestr + ".csv")
     df.to_hdf(path + "out/" + filenamestr + ".hdf", key = 'df')
