@@ -43,7 +43,7 @@ RS41_cor = np.flipud(RS41_cor)
 RS41_pval = np.flipud(RS41_pval)
 
 RS80_cor = np.array([0, -0.34, 0.05, -0.17, -0.47, -0.61, -0.70, -0.83, -0.85, -0.91, -0.94, -0.97, -0.98, -1.02, -1.02, -1.01, -0.94, -0.94,
--1.01, -0.95,-1.00, -0.96, -0.98, -0.99, -1.00, -0.99, -1.01, -1.00, -1.06, -1.01, -1.04, -1.02, -0.97])
+-1.01, -0.95,-1.00, -0.96, -0.98, -0.99, -1.00, -0.99, -1.01, -1.00, -1.06, -1.01, -1.04])
 RS80_cor_err = np.array([0, 1.57, 1.56, 1.46, 1.43, 1.33, 1.26, 1.26, 1.21, 1.17, 1.14, 1.15, 1.16, 1.16, 1.17, 1.29, 1.28, 1.20, 1.29, 1.41,
 1.36, 1.23, 1.31, 1.30, 1.39, 1.33, 1.35, 1.38, 1.40, 1.44, 1.60])
 RS92_cor = np.array([0, 1.11, 0.56, 0.35, 0.23, 0.07, -0.03, -0.11, -0.16, -0.21, -0.26, -0.27, -0.27, -0.24, -0.28, -0.27,
@@ -51,7 +51,7 @@ RS92_cor = np.array([0, 1.11, 0.56, 0.35, 0.23, 0.07, -0.03, -0.11, -0.16, -0.21
 RS92_cor_err = np.array([0, 1.42, 1.41, 1.17, 1.03, 0.92, 0.85, 0.78, 0.75, 0.70, 0.65, 0.62, 0.58, 0.75, 0.50, 0.47, 0.45,
 0.42, 0.40, 0.35, 0.34, 0.31, 0.30, 0.28, 0.27, 0.27, 0.27, 0.27, 0.26, 0.26, 0.25])
 RS_alt = np.array([0, 1,2,3,4,5,6,7,8,9,10,11,12,13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30])
-RS_alt = [i * 1000 for i in RS_alt]
+# RS_alt = [i * 1000 for i in RS_alt]
 
 k = 273.15
 
@@ -137,6 +137,8 @@ def RS_pressurecorrection(dft, height, radiosondetype):
 
     dft = dft.reset_index()
 
+    dft['height_km'] = dft[height]/1000
+
     dft['Crs'] = 0.0
     dft['unc_Crs'] = 0.0
 
@@ -152,19 +154,24 @@ def RS_pressurecorrection(dft, height, radiosondetype):
 
         for i in range(len(RS_alt) - 1):
             # just check that value is in between xvalues
-            if (RS_alt[i] <= dft.at[k, height] < RS_alt[i + 1]):
+            if (RS_alt[i] <= dft.at[k, 'height_km'] < RS_alt[i + 1]):
+                # x1 = float(RS_alt[i])
+                # x2 = float(RS_alt[i + 1])
+                # y1 = float(RS_cor[i])
+                # y2 = float(RS_cor[i + 1])
+                # unc_y1 = float(RS_cor_err[i])
+                # unc_y2 = float(RS_cor_err[i + 1])
+                # dft.at[k, 'Crs'] = float(y1 + (dft.at[k, 'height_km'] - x1) * (y2 - y1) / (x2 - x1))
+                # dft.at[k, 'unc_Crs'] = float(unc_y1 + (dft.at[k, 'height_km'] - x1) * (unc_y2 - unc_y1) / (x2 - x1))
+                dft.at[k, 'Crs'] = RS_cor[i+1]
+                dft.at[k, 'unc_Crs'] = RS_cor_err[i+1]
 
-                x1 = float(RS_alt[i])
-                x2 = float(RS_alt[i + 1])
-
-                y1 = float(RS_cor[i])
-                y2 = float(RS_cor[i + 1])
-
-                unc_y1 = float(RS_cor_err[i])
-                unc_y2 = float(RS_cor_err[i + 1])
-
-                dft.at[k, 'Crs'] = float(y1 + (dft.at[k, height] - x1) * (y2 - y1) / (x2 - x1))
-                dft.at[k, 'unc_Crs'] = float(unc_y1 + (dft.at[k, height] - x1) * (unc_y2 - unc_y1) / (x2 - x1))
+        if (dft.at[k, 'height_km'] > 30) & (radiosondetype == 'RS80'):
+            dft.at[k, 'Crs'] = -1.02
+            dft.at[k, 'unc_Crs'] = -1.43
+        if (dft.at[k, 'height_km'] > 30) & (radiosondetype == 'RS92'):
+            dft.at[k, 'Crs'] = -0.12
+            dft.at[k, 'unc_Crs'] = -0.26
 
     return dft['Crs'], dft['unc_Crs']
 

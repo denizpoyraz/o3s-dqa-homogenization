@@ -51,20 +51,14 @@ for (filename) in (allFiles):
     fname = filename.split('/')[-1].split('.')[0][0:8]
     fullname = filename.split('/')[-1].split('.')[0]
     metaname = path + 'Metadata/' + fname + "_metadata.csv"
-
-    print(metaname)
-
     if search("2nd", fullname): metaname = path + 'Metadata/' + fname + "_2nd_metadata.csv"
 
     date = datetime.strptime(date_tmp, '%y%m%d')
     datef = date.strftime('%Y%m%d')
     datestr = str(datef)
 
-
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
-
-    print(dfm.at[0,'LaunchTime'])
 
     # to deal with data that is not complete
     if (len(df) < 300): continue
@@ -80,7 +74,6 @@ for (filename) in (allFiles):
     # the string options for pump temperature can be seen in homogenisation_functions -> pumptemp_corr
     # see boxlocation strings
 
-
     # input variables for hom.
     df['Tpump'] = df['TboxK']
     df['Phip'] = 100 / dfm.at[dfm.first_valid_index(),'PF']
@@ -94,6 +87,7 @@ for (filename) in (allFiles):
     #      radiosonde RS80 correction   #
     try: rsmodel = dfm.at[dfm.first_valid_index(), 'RadiosondeModel']
     except KeyError: rsmodel = 'RS92'
+    # print('rsmodel', rsmodel)
     if rsmodel == 'RS80': bool_rscorrection = True
     else: bool_rscorrection = False
     if bool_rscorrection:
@@ -130,10 +124,10 @@ for (filename) in (allFiles):
     df['dI'] = 0
     df.loc[df.I < 1, 'dI'] = 0.01
     df.loc[df.I >= 1, 'dI'] = 0.01 * df.loc[df.I > 1, 'I']
-    df['dIall'] = (df['dI'] ** 2 + df['unc_iBc'] ** 2) / (df['I'] - df['iBc']) ** 2
-    df['dEta'] = (df['unc_eta_c'] / df['eta_c']) ** 2
-    df['dPhi_cor'] = (df['unc_Phip_cor'] / df['Phip_cor']) ** 2
-    df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor']) ** 2
+    df['dIall'] = (df['dI'] ** 2 + df['unc_iBc']**2) / (df['I'] - df['iBc'])**2
+    df['dEta'] = (df['unc_eta_c'] / df['eta_c'])**2
+    df['dPhi_cor'] = (df['unc_Phip_cor'] / df['Phip_cor'])**2
+    df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor'])**2
     if bool_rscorrection: df['dPrs'] = (df['unc_Crs']/df['Crs'])**2
     # final uncertainity on O3
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
@@ -155,15 +149,14 @@ for (filename) in (allFiles):
      'unc_cpl', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c',
      'iBc', 'unc_iBc', 'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab',
      'ULab', 'Pground', 'x', 'psaturated', 'cph', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground',
-     'dI', 'dIall', 'dEta', 'dTpump_cor'], axis=1)
+     'dI'], axis=1)
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
     df.to_hdf(path + '/DQA/' + datestr + "_all_hom.hdf", key = 'df')
 
-
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
-    df = df.drop(['TboxC', 'Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor', 'dO3'], axis = 1)
+    df = df.drop(['TboxC', 'Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor'], axis = 1)
     # df to be converted to WOUDC format together with the metadata
     df.to_hdf(path + '/DQA/' + datestr + "_o3sdqa.hdf", key = 'df')
 
