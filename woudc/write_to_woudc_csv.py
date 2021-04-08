@@ -33,9 +33,7 @@ def util_func(df, a):
     :return: the corresponding value of the column
     '''
     try:
-        tmp = str(df.at[df.first_valid_index(), a])
         tmp = df.at[df.first_valid_index(), a]
-
         if search(",", str(tmp)):
             tmp = tmp.replace(',', '')
         return tmp
@@ -61,7 +59,7 @@ def make_summary(df, column_names):
 
 path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
 
-data_files = glob.glob(path + "20050406*_o3sdqa.hdf")
+data_files = glob.glob(path + "200504*_o3sdqa.hdf")
 
 for (filename) in(data_files):
 
@@ -70,7 +68,6 @@ for (filename) in(data_files):
     extcsv = woudc_extcsv.Writer(template=True)
     # extcsv = woudc_extcsv.Writer()
 
-
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
@@ -78,13 +75,11 @@ for (filename) in(data_files):
     dfm['Date'] = dfm['Date'].astype('str')
     dfm['LaunchTime'] = dfm['LaunchTime'].apply(lambda _: datetime.strptime(_, "%H.%M"))
     dfm['LaunchTime'] = dfm['LaunchTime'].apply(lambda _: datetime.strftime(_, "%H.%M"))
-    # dfm['LaunchTime'] = pd.to_datetime(dfm['LaunchTime'], format='%H%M').dt.time
     dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strptime(_, "%Y%m%d"))
     dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strftime(_, '%Y-%m-%d'))
 
     df = round(df,3)
     dfm = round(dfm,3)
-
 
     # CONTENT
     extcsv.add_data('CONTENT',
@@ -176,9 +171,8 @@ for (filename) in(data_files):
     #
     #
     # PROFILE
-    data_names = 'Duration, Height, Pressure, Temperature, Humidity, TemperatureSonde, O3PartialPressure, SondeCurrent'
-    df_names = ['Time', 'Height','Pair', 'T', 'U',  'Tbox', 'O3',  'I']
-    df = round(df,3)
+    data_names = 'Duration, Height, Pressure, Temperature, Humidity, TemperatureSonde, O3PartialPressure, SondeCurrent,O3PartialPressure_Uncertainty'
+    df_names = ['Time', 'Height','Pair', 'T', 'U',  'Tbox', 'O3',  'I', 'dO3']
 
     size = len(df)
 

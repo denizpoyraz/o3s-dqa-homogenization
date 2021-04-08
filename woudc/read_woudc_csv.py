@@ -51,9 +51,9 @@ for filename in allFiles:
 
     for i in range(msize):
         dict = list(tables)[i]
-        print('dict',dict)
+        # print('dict',dict)
         keys = extcsv_to.sections[dict].keys()
-        print('keys', keys)
+        # print('keys', keys)
         ksize = len(keys)
         if ksize == 1:
             test = extcsv_to.sections[dict]['_raw']
@@ -70,16 +70,13 @@ for filename in allFiles:
             kstr = list(keys)[j]
             if kstr == '_raw': kstr = ""
             astr = mstr + '_' + kstr
-            # print(fi, " , " , mstr, " , ", kstr , " , ", extcsv_to.sections[dict][list(keys)[j]])
             dfm.at[fi, astr] = extcsv_to.sections[dict][list(keys)[j]]
-
 
     dfprofile = StringIO(Profile)
     df = pd.read_csv(dfprofile)
     df['Date'] = dfm.at[fi, 'TIMESTAMP_Date']
     df['Station'] = dfm.at[fi, 'DATA_GENERATION_Agency']
     list_data.append(df)
-
 
     filenamestr = filename.split('.csv')[0][-8:] + '_out'
     metastr = filename.split('.csv')[0][-8:] + '_metadata'
