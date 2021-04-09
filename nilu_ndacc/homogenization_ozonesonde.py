@@ -19,7 +19,7 @@ path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/vers
 # if there was a change in the used background current or the location of the pump thermistor, please do the following
 
 string_bkg_used = 'ib2'
-# string_BkgUsed = 'ib0'
+# string_bkg_used = 'ib0'
 string_pump_location = 'InternalPump'
 
 
@@ -131,7 +131,6 @@ for (filename) in (allFiles):
     if bool_rscorrection: df['dPrs'] = (df['unc_Crs']/df['Crs'])**2
     # final uncertainity on O3
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
-    if bool_rscorrection: df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'] + df['dPrs'])
 
     md_clist = ['Phip', 'Eta', 'unc_Phip', 'unc_Tpump', 'unc_cph', 'unc_cpl', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich',
               'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc',  'unc_Tpump_cor', 'deltat', 'unc_deltat',  'unc_deltat_ppi',
