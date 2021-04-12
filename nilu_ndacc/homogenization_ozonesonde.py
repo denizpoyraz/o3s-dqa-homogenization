@@ -109,7 +109,7 @@ for (filename) in (allFiles):
 
     #      pump flow corrections        #
     # ground correction
-    df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'unc_Phip', 'TLab', 'Pground', 'ULab')
+    df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'unc_Phip', 'TLab', 'Pground', 'ULab',True)
     # efficiency correction
     pumpflowtable = ''
     if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'

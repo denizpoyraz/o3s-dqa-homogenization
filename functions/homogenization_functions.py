@@ -66,12 +66,12 @@ def calculate_cph(dfmeta):
     # Eq.17
     dfmeta['cph'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
     # Eq.16
-    dfmeta['cpl'] = 2/(dfmeta['TLab'].astype('float') + k)
+    dfmeta['cPL'] = 2/(dfmeta['TLab'].astype('float') + k)
 
     return dfmeta
 
 
-def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab):
+def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab, boolrh):
     """
     O3S-DQA 8.4
     :param df:
@@ -84,19 +84,29 @@ def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab):
     :return:
     """
     df['TLab'] = dfm.at[0,tlab].astype('float')
-    df['ULab'] = dfm.at[0,tlab].astype('float')
-    df['Pground'] = dfm.at[0,plab].astype('float')
 
-    df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
-    df['psaturated'] = 10 ** (df['x'])
-    df['cph'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['Pground'] #Eq. 17
+    if boolrh == True:
+        df['ULab'] = dfm.at[0, rhlab].astype('float')
+        df['Pground'] = dfm.at[0, plab].astype('float')
+        df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
+        df['psaturated'] = 10 ** (df['x'])
+        df['cPH'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['Pground'] #Eq. 17
+        unc_cPH = df.at[df.first_valid_index(), 'unc_cPH']
+        df['TLabK'] = df[tlab] + k
+        df['cPL'] = 2 / df['TLabK']  # Eq. 16
+        unc_cPL = df.at[df.first_valid_index(), 'unc_cPL']
+        
+    if boolrh == False:
 
-    df['TLabK'] = df[tlab] + k
-    df['cPL'] = 2/df['TLabK'] #Eq. 16
-    unc_cPL = df.at[df.first_valid_index(),'unc_cpl']
-    unc_cPH = df.at[df.first_valid_index(),'unc_cph']
-    df['Phip_ground'] = (1 + df['cPL'] - df['cph']) * df[phim]  # Eq. 15
-    df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt((df[unc_phim]/df[phim])**2 + (unc_cPL)**2 + (unc_cPH)**2) #Eq. 21
+        df['TLabK'] = df[tlab] + k
+        df['cPL'] = 2/df['TLabK'] #Eq. 16
+        unc_cPL = df.at[df.first_valid_index(),'unc_cPL']
+        df['cPH'] = 0
+        unc_cPH = 0
+
+    df['Phip_ground'] = (1 + df['cPL'] - df['cPH']) * df[phim]  # Eq. 15
+    df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt(
+        (df[unc_phim] / df[phim]) ** 2 + (unc_cPL) ** 2 + (unc_cPH) ** 2)  # Eq. 21
 
     return df['Phip_ground'], df['unc_Phip_ground']
 
