@@ -100,7 +100,7 @@ def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab, boolrh):
 
         df['TLabK'] = df[tlab] + k
         df['cPL'] = 2/df['TLabK'] #Eq. 16
-        unc_cPL = df.at[df.first_valid_index(),'unc_cPL']
+        unc_cPL = 0
         df['cPH'] = 0
         unc_cPH = 0
 
@@ -287,7 +287,7 @@ def currenttopo3(df, im, tpump, ib, etac, phip, boolcorrection):
 
     if (boolcorrection == False):
         df.loc[(df[im] == 0), 'O3c'] = 0
-        df['O3c'] = 0.043085 * df[tpump] / (df[etac] * df[phip]) * (df[im] - df[ib])
+        df['O3c'] = 0.043085 * df[tpump] * (df[im] - df[ib]) / (df[etac] * df[phip])
 
     return df['O3c']
 

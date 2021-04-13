@@ -30,9 +30,9 @@ dfmeta = filter_metadata(dfmeta)
 
 # part to calculate cph and its error
 dfmeta = calculate_cph(dfmeta)
-dfmeta['unc_cph'] = dfmeta['cph'].std()
-dfmeta['unc_cpl'] = dfmeta['cpl'].std()
-# print('cph std', dfmeta['cph'].std(), 'cpl std', dfmeta['cpl'].std())
+dfmeta['unc_cPH'] = dfmeta['cPH'].std()
+dfmeta['unc_cPL'] = dfmeta['cPL'].std()
+# print('cPH std', dfmeta['cPH'].std(), 'cpl std', dfmeta['cpl'].std())
 
 allFiles = sorted(glob.glob(path + "Current/SO0504*rawcurrent.hdf"))
 # mdFiles = sorted(glob.glob(path + "Metadata/*metadata.csv"))
@@ -81,8 +81,8 @@ for (filename) in (allFiles):
 
     df['unc_Phip'] = 0.02
     df['unc_Tpump'] = 1
-    df['unc_cph'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cph']
-    df['unc_cpl'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cpl']
+    df['unc_cPH'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPH']
+    df['unc_cPL'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPL']
 
     #      radiosonde RS80 correction   #
     try: rsmodel = dfm.at[dfm.first_valid_index(), 'RadiosondeModel']
@@ -132,9 +132,9 @@ for (filename) in (allFiles):
     # final uncertainity on O3
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
 
-    md_clist = ['Phip', 'Eta', 'unc_Phip', 'unc_Tpump', 'unc_cph', 'unc_cpl', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich',
+    md_clist = ['Phip', 'Eta', 'unc_Phip', 'unc_Tpump', 'unc_cPH', 'unc_cPL', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich',
               'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc',  'unc_Tpump_cor', 'deltat', 'unc_deltat',  'unc_deltat_ppi',
-              'x', 'psaturated', 'cph', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+              'x', 'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
               'dEta', 'dTpump_cor']
 
     # merge all the metadata to md df and save it as a csv file
@@ -144,10 +144,10 @@ for (filename) in (allFiles):
     dfm.to_csv(path + '/DQA/'+ datestr + "_o3smetadata.csv")
 
     df = df.drop(
-        ['Datedt', 'Phip', 'Eta', 'unc_Phip', 'unc_Tpump', 'unc_cph', 'TboxK',
-     'unc_cpl', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c',
+        ['Datedt', 'Phip', 'Eta', 'unc_Phip', 'unc_Tpump', 'unc_cPH', 'TboxK',
+     'unc_cPL', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c',
      'iBc', 'unc_iBc', 'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab',
-     'ULab', 'Pground', 'x', 'psaturated', 'cph', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground',
+     'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground',
      'dI'], axis=1)
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature

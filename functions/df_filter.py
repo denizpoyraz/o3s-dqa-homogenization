@@ -9,12 +9,14 @@ def filter_data(df):
     :return: filtered data df
     '''
 
-    df = df[df.Pair < 1100]
-    df = df[df.TboxC < 40]
-    df = df[df.O3 < 30]
+    df = df[df.P != -9999]
+    df = df[df.Time != -9999]
+    df = df[df.I != -9999 ]
+    df = df[df.Tbox != -9999 ]
 
     # ['Pair', 'Time', 'Height', 'TboxK', 'TboxC', 'WindDirection', 'WindSpeed', 'O3', 'T', 'U', 'SensorType',
     #  'SolutionVolume', 'Cef', 'ibg', 'I', 'Date']
+    # 'Time', 'Height', 'P', 'T', 'U', 'Winddir', 'Windv', 'Tbox', 'Tboxcor', 'I', 'Phi', 'PO3_presto', 'dPO3_presto'
 
     return df
 
