@@ -64,14 +64,14 @@ def calculate_cph(dfmeta):
     dfmeta['x'] = ((7.5 * dfmeta['TLab'].astype('float')) / (dfmeta['TLab'].astype('float') + 237.3)) + 0.7858
     dfmeta['psaturated'] = 10 ** (dfmeta['x'])
     # Eq.17
-    dfmeta['cph'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
+    dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
     # Eq.16
     dfmeta['cPL'] = 2/(dfmeta['TLab'].astype('float') + k)
 
     return dfmeta
 
 
-def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab, boolrh):
+def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
     """
     O3S-DQA 8.4
     :param df:
@@ -106,7 +106,7 @@ def pf_groundcorrection(df, dfm, phim, unc_phim, tlab, plab, rhlab, boolrh):
 
     df['Phip_ground'] = (1 + df['cPL'] - df['cPH']) * df[phim]  # Eq. 15
     df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt(
-        (df[unc_phim] / df[phim]) ** 2 + (unc_cPL) ** 2 + (unc_cPH) ** 2)  # Eq. 21
+        (df[dphim]) ** 2 + (unc_cPL) ** 2 + (unc_cPH) ** 2)  # Eq. 21
 
     return df['Phip_ground'], df['unc_Phip_ground']
 

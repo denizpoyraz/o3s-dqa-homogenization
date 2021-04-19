@@ -79,7 +79,7 @@ for (filename) in (allFiles):
     df['Phip'] = 100 / dfm.at[dfm.first_valid_index(),'PF']
     df['Eta'] = 1
 
-    df['unc_Phip'] = 0.02
+    df['dPhip'] = 0.02
     df['unc_Tpump'] = 1
     df['unc_cPH'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPH']
     df['unc_cPL'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPL']
@@ -109,7 +109,7 @@ for (filename) in (allFiles):
 
     #      pump flow corrections        #
     # ground correction
-    df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'unc_Phip', 'TLab', 'Pground', 'ULab',True)
+    df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'Pground', 'ULab',True)
     # efficiency correction
     pumpflowtable = ''
     if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'

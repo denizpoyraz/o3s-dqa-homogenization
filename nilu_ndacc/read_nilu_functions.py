@@ -120,7 +120,7 @@ def organize_df(df1, df2):
 
         if (search('Background', list2[j])) and (search('correction', list2[j])):
             dfm_out.at[0,'BackgroundCorrection'] = df2.at[df2.first_valid_index(), list2[j]]
-            print(df2.at[df2.first_valid_index(), list2[j]])
+            # print(df2.at[df2.first_valid_index(), list2[j]])
 
         if (search('Launch time', list2[j])):
             dfm_out.at[0,'LaunchTime'] = df2.at[df2.first_valid_index(), list2[j]]

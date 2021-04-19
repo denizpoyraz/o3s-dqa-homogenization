@@ -8,12 +8,12 @@ from nilu_ndacc.read_nilu_functions import organize_df, o3tocurrent
 
 K = 273.15
 
-filepath = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/'
+filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "/*0504*.hdf"))
+allFiles = sorted(glob.glob(filepath + "/*.hdf"))
 
-print(allFiles)
+# print(allFiles)
 
 list_metadata = []
 
@@ -21,12 +21,13 @@ f = 0
 sensortype = [''] * len(allFiles)
 
 for filename in (allFiles):
-
+    # print('filename', filename)
     name = filename.split(".")[-2].split("/")[-1][2:8]
     fname = filename.split(".")[-2].split("/")[-1]
     # not to read metada files with _md extension
     if (search("md", fname)) or (search("metadata", fname)): continue
     print(fname)
+    if (fname == 'so980827') | (fname == 'so990708'): continue #one problematic file in sodankyal
 
     metafile = filepath + fname + "_md.csv"
 
@@ -62,15 +63,23 @@ for filename in (allFiles):
     dfl, dfm = organize_df(dfd, dfm_tmp)
     dfm['Date'] = datef
     # print(dfm.at[dfm.first_valid_index(), 'SensorType'])
+    #
+    # print('dfl', list(dfl))
+    # print('dfm', list(dfm))
 
     if (len(dfl) < 300): continue
 
+    # print(dfm.at[dfm.first_valid_index(), 'SensorType'])
+
     # for some files that the value were written wrong
     try:
-        sensortype[f] = dfl.at[dfl.first_valid_index(), 'SensorType']
+        sensortype[f] = dfm.at[dfm.first_valid_index(), 'SensorType']
+        # print('try', sensortype[f])
     except KeyError:
         sensortype[f] = sensortype[f - 2]
-        dfl['SensorType'] = sensortype[f - 2]
+        dfm['SensorType'] = sensortype[f - 2]
+        print('except', sensortype[f], sensortype[f-2])
+
     f = f + 1
     #
 
@@ -91,10 +100,10 @@ for filename in (allFiles):
     list_metadata.append(dfm)
 
 # # save all the metada in one file, either in hdf format or csv format
-# dff = pd.concat(list_metadata, ignore_index=True)
-# hdfall = filepath + "All_metadata.hdf"
-# csvall = filepath + "All_metadata.csv"
-#
-# dff.to_hdf(hdfall, key = 'df')
-# dff.to_csv(csvall)
-#
+dff = pd.concat(list_metadata, ignore_index=True)
+hdfall = filepath + "All_metadata.hdf"
+csvall = filepath + "All_metadata.csv"
+
+dff.to_hdf(hdfall, key = 'df')
+dff.to_csv(csvall)
+
