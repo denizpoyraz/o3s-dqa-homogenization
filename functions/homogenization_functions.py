@@ -128,8 +128,8 @@ def VecInterpolate_linear(XValues, YValues, unc_YValues, dft, Pair):
                 y2 = float(YValues[i+1])
                 unc_y1 = float(unc_YValues[i])
                 unc_y2 = float(unc_YValues[i + 1])
-                dft.at[k,'Cpf'] = y1 + (dft.at[k,'plog'] - x1) * (y2 - y1) / (x2 - x1)
-                dft.at[k,'unc_Cpf'] = unc_y1 + (dft.at[k,'plog'] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
+                dft.at[k,'Cpf'] = y1 + (dft.at[k,Pair] - x1) * (y2 - y1) / (x2 - x1)
+                dft.at[k,'unc_Cpf'] = unc_y1 + (dft.at[k,Pair] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
 
     return dft['Cpf'], dft['unc_Cpf']
 
