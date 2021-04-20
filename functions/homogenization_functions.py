@@ -14,6 +14,9 @@ import datetime
 
 pval = np.array([1100, 200, 100, 50, 30, 20, 10, 7, 5, 3])
 
+pvallog = [np.log10(i) for i in pval]
+print(pvallog)
+
 pval_sod = np.array([1100, 150, 100, 70, 60, 50, 40, 30, 20, 15, 10, 8, 5])
 corr_sod = np.array([1,1,1.010, 1.022, 1.025, 1.035, 1.047, 1.065, 1.092, 1.120, 1.170, 1.206, 1.300])
 corr_sod_unc = np.array([0 ,0 ,0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05])
@@ -110,8 +113,7 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
 
     return df['Phip_ground'], df['unc_Phip_ground']
 
-
-def VecInterpolate(XValues, YValues, unc_YValues, dft, Pair, LOG):
+def VecInterpolate_linear(XValues, YValues, unc_YValues, dft, Pair):
 
     dft = dft.reset_index()
 
@@ -120,19 +122,38 @@ def VecInterpolate(XValues, YValues, unc_YValues, dft, Pair, LOG):
         for i in range(len(XValues)-1):
             # check that value is in between xvalues
             if (XValues[i] >= dft.at[k, Pair] >= XValues[i + 1]):
-
                 x1 = float(XValues[i])
                 x2 = float(XValues[i+1])
-                if LOG == 1:
-                    x = math.log(x)
-                    x1 = math.log(x1)
-                    x2 = math.log(x2)
                 y1 = float(YValues[i])
                 y2 = float(YValues[i+1])
                 unc_y1 = float(unc_YValues[i])
                 unc_y2 = float(unc_YValues[i + 1])
-                dft.at[k,'Cpf'] = y1 + (dft.at[k,Pair] - x1) * (y2 - y1) / (x2 - x1)
-                dft.at[k,'unc_Cpf'] = unc_y1 + (dft.at[k,Pair] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
+                dft.at[k,'Cpf'] = y1 + (dft.at[k,'plog'] - x1) * (y2 - y1) / (x2 - x1)
+                dft.at[k,'unc_Cpf'] = unc_y1 + (dft.at[k,'plog'] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
+
+    return dft['Cpf'], dft['unc_Cpf']
+
+
+def VecInterpolate_log(XValues, YValues, unc_YValues, dft, Pair):
+
+    dft = dft.reset_index()
+
+    dft['plog'] = np.log10(dft[Pair])
+
+    for k in range(len(dft)):
+
+        for i in range(len(XValues)-1):
+            # check that value is in between xvalues
+            if (XValues[i] >= dft.at[k, 'plog'] >= XValues[i + 1]):
+
+                x1 = float(XValues[i])
+                x2 = float(XValues[i+1])
+                y1 = float(YValues[i])
+                y2 = float(YValues[i+1])
+                unc_y1 = float(unc_YValues[i])
+                unc_y2 = float(unc_YValues[i + 1])
+                dft.at[k,'Cpf'] = y1 + (dft.at[k,'plog'] - x1) * (y2 - y1) / (x2 - x1)
+                dft.at[k,'unc_Cpf'] = unc_y1 + (dft.at[k,'plog'] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
 
     return dft['Cpf'], dft['unc_Cpf']
 
@@ -209,13 +230,15 @@ def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
     if effmethod == 'table_interpolate':
 
         if pumpcorrectiontag == 'komhyr_86':
-            df['Cpf'], df['unc_Cpf'] = VecInterpolate(pval, komhyr_86, komhyr_86_unc,  df, pair, 0)
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_86, komhyr_86_unc,  df, pair)
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_86, komhyr_86_unc,  df, pair)
 
         if pumpcorrectiontag == 'komhyr_95':
-            df['Cpf'], df['unc_Cpf'] = VecInterpolate(pval, komhyr_95, komhyr_95_unc,  df, pair, 0)
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_95, komhyr_95_unc,  df, pair)
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_95, komhyr_95_unc,  df, pair)
 
-        if pumpcorrectiontag == 'sodankayl':
-            df['Cpf'], df['unc_Cpf'] = VecInterpolate(pval_sod, corr_sod, corr_sod_unc,  df, pair, 0)
+        # if pumpcorrectiontag == 'sodankayl':
+        #     df['Cpf'], df['unc_Cpf'] = VecInterpolate(pval_sod, corr_sod, corr_sod_unc,  df, pair, 1)
 
     return df['Cpf'], df['unc_Cpf']
 
