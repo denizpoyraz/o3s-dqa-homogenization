@@ -13,14 +13,15 @@ from functions.homogenization_functions import absorption_efficiency, stoichmetr
 from functions.df_filter import filter_data, filter_metadata
 
 
-path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 
 ## important adjusments
 # if there was a change in the used background current or the location of the pump thermistor, please do the following
 
 string_bkg_used = 'ib2'
 # string_bkg_used = 'ib0'
-string_pump_location = 'InternalPump'
+# string_pump_location = 'InternalPump'
+string_pump_location = 'case5'
 
 
 k = 273.15
@@ -80,7 +81,20 @@ for (filename) in (allFiles):
     df['Eta'] = 1
 
     df['dPhip'] = 0.02
-    df['unc_Tpump'] = 1
+
+    # different pump temperature corrections
+    df['unc_Tpump'] = 0.5 #case II-V
+    serial_ecc = dfm.at[dfm.first_valid_index(),'SerialECC']
+    if (search('2A', serial_ecc)) or (search('3A',serial_ecc)) or (search('4A',serial_ecc)) or \
+            (search('2a', serial_ecc)) or (search('3a',serial_ecc)) or (search('4a',serial_ecc)):
+        df['unc_Tpump'] = 1.0 #case I
+        string_pump_location = 'case1'
+    if (search('5a', serial_ecc)) or (search('5A', serial_ecc)):
+        string_pump_location = 'case3'
+    if (search('6a', serial_ecc)) or (search('6A', serial_ecc)) or (search('Z', serial_ecc)) :
+        string_pump_location = 'case5'
+
+
     df['unc_cPH'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPH']
     df['unc_cPL'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPL']
 

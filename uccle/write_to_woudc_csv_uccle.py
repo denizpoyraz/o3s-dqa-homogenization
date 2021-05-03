@@ -57,81 +57,161 @@ def make_summary(df, column_names):
     return field_summary
 
 
-path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_upd/'
 
-data_files = glob.glob(path + "200504*_o3sdqa.hdf")
+data_files = sorted(glob.glob(path + "*_o3sdqa_rs80.hdf"))
 
 for (filename) in(data_files):
 
-    print(filename)
-    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata.csv'
+    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_rs80.csv'
     extcsv = woudc_extcsv.Writer(template=True)
-    # extcsv = woudc_extcsv.Writer()
 
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
-    dfm['LaunchTime'] = round(dfm['LaunchTime'],2).astype('str')
-    dfm['Date'] = dfm['Date'].astype('str')
-    dfm['LaunchTime'] = dfm['LaunchTime'].apply(lambda _: datetime.strptime(_, "%H.%M"))
-    dfm['LaunchTime'] = dfm['LaunchTime'].apply(lambda _: datetime.strftime(_, "%H.%M"))
-    dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strptime(_, "%Y%m%d"))
+    # before this date it is BrewerMast
+    if dfm.at[0,'Datenf'] < 19970401: continue
+
+    print(filename)
+
+    if np.isnan(dfm.at[0, 'Datenf']):
+        print('nan date', filename)
+        continue
+
+    try: dfm['LaunchTime_int'] = dfm.at[0,'LaunchTime']
+    except:
+        dfm['LaunchTime'] = 11.30
+        dfm['LaunchTime_int'] = dfm.at[0, 'LaunchTime']
+
+    dfm['test'] = dfm.at[0, 'LaunchTime']
+    if dfm.at[0,'test'] == 9999: dfm.at[0,'test'] = 11.30
+    dfm['test'] = dfm['test'].apply(lambda x: pd.to_datetime(str(x), format='%H.%M'))
+    dfm['LaunchTime'] = dfm['test'].apply(lambda x: x.strftime('%H:%M:%S'))
+
+
+    if dfm.at[0,'Datenf'] < 20070901:
+        dfm['RadiosondeModel'] = 'RS80-A'
+        dfm['InterfaceModel'] = 'OIF11'
+    if (dfm.at[0,'Datenf'] > 20070831) & (dfm.at[0,'Datenf'] < 20160615):
+        dfm['RadiosondeModel'] = 'RS92-SGP'
+        dfm['InterfaceModel'] = 'OIF92'
+    if dfm.at[0, 'Datenf'] > 20160615:
+        dfm['RadiosondeModel'] = 'RS41-SGP'
+        dfm['InterfaceModel'] = 'OIF411'
+    if dfm.at[0, 'Datenf'] < 20170701:
+        dfm['GroundEquipment'] = "KTU-2"
+    if dfm.at[0, 'Datenf'] > 20170701:
+        dfm['GroundEquipment'] = "KTU-3"
+
+    if dfm.at[0, 'Datenf'] <= 20171027:
+        dfm['O3Ref_Number'] = 16
+        dfm['O3Ref_Model'] = 'MK-II'
+    if (dfm.at[0, 'Datenf'] > 20171027) & (dfm.at[0, 'Datenf'] <= 20191028):
+        dfm['O3Ref_Number'] = 178
+        dfm['O3Ref_Model'] = 'MK-III'
+    if (dfm.at[0, 'Datenf'] > 20191028) & (dfm.at[0, 'Datenf'] <= 20200116):
+        dfm['O3Ref_Number'] = 16
+        dfm['O3Ref_Model'] = 'MK-II'
+    if (dfm.at[0, 'Datenf'] > 20200116) & (dfm.at[0, 'Datenf'] <= 20201209):
+        dfm['O3Ref_Number'] = 178
+        dfm['O3Ref_Model'] = 'MK-III'
+    if (dfm.at[0, 'Datenf'] > 20201209) & (dfm.at[0, 'Datenf'] <= 20201215):
+        dfm['O3Ref_Number'] = 16
+        dfm['O3Ref_Model'] = 'MK-II'
+    if dfm.at[0, 'Datenf'] > 20201215:
+        dfm['O3Ref_Number'] = 178
+        dfm['O3Ref_Model'] = 'MK-III'
+
+
+    dfm['O3Ref_Version'] = 1
+    dfm['WLCode'] = 9
+    dfm['O3Ref_Name'] = 'Brewer'
+    dfm['UTC_Mean'] = '12:00:00'
+
+    # BurstOzonePressure
+
+    burst_height = df.Height.max()
+    burst_pressure = df[df.Height == burst_height].Pair.tolist()
+    # print(burst_pressure, len(burst_pressure))
+    #
+    # if len(burst_pressure) >1:
+    #     print(burst_pressure, len(burst_pressure))
+    #     burst_pressure = burst_pressure[0]
+    dfm['BurstOzonePressure'] = float(burst_pressure[0])
+
+    dfm['Datenf'] = dfm['Datenf'].astype('str')
+    dfm['Date'] = dfm['Datenf'].apply(lambda _: datetime.strptime(_, "%Y%m%d"))
     dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strftime(_, '%Y-%m-%d'))
 
     df = round(df,3)
     dfm = round(dfm,3)
 
+    extcsv.add_comment('Procedure: https://github.com/denizpoyraz/o3s-dqa-homogenization')
 
     # CONTENT
     extcsv.add_data('CONTENT',
-                    'WOUDC,Spectral,1.0,1',
+                    'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2005-04-30,EPA_UGA,2.00',
+                    '2021-04-30,RMIB,2.1.3,Roeland Van Malderen',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
-                    'STN,388,Shenandoah,USA',
+                    'STN,053,UCCLE,BEL,6447',
                     field='Type,ID,Name,Country,GAW_ID')
     # INSTRUMENT
     dfm['Name'] = 'ECC'
+    dfm['SensorType'] = 'Z'
     instrument_field = 'Name,Model,Number'
-    df_names = 'Name',  'SensorType', 'SerialECC'
+    df_names = 'Name', 'SensorType', 'SerialECC'
     instrument_summary = make_summary(dfm, df_names)
     extcsv.add_data('INSTRUMENT', instrument_summary, instrument_field)
-
     # LOCATION
-    location_field = 'Latitude,Longitude,Height'
-    df_names = 'Latitude', 'Longitude', 'Height'
-    location_summary = make_summary(dfm, df_names)
-    extcsv.add_data('LOCATION',   location_summary, field= location_field)
+    extcsv.add_data('LOCATION',
+                    '50.48,4.21,100',
+                    field='Latitude,Longitude,Height')
 
    # TIMESTAMP
+    try:
+        dfm['UTCOffset'] = round((dfm['LaunchTime_Int'] - 11.30),2)
+        dfm['UTCOffset'] = dfm['UTCOffset'].apply(lambda x: pd.to_datetime(str(x), format='%H.%M'))
+        dfm['UTCOffset'] = dfm['UTCOffset'].apply(lambda x: x.strftime('%H:%M:%S'))
+    except KeyError:
+        dfm['LaunchTime_Int'] = 11.30
+        dfm['UTCOffset'] = round((dfm['LaunchTime_Int'] - 11.30), 2)
+        dfm['UTCOffset'] = dfm['UTCOffset'].apply(lambda x: pd.to_datetime(str(x), format='%H.%M'))
+        dfm['UTCOffset'] = dfm['UTCOffset'].apply(lambda x: x.strftime('%H:%M:%S'))
+
     time_field = 'UTCOffset,Date,Time'
     df_names = 'UTCOffset', 'Date', 'LaunchTime'
     time_summary = make_summary(dfm, df_names)
     extcsv.add_data('TIMESTAMP', time_summary, time_field)
 
     # # PREFLIGHT_SUMMARY
-    ps_field = 'Ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime'
-    df_names = 'iB0', 'iB1','iB2', 'SolutionConcentration', 'SolutionVolume', 'PF', 'TimeResponse'
+    if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    if dfm.at[dfm.first_valid_index(), 'iB0'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iBc']
+    ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected'
+    df_names = 'iB0','iB1','iB2', 'SolutionType', 'SolutionVolume', 'PF', 'TimeResponse', 'ib_corrected'
     preflight_summary = make_summary(dfm, df_names)
     # AUXILIARY_DATA
-    # extcsv.add_data('PREFLIGHT_SUMMARY', preflight_summary, ps_field)
-    extcsv.add_data('AUXILIARY_DATA', preflight_summary, ps_field)
+    extcsv.add_data('PREFLIGHT_SUMMARY', preflight_summary, ps_field)
+    # extcsv.add_data('AUXILIARY_DATA', preflight_summary, ps_field)
 
     # RADIOSONDE
+    dfm['RadiosondeManufacturer'] = 'Vaisala'
     rs_field = 'Manufacturer,Model,Number'
-    df_names = 'RadiosondeModel', 'RadiosondeModel', 'RadiosondeSerial'
+    df_names = 'RadiosondeManufacturer', 'RadiosondeModel', 'mRadioSondeNr'
     rs_summary = make_summary(dfm,df_names)
     extcsv.add_data('RADIOSONDE',   rs_summary, field= rs_field)
 
     # Interface
+    dfm['InterfaceManufacturer'] = 'Vaisala'
     int_field = 'Manufacturer,Model,Number'
-    df_names = 'InterfaceModel', 'InterfaceModel', 'InterfaceSerial'
+    df_names = 'InterfaceManufacturer', 'InterfaceModel', 'InterfaceNr'
     int_summary = make_summary(dfm, df_names)
     extcsv.add_data('INTERFACE_CARD', int_summary, field=int_field)
 
     # SAMPLING_METHOD
+    dfm['LengthBG'] = 15
     samp_field = 'TypeOzoneFreeAir,CorrectionWettingFlow,SurfaceOzone,DurationSurfaceOzoneExposure,LengthBG,WMOTropopausePressure,BurstOzonePressure,GroundEquipment,ProcessingSoftware'
     df_names = 'TypeOzoneFreeAir', 'CorrectionWettingFlow', 'SurfaceOzone', 'DurationSurfaceOzoneExposure', 'LengthBG',\
                  'WMOTropopausePressure', 'BurstOzonePressure', 'GroundEquipment', 'ProcessingSoftware'
@@ -159,20 +239,26 @@ for (filename) in(data_files):
 
 
     # FLIGHT_SUMMARY 	IntegratedO3, CorrectionCode, SondeTotalO3, NormalizationFactor, BackgroundCorrection,
+    dfm['CorrectionCode'] = 6
+    dfm['BackgroundCorrection'] = "constant_ib0"
+    try: dfm['TON'] = -dfm['TON']
+    except KeyError: dfm['TON'] = 9999
+    if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib0"
+    if dfm.at[dfm.first_valid_index(), 'iB0'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_climatologicalmean_ib0"
     flight_field = 'IntegratedO3,CorrectionCode,SondeTotalO3,NormalizationFactor,BackgroundCorrection'
-    df_names = 'IntegratedO3', 'CorrectionFactor', 'SondeTotalO3', 'NormalizationFactor', 'BackgroundCorrection'
+    df_names = 'IntegratedO3', 'CorrectionCode', 'SondeO3', 'TON', 'BackgroundCorrection'
     flight_summary = make_summary(dfm, df_names)
     extcsv.add_data('FLIGHT_SUMMARY', flight_summary, field=flight_field)
     #
     # OZONE_REFERENCE -> O3Ref
     ozoneref_field = 'Name, Model, Number, Version, TotalO3, WLCode, ObsType, UTC_Mean'
-    df_names = 'O3Ref_Name', 'O3Ref_Model', 'O3Ref_Number', 'O3Ref_Version', 'TotalO3_Col2A', 'WLCode', 'ObsType', 'UTC_Mean'
+    df_names = 'O3Ref_Name', 'O3Ref_Model', 'O3Ref_Number', 'O3Ref_Version', 'TO_Brewer', 'WLCode', 'ObsType', 'UTC_Mean'
     ozoneref_summary = make_summary(dfm,df_names)
     extcsv.add_data('OZONE_REFERENCE', ozoneref_summary, field=ozoneref_field)
     #
     #
     # PROFILE
-    data_names = 'Duration, Height, Pressure, Temperature, Humidity, TemperatureSonde, O3PartialPressure, SondeCurrent,O3PartialPressure_Uncertainty'
+    data_names = 'Duration, Height, Pressure, Temperature, Humidity, TemperatureSonde, O3PartialPressure, SondeCurrent,UncO3PartialPressure'
     df_names = ['Time', 'Height','Pair', 'T', 'U',  'Tbox', 'O3',  'I', 'dO3']
 
     size = len(df)
@@ -184,8 +270,8 @@ for (filename) in(data_files):
         extcsv.add_data('#PROFILE',   profile[k], field= data_names)
 
 
-    out_name = path + str(df.at[df.first_valid_index(),'Date']) + '_testwoudc.csv'
-    print(out_name)
+    out_name = path + '/WOUDC_v2/' + str(df.at[df.first_valid_index(),'Date']) + '_uccle_woudc.csv'
+    # print(out_name)
 
     woudc_extcsv.dump(extcsv, out_name)
 

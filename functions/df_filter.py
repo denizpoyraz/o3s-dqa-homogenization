@@ -9,9 +9,12 @@ def filter_data(df):
     :return: filtered data df
     '''
 
+    # print(list(df))
+    # df['P'] = df['Pair']
     df = df[df.P != -9999]
     df = df[df.Time != -9999]
     df = df[df.I != -9999 ]
+    # df = df[df.TboxC != -9999 ]
     df = df[df.Tbox != -9999 ]
 
     # ['Pair', 'Time', 'Height', 'TboxK', 'TboxC', 'WindDirection', 'WindSpeed', 'O3', 'T', 'U', 'SensorType',
@@ -40,7 +43,7 @@ def filter_metadata(df):
     df = df[df.iB0 < 9]
     df = df[df.iB2 < 9]
     df = df[df.Pground < 9999]
-    df = df[df.TLab < 40]
+    df = df[df.TLab < 50]
     df = df[df.ULab < 9999]
 
     # ['Pair', 'Time', 'Height', 'TboxK', 'TboxC', 'WindDirection', 'WindSpeed', 'O3', 'T', 'U', 'SensorType',

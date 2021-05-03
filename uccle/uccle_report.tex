@@ -1,0 +1,276 @@
+%! Author = poyraden
+%! Date = 15/04/2021
+%
+%% Preamble
+%\documentclass[11pt]{article}
+%
+%% Packages
+%\usepackage{amsmath}
+%
+%% Document
+%\begin{document}
+%
+%
+%
+%\end{document}
+
+\documentclass{article}
+%\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{mwe}
+\usepackage{subfig}
+\usepackage{float}
+
+\usepackage{graphicx,floatpag,fancyhdr}
+\usepackage{lipsum}
+
+% This defines the fancy page style to be similar to plain
+\pagestyle{fancy}
+\fancyhf{}% Clear header/footer
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}% Remove header rule
+
+% Page style plainlower is similar to plain, but lowers page number by 6 lines of text
+\fancypagestyle{plainlower}{
+  \fancyhf{}% Clear header/footer
+  \fancyfoot[C]{\raisebox{-6\baselineskip}{\thepage}}
+  \renewcommand{\headrulewidth}{0pt}% Remove header rule
+}
+
+%All LaTeX documents have a ``preamble'' that includes the packages and macros needed to make the document compile. The file `PomonaLgcsFormatting.tex' includes the preamble for this template. You can see it in the file list on the left frame of your screen, and this document is instructed to use it with the \input{} command below.
+
+
+\title{Uccle O3S-DQA Homogenization Report}
+\author{Deniz Poyraz}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Uccle Metadata timeseries}
+\label{sec:metadata}
+
+    \begin{figure}[H]
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Plots/Metadata/iB0}
+%        \includegraphics[width=0.9\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Uccle iB0 timeseries}
+            \label{fig:iB0}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Plots/Metadata/iB1}
+%        \includegraphics[width=0.9\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Uccle iB1 timeseries}
+            \label{fig:iB1}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Plots/Metadata/PF}
+%        \includegraphics[width=0.9\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Uccle pump flow rate timeseries}
+            \label{fig:PF}
+    \end{figure}
+
+\section{O3S-DQA corrections}
+\label{sec:dqa}
+
+
+The recommended and applied O3S-DQA corrections are summarized below.
+    \begin{enumerate}
+        \item Conversion efficiency
+        \item Background current
+        \item Pump temperature measurement
+        \item Pump flow rate, moistening effect
+        \item Pump flow efficiency at low pressures
+        \item Total ozone normalization: in O3S-DQA guide this correction factor is recommended to added in the data-set,
+        but this is not extracted yet.
+        \item Radiosonde changes: RS80 radiosonde correction is applied.
+\end{enumerate}
+
+ \subsubsection{Conversion efficiency}
+    The absorption efficiency is applied if the cathode sensing solution is 2.5 $cm^3$. Among the data only 1 date folds into this, 2012-03-07.
+    The stoichiometry correction is needed if not a sonde manufacturer and solution concentration among the recommended ones are launched. The recommended combinations are
+    ENSCI $0.5\%-0.5B$ and SPC $1.0\%-1.0B$. This correction does not have an influence on the Uccle time-series since the volume of the cathode sensing solution has been always
+    3.0 $cm^3$ and ENSCI $0.5\%-0.5B$ sondes have been launched since 1997-04-1, where the ECC launches started in Uccle. (Before 1997-04-01 Brewer–Mast sondes were launched. )
+    The effect of the conversion correction is shown in Fig\ref{fig:eta}.
+
+            \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Binned/Plots/Eta_vs_Raw_alltimerange.png}
+    \caption{Conversion efficiency correction applied}
+            \label{fig:eta}
+    \end{figure}
+
+
+        \subsubsection{Background current}
+        Background correction applied to Uccle data is shown in Fig~\ref{fig:bkg}. If $I_B$ exceeds $I_{B,\text{Mean}}+2\sigma_{IB}$ then $I_B$, it
+should be replaced by the more representative climatological value of $I_{B,\text{Mean}}$, however with
+larger uncertainty of $2\sigma_{IB}$. This effect can be seen in  Fig~\ref{fig:bkg}.
+
+                \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Binned/Plots/EtaBkg_vs_Eta_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Background current correction applied}
+            \label{fig:bkg}
+    \end{figure}
+
+           \subsubsection{Pump temperature measurement}
+    Truest pump temperature correction is applied according to Eq.13 of the O3S-DQA Guidelines. At 1998-12-01 the pump location changed from in the box to in the pump.
+    Therefore Case-III correction is applied for the period before 1998-12-01 and case-V correction for the period after 1998-12-01. The effect of the temperature correction
+is shown in  Fig~\ref{fig:tpump}.
+
+
+                    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Binned/Plots/EtaBkgTpump_vs_EtaBkg_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Pump temperature correction applied}
+            \label{fig:tpump}
+    \end{figure}
+
+               \subsubsection{Pump flow rate (moistening effect)}
+    This correction, Eq.15 of the O3S-DQA Guidelines, is applied and shown in Fig\ref{fig:pf_ptu}. Here only the temperature difference between the
+    internal pump base temperatire and the ambient room temperature of the flowrate measurement is applied. The effect of this correction
+is shown in  Fig~\ref{fig:pf_ptu}.
+%Pump flow (PF) rate ground correction is applied to the Uccle data only for the piston temperature, using Eq.15 and Eq.16 from the O3S-DQA Guidelines version 2. For Eq.15 $C_{PH}$ is taken
+%    0, since no humidification correction is needed. The PFefficiency correction at low pressures are applied according to Eq.22 and Tab.6 from the O3S-DQA Guidelines version 2.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Binned/Plots/EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Pump flow rate correction applied}
+            \label{fig:pf_ptu}
+    \end{figure}
+
+                   \subsubsection{Pump flow efficiency}
+    This correction, Eq.22 of the O3S-DQA Guidelines, is applied using Table 6 of the O3S-DQA Guidelines.
+The interpolation of the correction factors are made using pressure. This method gives the same result as doing the interpolation using the logarithm of pressure
+and polynomial fit with an error of less than $0.03\%$. Uccle launches ENSCI sondes, therefire Komhyr 1995 correction factors are applied.
+The effect of this correction is shown in Fig\ref{fig:pf_eff}
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Binned/Plots/EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Pump flow rate correction applied}
+            \label{fig:pf_eff}
+    \end{figure}
+
+ \subsubsection{Radiosonde correction}
+    This correction (give a reference to the paper) is applied to correct the pressure offset difference. This correction is applied
+only to RS80 radiosondes which is before 2007-09-01. The effect of this correction is shown in Fig\ref{fig:rs80}.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Binned/Plots/RS80_vs_noRS80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{RS80 correction applied}
+            \label{fig:rs80}
+    \end{figure}
+
+The effect of all DQA correction with respect to no correction is shown in Fig\ref{fig:dqa_all}.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/Binned/Plots/DQA_vs_Raw_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Effect of all DQA corrections}
+            \label{fig:dqa_all}
+    \end{figure}
+
+
+\section{Comparison plots to AURA MLS v04}
+\label{sec:mls}
+
+        Here in Fig~\ref{fig:raw_uccle} we can see the comparison of MLS v04 with  uccle data-set without any correction applied starting from, the beginning of the AURA MLS, 2004.
+
+    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_v04_rs80}
+%        \includegraphics[width=0.9\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Raw Uccle-MLS comparison}
+            \label{fig:raw_uccle}
+    \end{figure}
+
+
+In Fig~\ref{fig:mlsv4_uccle} the comparison of MLS v04 with Uccle data-set DQA corrections applied is shown. In Fig~\ref{fig:mlsv4_uccle_nors80},
+all the DQA corrections except RS80 correction is applied.
+
+    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/MLS/Plots/DQA_vs_MLS_v04_rs80_test.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA Uccle-MLS v04 comparison}
+            \label{fig:mlsv4_uccle}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/MLS/Plots/DQA_vs_MLS_v04_nors80_test.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA Uccle-MLS v04 comparison without RS80 correction}
+            \label{fig:mlsv4_uccle_nors80}
+    \end{figure}
+
+
+
+In Fig~\ref{fig:mlsv5_uccle} the comparison of MLS v05 with Uccle data-set DQA corrections applied is shown.
+
+    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/uccle/MLS/Plots/DQA_vs_MLS_v05_rs80_test.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA Uccle-MLS v05 comparison}
+            \label{fig:mlsv5_uccle}
+    \end{figure}
+
+
+
+
+%    \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \label{raw_uccle_zoom}
+%    \caption{Raw Uccle-MLS comparison in pressure levels less than 57 hPa }
+%\end{figure}
+
+
+\end{document}
+
+
+
+%One fit function: 2 parameters are fitted Y$_{10}$ and Y$_{20}$\\
+%\\
+%    \textrm{Upward region: } $ t > t_{up}  $ and $  t < t_{down}$
+%\begin{equation}    \label{onefit_up}
+%    I(t) = Y_{10}  (1 - e^{-(t-t_{up})/ \tau_{fast}})+ Y_{20}  (1 - e^{-(t-t_{up}) / \tau_{slow}})\\
+%\end{equation}
+%        \textrm{Downward region: } $ t > t_{down} $
+%\begin{equation}  \label{onefit_down}
+%    I(t) = Y_{10}  e^{-(t-t_{down}) / \tau_{fast}}) +
+%Y_{20} (1 - e^{-(t_{down}-t_{up}) / \tau_{slow}}) e^{-(t - t_{down}) / \tau_{slow}}\\
+%\end{equation}
+
+%    \begin{figure}
+%\includegraphics[width=0.5\textwidth]{../Plots/Interactive/Normalization.pdf}
+%\includegraphics[width=0.5\textwidth]{../Plots/Interactive/Normalization_zoom.pdf}\\
+% \label{fig_normecc_2}
+%        \caption{The normalized ECC signal, method explained in Sec.3}
+%\end{figure}
+
+
+%    \begin{figure}
+%
+%    \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_r1.pdf} \\
+%
+%    \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_log.pdf} \\
+%   \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_r2.pdf}
+%    \caption{}
+%\label{fig_conv}
+%\end{figure}

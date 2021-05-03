@@ -11,7 +11,7 @@ K = 273.15
 filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "/*.hdf"))
+allFiles = sorted(glob.glob(filepath + "Raw/*.hdf"))
 
 # print(allFiles)
 
@@ -26,10 +26,10 @@ for filename in (allFiles):
     fname = filename.split(".")[-2].split("/")[-1]
     # not to read metada files with _md extension
     if (search("md", fname)) or (search("metadata", fname)): continue
-    print(fname)
     if (fname == 'so980827') | (fname == 'so990708'): continue #one problematic file in sodankyal
+    print(fname)
 
-    metafile = filepath + fname + "_md.csv"
+    metafile = filepath + 'Raw/' + fname + "_md.csv"
 
     # extract the date from file name
     date = datetime.strptime(name, '%y%m%d')
@@ -92,7 +92,8 @@ for filename in (allFiles):
     rawname = filename.split(".")[-2].split("/")[-1] + "_rawcurrent.hdf"
     metaname = filename.split(".")[-2].split("/")[-1] + "_metadata.csv"
 
-    dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
+    # dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
+
 
     dfl.to_hdf(filepath + '/Current/' + rawname, key = 'df')
     dfm.to_csv(filepath + '/Metadata/' + metaname)
@@ -101,8 +102,8 @@ for filename in (allFiles):
 
 # # save all the metada in one file, either in hdf format or csv format
 dff = pd.concat(list_metadata, ignore_index=True)
-hdfall = filepath + "All_metadata.hdf"
-csvall = filepath + "All_metadata.csv"
+hdfall = filepath + "Metadata/All_metadata.hdf"
+csvall = filepath + "Metadata/All_metadata.csv"
 
 dff.to_hdf(hdfall, key = 'df')
 dff.to_csv(csvall)

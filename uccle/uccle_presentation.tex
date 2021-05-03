@@ -1,0 +1,126 @@
+%! Author = poyraden
+%! Date = 15/04/2021
+
+%% Preamble
+%\documentclass[11pt]{article}
+%
+%% Packages
+%\usepackage{amsmath}
+%
+%% Document
+%\begin{document}
+%
+%
+%
+%\end{document}
+
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usetheme{Madrid}
+%\usecolortheme{beaver}
+
+\title{Uccle O3S-DQA Homogenization}
+\author{Deniz Poyraz}
+%\institute{Overleaf}
+\date{\today}
+
+\begin{document}
+
+
+
+% \begin{frame}
+%      \centering
+%        \begin{tabular}{c}
+%        a) RDif Sonde-OPM \\
+%        \includegraphics[width=5cm]{../../../Josie17/Plots/Calibration/RDif_Pair_calibration.pdf}
+%      \end{tabular}
+%
+%      \vspace{0.01em}
+%        \begin{tabular}{cc}
+%        b) Slope of the scatter plot  & c) The mean of the slope of \\
+%       								& the scatter plot per sim  \\
+%        \includegraphics[width=5cm]{../../../Josie17/Plots/Calibration/Scatter_NI_ENSCI_0505.pdf}
+%         &
+%         \includegraphics[width=5cm]{../../../Josie17/Plots/Calibration/Scatter_PerSimNI_EN_0505_174.pdf}
+%         \end{tabular}
+%    \end{frame}
+
+
+
+
+
+
+
+    %%%%%%%%%%%
+\begin{frame}
+    \centering{Uccle iB0 timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/uccle/Plots/Metadata/iB0.png}
+\end{frame}
+
+\begin{frame}
+    \centering{Uccle iB1 timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/uccle/Plots/Metadata/iB1.png}
+\end{frame}
+
+\begin{frame}
+    \centering{Uccle PF timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/uccle/Plots/Metadata/PF.png}
+\end{frame}
+
+\begin{frame}
+    \centering{ Uccle Raw vs MLS\\}
+%\begin{columns}[t]
+%\column{.6\textwidth}
+\centering
+\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS.png}\\
+%\includegraphics[width=4.5cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_EN_0505.pdf}\\
+%\column{.6\textwidth}
+%\centering
+%\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.png}\\
+%%\includegraphics[width=4.55cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_SP_1010.pdf}\\
+%\end{columns}
+%\centering\colorbox{yellow}{C Profiles}
+\end{frame}
+%%%%%%%%%%%
+
+    \begin{frame}
+    \centering{ Uccle Phip correction applied vs MLS\\}
+\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/Phip_vs_MLS.png}\\
+\end{frame}
+
+    \begin{frame}
+    \centering{ Uccle Tpump correction applied vs MLS\\}
+\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/Tpump_vs_MLS.png}\\
+\end{frame}
+
+        \begin{frame}
+    \centering{ Uccle O3S corrections (Bkg+Phip+Tpump) applied vs MLS (v04)\\}
+\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/O3S_vs_MLS.png}\\
+\end{frame}
+
+            \begin{frame}
+    \centering{ Uccle O3S corrections applied vs MLS (v05)\\}
+\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/O3S_vs_MLS_v05.png}\\
+\end{frame}
+
+\end{document}
+
+
+%\begin{frame}
+%
+%    \centering{ Uccle Raw vs MLS\\}
+%
+%%\begin{columns}[t]
+%%\column{.5\textwidth}
+%\centering
+%\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS.png}\\
+%%\includegraphics[width=4.5cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_EN_0505.pdf}\\
+%%\column{.5\textwidth}
+%%\centering
+%%\includegraphics[width=1.1\textwidth]{../../Files/uccle/MLS/Plots/Raw_vs_MLS_zoom.png}\\
+%%\includegraphics[width=4.55cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_SP_1010.pdf}\\
+%%\end{columns}
+%%\centering\colorbox{yellow}{C Profiles}
+%\end{frame}
+%%%%%%%%%%%%

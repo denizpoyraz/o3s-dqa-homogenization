@@ -53,25 +53,25 @@ def organize_df(df1, df2):
     list2 = list(df2)
     for j in range(len(list2)):
 
-        if (search('Background', list2[j])) and (search('before', list2[j])) and (search('exposed', list2[j])):
+        if (search('ackground', list2[j])) and (search('before', list2[j])) and (search('exposed', list2[j])):
             bkg = list2[j]
             dfm_out.at[0,'iB0'] = df2.at[df2.first_valid_index(), bkg]
 
-        if (search('Background', list2[j])) and (search('sensor current', list2[j])) and (
+        if (search('ackground', list2[j])) and (search('sensor current', list2[j])) and (
         search('after 10min', list2[j])):
             bkg = list2[j]
             dfm_out.at[0,'iB1'] = df2.at[df2.first_valid_index(), bkg]
 
-        if (search('Background', list2[j])) and (search('end', list2[j])) and (search('pre-flight', list2[j])):
+        if (search('ackground', list2[j])) and (search('end', list2[j])) and (search('pre-flight', list2[j])):
             bkg = list2[j]
             dfm_out.at[0,'iB2'] = df2.at[df2.first_valid_index(), bkg]
 
-        if (search('Background', list2[j])) and (search('current', list2[j])) and (search('launch', list2[j])):
+        if (search('ackground', list2[j])) and (search('current', list2[j])) and (search('launch', list2[j])):
             bkg = list2[j]
             dfm_out.at[0,'iB2'] = df2.at[df2.first_valid_index(), bkg]
 
         dfm_out.at[0,'BkgUsed'] = 'Constant'
-        if (search('Background', list2[j])) and (search('current', list2[j])) and (search('used', list2[j])) and (
+        if (search('ackground', list2[j])) and (search('current', list2[j])) and (search('used', list2[j])) and (
         search('computation', list2[j])):
             bkg = list2[j]
             dfm_out.at[0,'BkgUsed'] = df2.at[df2.first_valid_index(), bkg]
@@ -275,21 +275,24 @@ def o3tocurrent(dft, dfm):
         dft['SensorType'] = 'SPC'
         dfm['SensorType'] = 'SPC'
 
+
+
     dft['Cef'] = ComputeCef(dft)
 
     cref = 1
     dft['ibg'] = 0
+    dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
 
-    # by default uses iB2 as background current
-    dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    # # by default uses iB2 as background current
+    # dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
     # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
-    if dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1': dft['ibg'] = dfm['iB0']
-
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'ibg')
-
-
+    if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
+        dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2')
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
 
     dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+
 
     return dft
 
@@ -363,6 +366,7 @@ def ComputeIBG(dft, bkg):
   ibg  -- background current used
   :returns corrected background current
     """
+
     try:
         dft['Pcor'] = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
     except KeyError:
@@ -376,6 +380,8 @@ def ComputeIBG(dft, bkg):
 
 
 def ComputeCorP(dft, Pressure):
+
+    dft['CorP'] = 0
     A0 = 0.0012250380415
     A1 = 0.000124111475632
     A2 = -0.00000002687066130

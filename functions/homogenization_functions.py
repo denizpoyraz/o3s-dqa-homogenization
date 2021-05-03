@@ -173,15 +173,10 @@ def RS_pressurecorrection(dft, height, radiosondetype):
     dft['Crs'] = 0.0
     dft['unc_Crs'] = 0.0
 
+    RS_cor = RS80_cor
+    RS_cor_err = RS80_cor_err
+
     for k in range(len(dft)):
-
-        if radiosondetype == 'RS80':
-            RS_cor = RS80_cor
-            RS_cor_err = RS80_cor_err
-
-        # if radiosondetype == 'RS92':
-        #     RS_cor = RS92_cor
-        #     RS_cor_err = RS92_cor_err
 
         for i in range(len(RS_alt) - 1):
             # just check that value is in between xvalues
@@ -197,12 +192,11 @@ def RS_pressurecorrection(dft, height, radiosondetype):
                 dft.at[k, 'Crs'] = RS_cor[i+1]
                 dft.at[k, 'unc_Crs'] = RS_cor_err[i+1]
 
-        if (dft.at[k, 'height_km'] > 30) & (radiosondetype == 'RS80'):
+        if (dft.at[k, 'height_km'] > 30):
             dft.at[k, 'Crs'] = -1.02
             dft.at[k, 'unc_Crs'] = -1.43
-        if (dft.at[k, 'height_km'] > 30) & (radiosondetype == 'RS92'):
-            dft.at[k, 'Crs'] = -0.12
-            dft.at[k, 'unc_Crs'] = -0.26
+
+        # print('rs80',k, dft.at[k, 'height_km'], dft.at[k, 'Crs'])
 
     return dft['Crs'], dft['unc_Crs']
 
@@ -266,10 +260,10 @@ def background_correction(df, dfmeta, dfm, ib,):
     mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
     std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
 
-    if (dfm.at[0,ib] > mean + 2 * std) | (dfm.at[0,ib] < mean - 2 * std):
+    if (dfm.at[0,ib] > mean + 2 * std):
         df['iBc'] = mean
         df['unc_iBc'] = 2 * std
-    if (dfm.at[0,ib] <= mean + 2 * std) & (dfm.at[0,ib] >= mean - 2 * std):
+    if (dfm.at[0,ib] <= mean + 2 * std):
         df['iBc'] = dfm.at[0,ib]
         df['unc_iBc'] = std
 
@@ -327,14 +321,14 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
     df['Tpump_cor'] = 0
     df['unc_Tpump_cor'] = 0
 
-    if boxlocation == 'Box':  # case I in O3S-DQA guide
+    if (boxlocation == 'Box') | (boxlocation == 'case1'):  # case I in O3S-DQA guide
         df.loc[(df[pair] >= 40), 'deltat'] = 7.43 - 0.393 * np.log10(df.loc[(df[pair] >= 40), pair])
         df.loc[(df[pair] < 40) & (df[pair] > 6), 'deltat'] = 2.7 + 2.6 * np.log10(
             df.loc[(df[pair] < 40) & (df[pair] > 6), pair])
         df.loc[(df[pair] <= 6), 'deltat'] = 4.5
         df['unc_deltat'] = 1  # units in K
 
-    if boxlocation == 'ExternalPumpTaped':  # case III in O3S-DQA guide
+    if (boxlocation == 'ExternalPumpTaped') | (boxlocation == 'case2') | (boxlocation == 'case3'):  # case III in O3S-DQA guide
         df.loc[(df[pair] > 70), 'deltat'] = 20.6 - 6.7 * np.log10(df.loc[(df[pair] > 70), pair])
         df.loc[(df[pair] > 70), 'unc_deltat'] = 3.9 - 1.13 * np.log10(df.loc[(df[pair] > 70), pair])
         df.loc[(df[pair] <= 70) & (df[pair] >= 15), 'deltat'] = 8.25
@@ -342,14 +336,14 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
             df.loc[(df[pair] < 15) & (df[pair] >= 5), pair])
         df.loc[(df[pair] <= 70), 'unc_deltat'] = 0.3 + 1.13 * np.log10(df.loc[(df[pair] <= 70), pair])
 
-    if boxlocation == 'ExternalPumpGlued':  # case IV in O3S-DQA guide
+    if (boxlocation == 'ExternalPumpGlued') | (boxlocation == 'case4'):  # case IV in O3S-DQA guide
         df.loc[(df[pair] > 40), 'deltat'] = 6.4 - 2.14 * np.log10(df.loc[(df[pair] > 40), pair])
         df.loc[(df[pair] <= 40) & (df[pair] >= 3), 'deltat'] = 3.0
         df['unc_deltat'] = 0.5  # units in K
 
     filt = df[pair] > 3
 
-    if boxlocation == 'InternalPump':  # case V in O3S-DQA guide
+    if (boxlocation == 'InternalPump') | (boxlocation == 'case5'):  # case V in O3S-DQA guide
         df.loc[filt,'deltat'] = 0  # units in K
         df.loc[filt,'unc_deltat'] = 0  # units in K
 
@@ -360,7 +354,7 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
     df.loc[filt, 'unc_Tpump_cor'] = (df.loc[filt, unc_temp] ** 2 / df.loc[filt, temp] ** 2) + \
                             (df.loc[filt, 'unc_deltat'] ** 2 / df.loc[filt, temp] ** 2)+ (df.loc[filt, 'unc_deltat_ppi'] ** 2 / df.loc[filt, temp] ** 2) #Eq. 14
 
-    df = df.drop(['deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi'], axis=1)
+    # df = df.drop(['deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi'], axis=1)
 
     return df.loc[filt,'Tpump_cor'], df.loc[filt,'unc_Tpump_cor']
 
