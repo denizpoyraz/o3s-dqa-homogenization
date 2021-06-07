@@ -11,7 +11,7 @@ K = 273.15
 filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "Raw/*.hdf"))
+allFiles = sorted(glob.glob(filepath + "Raw/ *.hdf"))
 
 # print(allFiles)
 
@@ -37,7 +37,7 @@ for filename in (allFiles):
 
     dfd = pd.read_hdf(filename)
     # dfd = pd.read_csv(filename)
-    dfd = dfd[1:]
+    # dfd = dfd[1:]
 
     for i in list(dfd):
         dfd[i] = dfd[i].astype('float')
@@ -101,10 +101,10 @@ for filename in (allFiles):
     list_metadata.append(dfm)
 
 # # save all the metada in one file, either in hdf format or csv format
-dff = pd.concat(list_metadata, ignore_index=True)
-hdfall = filepath + "Metadata/All_metadata.hdf"
-csvall = filepath + "Metadata/All_metadata.csv"
-
-dff.to_hdf(hdfall, key = 'df')
-dff.to_csv(csvall)
+# dff = pd.concat(list_metadata, ignore_index=True)
+# hdfall = filepath + "Metadata/All_metadata.hdf"
+# csvall = filepath + "Metadata/All_metadata.csv"
+#
+# dff.to_hdf(hdfall, key = 'df')
+# dff.to_csv(csvall)
 

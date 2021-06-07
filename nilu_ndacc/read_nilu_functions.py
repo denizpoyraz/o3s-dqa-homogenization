@@ -227,7 +227,7 @@ def organize_df(df1, df2):
     try:
         dfm_out['PF'] = dfm_out['PF'].astype('float')
     except KeyError:
-        dfm_out['PF'] = 9999
+        dfm_out['PF'] = 28
     # in case there is no iB0 or iB2 it is written to 9999
     try:
         dfm_out['iB0'] = dfm_out['iB0'].astype('float')
@@ -282,6 +282,9 @@ def o3tocurrent(dft, dfm):
     cref = 1
     dft['ibg'] = 0
     dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
+
+    # check PF values
+    if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = 28
 
     # # by default uses iB2 as background current
     # dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']

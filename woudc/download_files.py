@@ -6,9 +6,9 @@ import pandas as pd
 ## this code takes a csv file that has the urls of the each data day, and downloads the corresponding url csv file
 ## First one needs to download data-file url list from https://woudc.org/data/explore.php?lang=en
 
-path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/WOUDC/Marambio/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 
-df = pd.read_csv(path + 'woudc-DataURLFileList.csv', low_memory=False)
+df = pd.read_csv(path + 'woudc-DataURLFileList_Madrid_after2018.csv', low_memory=False)
 
 size = len(df)
 

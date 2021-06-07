@@ -51,7 +51,8 @@ for (filename) in (allFiles):
     date = datetime.strptime(date_tmp, '%y%m%d')
     datef = date.strftime('%Y%m%d')
     datestr = str(datef)
-    if datef < '19970401':continue #before this date it is BrewerMast
+    if datef < '19961001':continue #before this date it is BrewerMast
+    if datef > '19970501':continue #already homogenized
 
     print(filename)
 
@@ -184,5 +185,5 @@ for (filename) in (allFiles):
     # , 'Crs', 'unc_Crs', 'dPrs'
     # df to be converted to WOUDC format together with the metadata
 
-    df.to_hdf(path + '/DQA_upd/' + datestr + "_o3sdqa_rs80.hdf", key = 'df')
+    # df.to_hdf(path + '/DQA_upd/' + datestr + "_o3sdqa_rs80.hdf", key = 'df')
 

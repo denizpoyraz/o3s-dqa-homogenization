@@ -56,7 +56,7 @@ for filename in allFiles:
     datef = date.strftime('%Y%m%d')
     hourf = date.strftime('%H%M')
     print(datef)
-    if datef < '19970401':continue #before this date it is BrewerMast
+    if datef < '19961001':continue #before this date it is BrewerMast
     # if datef < '20070926': continue
 
 

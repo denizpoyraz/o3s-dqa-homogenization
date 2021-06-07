@@ -67,7 +67,9 @@ def calculate_cph(dfmeta):
     dfmeta['x'] = ((7.5 * dfmeta['TLab'].astype('float')) / (dfmeta['TLab'].astype('float') + 237.3)) + 0.7858
     dfmeta['psaturated'] = 10 ** (dfmeta['x'])
     # Eq.17
-    dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
+    # dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
+    dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['PLab'].astype('float')
+
     # Eq.16
     dfmeta['cPL'] = 2/(dfmeta['TLab'].astype('float') + k)
 
@@ -86,11 +88,11 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
     :param rhlab:
     :return:
     """
-    df['TLab'] = dfm.at[0,tlab].astype('float')
+    df['TLab'] = dfm.at[dfm.first_valid_index(),tlab].astype('float')
 
     if boolrh == True:
-        df['ULab'] = dfm.at[0, rhlab].astype('float')
-        df['Pground'] = dfm.at[0, plab].astype('float')
+        df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab].astype('float')
+        df['Pground'] = dfm.at[dfm.first_valid_index(), plab].astype('float')
         df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
         df['psaturated'] = 10 ** (df['x'])
         df['cPH'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['Pground'] #Eq. 17
@@ -260,11 +262,11 @@ def background_correction(df, dfmeta, dfm, ib,):
     mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
     std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
 
-    if (dfm.at[0,ib] > mean + 2 * std):
+    if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
         df['iBc'] = mean
         df['unc_iBc'] = 2 * std
-    if (dfm.at[0,ib] <= mean + 2 * std):
-        df['iBc'] = dfm.at[0,ib]
+    if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
+        df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
         df['unc_iBc'] = std
 
     return df['iBc'], df['unc_iBc']

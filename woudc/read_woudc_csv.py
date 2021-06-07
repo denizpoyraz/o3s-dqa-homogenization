@@ -6,12 +6,13 @@ import pandas as pd
 import glob
 
 #example path of where the WOUDC csv files are
-path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
+# path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
 
 efile = open("errorfile.txt", "w")
 
 
-allFiles = sorted(glob.glob(path + "*06*testwoudc.csv"))
+allFiles = sorted(glob.glob(path + "MD/*.csv"))
 
 # /home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/20050406_testwoudc.csv
 

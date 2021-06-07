@@ -59,7 +59,7 @@ def make_summary(df, column_names):
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_upd/'
 
-data_files = sorted(glob.glob(path + "*_o3sdqa_rs80.hdf"))
+data_files = sorted(glob.glob(path + "1997*_o3sdqa_rs80.hdf"))
 
 for (filename) in(data_files):
 
@@ -70,7 +70,9 @@ for (filename) in(data_files):
     dfm = pd.read_csv(metaname)
 
     # before this date it is BrewerMast
-    if dfm.at[0,'Datenf'] < 19970401: continue
+    # if dfm.at[0,'Datenf'] < 19970401: continue
+    if dfm.at[0,'Datenf'] < 19961001: continue  # before this date it is BrewerMast
+    if dfm.at[0,'Datenf'] >= 19970401: continue  # already homogenized
 
     print(filename)
 
@@ -187,8 +189,13 @@ for (filename) in(data_files):
     extcsv.add_data('TIMESTAMP', time_summary, time_field)
 
     # # PREFLIGHT_SUMMARY
+    # additional check for ib -1.0 values
+
     if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iB0']
     if dfm.at[dfm.first_valid_index(), 'iB0'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iBc']
+    if dfm.at[dfm.first_valid_index(), 'iB0'] == -1.0: continue
+        # dfm['iB0'] = 9999
+        # dfm['ib_corrected'] = 0.016
     ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected'
     df_names = 'iB0','iB1','iB2', 'SolutionType', 'SolutionVolume', 'PF', 'TimeResponse', 'ib_corrected'
     preflight_summary = make_summary(dfm, df_names)
