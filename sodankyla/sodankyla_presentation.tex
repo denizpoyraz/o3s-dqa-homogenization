@@ -1,0 +1,183 @@
+%! Author = poyraden
+%! Date = 15/04/2021
+
+%% Preamble
+%\documentclass[11pt]{article}
+%
+%% Packages
+%\usepackage{amsmath}
+%
+%% Document
+%\begin{document}
+%
+%
+%
+%\end{document}
+
+\documentclass{beamer}
+\usepackage[utf8]{inputenc}
+\usepackage{hyperref}
+\usetheme{Madrid}
+%\usecolortheme{beaver}
+
+\title{Sodankyla O3S-DQA Homogenization}
+\author{Deniz Poyraz}
+%\institute{Overleaf}
+\date{\today}
+
+\begin{document}
+
+
+
+% \begin{frame}
+%      \centering
+%        \begin{tabular}{c}
+%        a) RDif Sonde-OPM \\
+%        \includegraphics[width=5cm]{../../../Josie17/Plots/Calibration/RDif_Pair_calibration.pdf}
+%      \end{tabular}
+%
+%      \vspace{0.01em}
+%        \begin{tabular}{cc}
+%        b) Slope of the scatter plot  & c) The mean of the slope of \\
+%       								& the scatter plot per sim  \\
+%        \includegraphics[width=5cm]{../../../Josie17/Plots/Calibration/Scatter_NI_ENSCI_0505.pdf}
+%         &
+%         \includegraphics[width=5cm]{../../../Josie17/Plots/Calibration/Scatter_PerSimNI_EN_0505_174.pdf}
+%         \end{tabular}
+%    \end{frame}
+
+
+
+
+
+
+
+%%%%%%%%%%%
+\begin{frame}
+\centering{Sodankyla iB0 Timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/sodankyla/Plots/Metadata/iB0.png}
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla iB1 Timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/sodankyla/Plots/Metadata/iB2.png}
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla Pump Flow Rate Timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/sodankyla/Plots/Metadata/PF.png}
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla Laboratory Relative Humidity Values Timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/sodankyla/Plots/Metadata/ULab.png}
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla Laboratory Temperature values Timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/sodankyla/Plots/Metadata/TLab.png}
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla Laboratory Pressure Values Timeseries}
+\includegraphics[width=0.8\textwidth]{../../Files/sodankyla/Plots/Metadata/Pground.png}
+\end{frame}
+
+
+
+\begin{frame}
+\centering{ Effect of Conversion Efficiency Correction (03S-DQA 8.1)\\}
+%\begin{columns}[t]
+%\column{.6\textwidth}
+\centering
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/Eta_vs_Raw_v04_rs80.png}\\
+%\includegraphics[width=4.5cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_EN_0505.pdf}\\
+%\column{.6\textwidth}
+%\centering
+%\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.png}\\
+%%\includegraphics[width=4.55cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_SP_1010.pdf}\\
+%\end{columns}
+%\centering\colorbox{yellow}{C Profiles}
+\end{frame}
+%%%%%%%%%%%
+
+\begin{frame}
+\centering{ Effect of Background Current Correction (03S-DQA 8.2)\\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/EtaBkg_vs_Eta_v04_rs80.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{ Effect of Pump Temperature Correction (03S-DQA 8.3) \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/EtaBkgTpump_vs_EtaBkg_v04_rs80.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{ Effect of Pump Flow Rate (moistening effect) Correction (03S-DQA 8.4) \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/EtaBkgTpumpPhiground_vs_EtaBkgTpump_v04.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{ Effect of Pump Flow Efficiency Correction (03S-DQA 8.5) \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/EtaBkgTpumpPhigroundlowpres_vs_EtaBkgTpumpPhiground_v04.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{ Effect of RS80 Radiosonde Correction \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/RS80_vs_noRS80_v04.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{ Comparison of O3S-DQA with NDACC \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/o3s_vs_ndacc.png}\\
+\end{frame}
+
+%\begin{frame}
+%\centering{ Sodankyla Raw vs MLS v04 comparison (no RS80 correction) \\}
+%\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_nors80_v04.png}\\
+%\end{frame}
+%
+%\begin{frame}
+%\centering{ Sodankyla Raw vs MLS v05 comparison (no RS80 correction) \\}
+%\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_nors80_v05.png}\\
+%\end{frame}
+
+\begin{frame}
+\centering{Sodankyla NDACC vs MLS v04 comparison (no RS80 correction) \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/ndacc_vs_MLS_v04.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla O3S-DQA vs MLS v04 comparison (no RS80 correction) \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/o3s_vs_MLS_v04.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla O3S-DQA vs MLS v05 comparison (no RS80 correction) \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/o3s_vs_MLS_v05.png}\\
+\end{frame}
+
+\begin{frame}
+\centering{Sodankyla O3S-DQA vs MLS v05 comparison (no RS80 correction) \\}
+\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/O3S_vs_MLS_nors80_v05.png}\\
+\end{frame}
+
+\end{document}
+
+
+%\begin{frame}
+%
+%    \centering{ Sodankyla Raw vs MLS\\}
+%
+%%\begin{columns}[t]
+%%\column{.5\textwidth}
+%\centering
+%\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS.png}\\
+%%\includegraphics[width=4.5cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_EN_0505.pdf}\\
+%%\column{.5\textwidth}
+%%\centering
+%%\includegraphics[width=1.1\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.png}\\
+%%\includegraphics[width=4.55cm,height=3.5cm]{../../../Josie17/Plots/Calibration/SlopeCorrected2_wOPM_SP_1010.pdf}\\
+%%\end{columns}
+%%\centering\colorbox{yellow}{C Profiles}
+%\end{frame}
+%%%%%%%%%%%%

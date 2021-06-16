@@ -1,0 +1,397 @@
+%! Author = poyraden
+%! Date = 15/04/2021
+%
+%% Preamble
+%\documentclass[11pt]{article}
+%
+%% Packages
+%\usepackage{amsmath}
+%
+%% Document
+%\begin{document}
+%
+%
+%
+%\end{document}
+
+\documentclass{article}
+%\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{mwe}
+\usepackage{subfig}
+\usepackage{float}
+
+\usepackage{graphicx,floatpag,fancyhdr}
+\usepackage{lipsum}
+
+% This defines the fancy page style to be similar to plain
+\pagestyle{fancy}
+\fancyhf{}% Clear header/footer
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}% Remove header rule
+
+% Page style plainlower is similar to plain, but lowers page number by 6 lines of text
+\fancypagestyle{plainlower}{
+  \fancyhf{}% Clear header/footer
+  \fancyfoot[C]{\raisebox{-6\baselineskip}{\thepage}}
+  \renewcommand{\headrulewidth}{0pt}% Remove header rule
+}
+
+%All LaTeX documents have a ``preamble'' that includes the packages and macros needed to make the document compile. The file `PomonaLgcsFormatting.tex' includes the preamble for this template. You can see it in the file list on the left frame of your screen, and this document is instructed to use it with the \input{} command below.
+
+
+\title{Sodankyla O3S-DQA Homogenization Report}
+\author{Deniz Poyraz}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Sodankyla Metadata timeseries}
+\label{sec:metadata}
+
+Sodankyla ozonesonde data time-series exist in 2 different servers, NILU and NDACC. NDACC time series covers a longer time period,
+therefore data from NDACC is used for the homogenization of the Sodankyla data. The NDACC files starts from 1991-11-20, but there are no background
+values until 1994-10-12. As a consequence the homogenization of the timeseries only starts from 1994-10-12.
+
+There are also missing metadata which are pump flow rate (PF) before 1997-01-07, temperature (TLab) before 1998-11-11,
+pressure (PLab) before 1997-01-07, humidity (ULab) beofre 1998-11-11  of the laboratory.
+For the missing PF values, the climatological mean of the period where SPC sondes were used (soundings before before 2004-01-01).
+For the TLab, ULab and PLab the climatological means are calculated for each month and these values are used for the missing metadata.
+
+
+    \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/sodankyla/Plots/Metadata/iB0}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Sodankyla iB0 timeseries}
+            \label{fig:iB0}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/sodankyla/Plots/Metadata/iB2}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Sodankyla iB1 timeseries}
+            \label{fig:iB1}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/sodankyla/Plots/Metadata/PF}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Sodankyla pump flow rate timeseries}
+            \label{fig:PF}
+    \end{figure}
+
+       \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/sodankyla/Plots/Metadata/Pground}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Sodankyla laboratory pressure timeseries}
+            \label{fig:PLab}
+    \end{figure}
+
+           \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/sodankyla/Plots/Metadata/TLab}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Sodankyla laboratory temperature timeseries}
+            \label{fig:TLab}
+    \end{figure}
+
+               \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/sodankyla/Plots/Metadata/ULab}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Sodankyla laboratory humidity timeseries}
+            \label{fig:ULab}
+    \end{figure}
+
+
+\section{O3S corrections}
+\label{sec:v04}
+
+
+The recommended and applied O3S-DQA corrections are summarized below.
+    \begin{enumerate}
+        \item Conversion efficiency
+        \item Background current
+        \item Pump temperature measurement
+        \item Pump flow rate, moistening effect
+        \item Pump flow efficiency at low pressures
+        \item Total ozone normalization: in O3S-DQA guide this correction factor is recommended to added in the data-set,
+        but this is not extracted yet.
+        \item Radiosonde changes: RS80 radiosonde correction is tested but not applied yet.
+\end{enumerate}
+
+    \subsubsection{Conversion efficiency}
+ The stoichiometry correction is needed if not a sonde manufacturer and solution concentration among the recommended ones are launched. The recommended combinations are
+    ENSCI $0.5\%-0.5B$ and SPC $1.0\%-1.0B$. There are launches of ENSCI $1.0\%-1.0B$ that the stoichiometry
+    correction is applied. The effect of the conversion correction is shown in Fig~\ref{fig:eta}.
+
+            \begin{figure}
+        \centering
+\includegraphics[width=1.3\textwidth]{../../Files/sodankyla/Binned/Plots/Eta_vs_Raw_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Conversion efficiency correction applied}
+            \label{fig:eta}
+    \end{figure}
+
+        \subsubsection{Background current}
+        Background correction applied Sodankyla data is shown in Fig~\ref{fig:bkg}. If $I_B$ exceeds $I_{B,\text{Mean}}+2\sigma_{IB}$ then $I_B$, it
+should be replaced by the more representative climatological value of $I_{B,\text{Mean}}$, however with
+larger uncertainty of $2\sigma_{IB}$. For the background correction the mean of $I_B$ is calculated in the range of $I_B < 0.1$.
+Therefore to the $I_B$ values falling above $I_{B,\text{Mean}}+2\sigma_{IB}$ in Fig~\ref{fig:bkg_hom}, the background correction is applied.
+
+                \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/sodankyla/Plots/Metadata/iB2_homogenization.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Background current correction applied}
+            \label{fig:bkg_hom}
+    \end{figure}
+This effect can be seen in  Fig~\ref{fig:bkg}.
+
+                \begin{figure}
+        \centering
+\includegraphics[width=1.3\textwidth]{../../Files/sodankyla/Binned/Plots/EtaBkg_vs_Eta_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Background current correction range}
+            \label{fig:bkg}
+    \end{figure}
+
+            \subsubsection{Pump temperature measurement}
+ Truest pump temperature correction is applied according to Eq.13 of the O3S-DQA Guidelines. At 1998-12-01 the pump location changed from in the box to in the pump.
+    Therefore Case-III correction is applied to SPC-5A sondes and case-V correction to SPC-6A and Z sondes. The effect of the temperature correction
+is shown in  Fig~\ref{fig:tpump}.
+
+
+                    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/Binned/Plots/EtaBkgTpump_vs_EtaBkg_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Pump temperature correction applied}
+            \label{fig:tpump}
+    \end{figure}
+
+                \subsubsection{Pump flow rate (moistening effect)}
+    This correction, Eq.15 of the O3S-DQA Guidelines, is applied and shown in Fig~\ref{fig:pf_ptu}. The details of the values used for
+    correction is explained in Sec~\ref{sec:metadata}.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/Binned/Plots/EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Pump flow rate correction applied}
+            \label{fig:pf_ptu}
+    \end{figure}
+
+                   \subsubsection{Pump flow efficiency}
+    This correction, Eq.22 of the O3S-DQA Guidelines, is applied using Table 6 of the O3S-DQA Guidelines and shown in Fig~\ref{fig:pf_eff}.
+The interpolation of the correction factors are made using pressure. This method gives the same result as doing the interpolation using the logarithm of pressure
+and polynomial fit with an error of less than $0.03\%$. The effect of this correction is shown in Fig~\ref{fig:pf_eff}.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/Binned/Plots/EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Pump flow rate correction applied}
+            \label{fig:pf_eff}
+    \end{figure}
+
+ \subsubsection{Radiosonde correction}
+    This correction (give a reference to the paper) is applied to correct the pressure offset difference. It's uncertainity is not implemented in the
+total uncertainity of the ozone partial pressure. The effect of RS80 correction is shown in Fig~\ref{fig:rs80}.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/Binned/Plots/RS80_vs_noRS80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{RS80 correction applied}
+            \label{fig:rs80}
+    \end{figure}
+
+The effect of all DQA correction with respect to no correction is shown in Fig~\ref{fig:dqa_all} and the comparison of DQA corrected and NDACC O3S values is shown in Fig~
+\ref{fig:fig_dqa_ndacc}.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/Binned/Plots/DQA_vs_Raw_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Effect of all DQA corrections}
+            \label{fig:dqa_all}
+    \end{figure}
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/Binned/Plots/DQA_vs_NDACC_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Comparison of DQA and NDACC O3S values}
+            \label{fig:fig_dqa_ndacc}
+    \end{figure}
+
+
+\section{Comparison plots to AURA MLS v04 and v05}
+
+    The homogenized and non-homogenized Sodankyla data is compared with AURA-MLS data using v04 and v05. Among these two a some difference
+    can be seen in the pressure levels between 45 and 215 hPa. This difference is due to the differences in the AURA MLS data.
+    The not-corrected, homogenized and NDACC O3S data sets are compared and shown in figures between
+\ref{fig:rawv04} and \ref{fig:o3sv05}.
+
+                            \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_v04.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{No Corrected Sodankyla O3S vs AURA MLS v04 }
+            \label{fig:rawv04}
+    \end{figure}
+
+                                \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/NDACC_vs_MLS_v04_rs80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{ Sodankyla NDACC vs AURA MLS v04 }
+            \label{fig:ndaccv04}
+    \end{figure}
+
+
+                                \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/DQA_vs_MLS_v04_rs80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA-O3S Sodankyla vs AURA MLS v04 }
+            \label{fig:o3sv04}
+    \end{figure}
+
+                                \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/DQA_vs_MLS_v05.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA-O3S Sodankyla vs AURA MLS v05 }
+            \label{fig:o3sv05}
+    \end{figure}
+
+
+
+
+\end{document}
+
+
+
+%One fit function: 2 parameters are fitted Y$_{10}$ and Y$_{20}$\\
+%\\
+%    \textrm{Upward region: } $ t > t_{up}  $ and $  t < t_{down}$
+%\begin{equation}    \label{onefit_up}
+%    I(t) = Y_{10}  (1 - e^{-(t-t_{up})/ \tau_{fast}})+ Y_{20}  (1 - e^{-(t-t_{up}) / \tau_{slow}})\\
+%\end{equation}
+%        \textrm{Downward region: } $ t > t_{down} $
+%\begin{equation}  \label{onefit_down}
+%    I(t) = Y_{10}  e^{-(t-t_{down}) / \tau_{fast}}) +
+%Y_{20} (1 - e^{-(t_{down}-t_{up}) / \tau_{slow}}) e^{-(t - t_{down}) / \tau_{slow}}\\
+%\end{equation}
+
+%    \begin{figure}
+%\includegraphics[width=0.5\textwidth]{../Plots/Interactive/Normalization.pdf}
+%\includegraphics[width=0.5\textwidth]{../Plots/Interactive/Normalization_zoom.pdf}\\
+% \label{fig_normecc_2}
+%        \caption{The normalized ECC signal, method explained in Sec.3}
+%\end{figure}
+
+
+%    \begin{figure}
+%
+%    \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_r1.pdf} \\
+%
+%    \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_log.pdf} \\
+%   \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_r2.pdf}
+%    \caption{}
+%\label{fig_conv}
+%\end{figure}
+
+%
+%
+%\section{O3S corrections and the corresponding comparison plots to AURA MLS  v04}
+%\label{sec:v04}
+%
+%        Here in Fig~\ref{fig:raw_sodankyla} we can see the raw sodankyla data-set starting from, the beginning of the AURA MLS, 2004.
+%
+%    \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{Raw Uccle-MLS comparison}
+%            \label{fig:raw_sodankyla}
+%    \end{figure}
+%
+%    Background correction applied Uccle data is shown in Fig~\ref{fig:bkg_sodankyla}. If station $I_B$ exceeds $I_{B,\text{Mean}}\pm2\sigma_{IB}$ then $I_B$
+%should be replaced by the more representative climatological value of $I_{B,\text{Mean}}$, however with
+%larger uncertainty of $2\sigma_{IB}$. As it can be seen in  Fig~\ref{fig:bkg_sodankyla}, the Uccle background values in MLS time period do not fall into  $I_{B,\text{Mean}}\pm2\sigma_{IB}$
+%    values that this correction does not have an effect.
+%
+%        \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/Bkg_vs_MLS}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{Background correction applied, Uccle-MLS comparison}
+%            \label{fig:bkg_sodankyla}
+%    \end{figure}
+%
+%
+%Pump flow (PF) rate ground correction is applied to the Uccle data only for the piston temperature, using Eq.15 and Eq.16 from the O3S-DQA Guidelines version 2. For Eq.15 $C_{PH}$ is taken
+%    0, since no humidification correction is needed. The PFefficiency correction at low pressures are applied according to Eq.22 and Tab.6 from the O3S-DQA Guidelines version 2.
+%    Since Uccle launches ENSCI sondes, Komhyr 1995 correction factors are applied. These corrections applied to Uccle data is shown in Fig~\ref{fig:phip_sodankyla}.
+%
+%            \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/Phip_vs_MLS}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{Pump flow corrections applied, Uccle-MLS comparison}
+%            \label{fig:phip_sodankyla}
+%    \end{figure}
+%
+%    Truest pump temperature correction is applied according to Eq.13 of the O3S-Guidelines. $\Delta T_{PPI}$ is calculated using Eq. 13 and $\Delta T_C = 0$ since the location of the
+%    pump thermisitor is inside the pump base (case V). The truest pump temperature applied to Uccle data is shown in Fig~\ref{fig:tpump_sodankyla}.
+%
+%                \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/Tpump_vs_MLS}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{Truest pump temperature corrections applied, Uccle-MLS comparison}
+%            \label{fig:tpump_sodankyla}
+%    \end{figure}
+%
+%    All the corrections explained above: background; PF rate and truest pump temperature, applied to Uccle data is shown Fig~\ref{fig:o3s_sodankyla}.
+%
+%                    \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/sodankyla/MLS/Plots/O3S_vs_MLS}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{O3S corrections applied, Uccle-MLS comparison}
+%            \label{fig:o3s_sodankyla}
+%    \end{figure}
+%
+%    The effect of the corrections starting from the raw Uccle data, PF rate and PF rate together with truest pump temperature (all o3s corrections),  can be seen in Fig~\ref{fig:step_sodankyla}.
+%
+%                    \begin{figure}
+%        \centering
+%\includegraphics[width=0.8\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%        \includegraphics[width=0.8\textwidth]{../../Files/sodankyla/MLS/Plots/Phip_vs_MLS_zoom.pdf}
+%        \includegraphics[width=0.8\textwidth]{../../Files/sodankyla/MLS/Plots/Tpump_vs_MLS_zoom.pdf}
+%        \includegraphics[width=0.8\textwidth]{../../Files/sodankyla/MLS/Plots/O3S_vs_MLS_zoom.pdf}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{O3S corrections applied, raw-phip-tpump-o3s, Uccle-MLS comparison}
+%            \label{fig:step_sodankyla}
+%    \end{figure}
+%
+
+
+
+
+%    \begin{figure}
+%        \centering
+%\includegraphics[width=1.5\textwidth]{../../Files/sodankyla/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \label{raw_sodankyla_zoom}
+%    \caption{Raw Uccle-MLS comparison in pressure levels less than 57 hPa }
+%\end{figure}
