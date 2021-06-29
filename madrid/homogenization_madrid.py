@@ -5,9 +5,12 @@ from re import search
 import glob
 from datetime import datetime
 import time
+import math
+from scipy.interpolate import interp1d
+
 
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
-    background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency,return_phipcor, RS_pressurecorrection
+    background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency,return_phipcor, RS_pressurecorrection, o3_integrate
 
 from functions.df_filter import filter_data, filter_metadata
 from functions_copy import o3tocurrent
@@ -15,11 +18,38 @@ from functions_copy import o3tocurrent
 
 k = 273.15
 
-
+# to calculate climatalogical means
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 
+allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
+
+# listall = []
+#
+# for (filename) in (allFiles):
+#     df = pd.read_hdf(filename)
+#     print(filename)
+#
+#     listall.append(df)
+#
+# name_out = 'Madrid_AllData_woudc'
+# dfall = pd.concat(listall, ignore_index=True)
+#
+# dfall.to_hdf(path + "DQA_final/" + name_out + ".hdf", key = 'df')
+
+dfmain = pd.read_hdf("/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_final/Madrid_AllData_woudc.hdf")
+
+df = dfmain[['Date', 'Pressure', 'SampleTemperature']]
+df['DateTime'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+
+dfmean = {}
+for i in range(1,13):
+    dfmean[i-1] = df[df.DateTime.dt.month == i]
+    dfmean[i-1] = dfmean[i-1].groupby(['Pressure']).mean()
+
+
+
 dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
-dfmeta = dfmeta[dfmeta.DateTime > '1994-01-01'] # start from 1994, because before there are no background values
+# dfmeta = dfmeta[dfmeta.DateTime > '1994-01-01'] # start from 1994, because before there are no background values
 dfmeta = dfmeta.reset_index()
 dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
 dfmeta['Date2'] = dfmeta['Date'].apply(lambda x: datetime.strftime(x, '%Y-%m-%d'))
@@ -53,7 +83,10 @@ for i in range(1,13):
 # dfmeta = filter_metadata(dfmeta)
 
 series = dfmeta[['DateTime', 'PLab', 'TLab','ULab','PF']]
-series['Date'] = series['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+# series['Date'] = series['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+series['Date'] = pd.to_datetime(series['DateTime'], format='%Y-%m-%d %H:%M:%S')
+
+# df['DataFrame Column'] = pd.to_datetime(df['DataFrame Column'], format=specify your format)
 series = series.set_index('Date')
 upsampled = series.resample('1M').mean()
 
@@ -61,6 +94,8 @@ plab = [0] * 12
 tlab = [0] * 12
 ulab = [0] * 12
 pf = [0] * 12
+
+dates_missingtpump = ['']
 
 for i in range(1,13):
     j = i-1
@@ -74,7 +109,8 @@ for i in range(1,13):
 print('tlab', tlab)
 print('plab', plab)
 print('ulab', ulab)
-
+print('pf', np.nanmean(dfmeta.PF))
+PFmean = np.nanmean(dfmeta.PF)
 
 # allFiles = sorted(glob.glob(path + "CSV/out/19950111*.hdf"))
 
@@ -88,11 +124,13 @@ for (filename) in (allFiles):
 
     df = pd.read_hdf(filename)
 
-    # if df.at[df.first_valid_index(),'Date'] < '2021-04-21': continue
+    # if df.at[df.first_valid_index(),'Date'] < '2011-03-01': continue
     if df.at[df.first_valid_index(),'Date'] == '2011-04-06': continue
+    if df.at[df.first_valid_index(),'Date'] == '2014-06-04': continue
+    if df.at[df.first_valid_index(),'Date'] == '2014-04-02': continue
+
     # if df.at[df.first_valid_index(),'Date'] == '2021-04-28': continue
 
-    print(filename)
 
     # print('df', df.dtypes, df['Date'][0:3])
     date = datetime.strptime(df.at[df.first_valid_index(),'Date'], '%Y-%m-%d')
@@ -102,9 +140,39 @@ for (filename) in (allFiles):
     dfm = dfmeta[dfmeta.Date2 == date2]
     dfm = dfm.reset_index()
 
+    # print(dfm.dtypes)
+
+    # if df.at[df.first_valid_index(),'Date'] > '2006-01-01': continue # no bkg values
 
     df['Pair'] = df['Pressure']
     df['O3'] = df['O3PartialPressure']
+
+    # if the pump temp is missing use the interpolated climatological mean:
+    df['DateTime'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+
+    df.loc[df['SampleTemperature'].isnull(), 'value_is_NaN'] = 1
+    df.loc[df['SampleTemperature'].notnull(), 'value_is_NaN'] = 0
+
+    # print(df[df.value_is_NaN == 'Yes'][['Pressure','Date', 'I', 'SampleTemperature']])
+    pair_missing = df[df.value_is_NaN == 1].Pressure.tolist()
+    if len(pair_missing) > 1000:
+        month_index = df['DateTime'].dt.month.tolist()[0]
+        print('no sample temperature', month_index, len(pair_missing), len(df))
+        x = dfmean[month_index - 1]['SampleTemperature'].tolist()
+        y = dfmean[month_index - 1].index.tolist()
+        fb = interp1d(y, x)
+        df_pair = df[df.value_is_NaN == 1].Pressure.tolist()
+        if min(df_pair) < min(y):
+            df_pair = df[(df.value_is_NaN == 1) & df.Pressure >= min(y)].Pressure.tolist()
+            df_samptemp = fb(df_pair)
+            df.loc[(df.value_is_NaN == 1) & df.Pressure >= min(y), 'SampleTemperature'] = df_samptemp
+        # if max(df_pair) > max(y):
+        #     df_pair = df[(df.value_is_NaN == 1) & df.Pressure < max(y)].Pressure.tolist()
+        df_samptemp = fb(df_pair)
+        df.loc[df.value_is_NaN == 1, 'SampleTemperature'] = df_samptemp
+        dates_missingtpump.append(date2)
+
+
     df['TboxK'] = df['SampleTemperature'] + k
 
 
@@ -117,12 +185,20 @@ for (filename) in (allFiles):
     if df.at[df.first_valid_index(),'Date'] < '2020-11-18':
         dfm.at[0, 'ULab'] = ulab[date.month-1]
 
-    if df.at[df.first_valid_index(),'Date'] < '1994-01-01': continue # no bkg values
+    # if df.at[df.first_valid_index(),'Date'] < '2019-01-01': continue # no bkg values
+
+    print(filename)
+
 
     # to deal with data that is not complete
+    # if PF is missing use the mean value of PF
     if (len(df) < 100): continue
+    if (math.isnan(dfm.at[dfm.first_valid_index(), 'PF'])):
+        dfm.at[dfm.first_valid_index(), 'PF'] = PFmean
 
+    #calculate current from PO3
     df = o3tocurrent(df, dfm)
+
 
     # input variables for hom.
     df['Tpump'] = df['SampleTemperature'] + k
@@ -133,8 +209,12 @@ for (filename) in (allFiles):
     df['unc_cPH'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPH']
     df['unc_cPL'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cPL']
 
+
     # different pump temperature corrections
     df['unc_Tpump'] = 0.5  # case II-V
+    if len(pair_missing) > 1000:
+        df['unc_Tpump'] = 1
+
     # serial_ecc = dfm.at[dfm.first_valid_index(), 'SerialECC']
     # infor from station pi
     if date2 < '1998-12-02':
@@ -143,19 +223,18 @@ for (filename) in (allFiles):
         string_pump_location = 'InternalPump'
 
         #      radiosonde RS80 correction   #
-        # Electronic o3 sonde interface  was replaced with the transfer from RS80 to RS92  in 24 Nov 2005.
     bool_rscorrection = False
-    rsmodel = ''
-    bool_rscorrection = ''
-    if date2 <= '2006-03-01':
-        # rsmodel = 'RS80'
-        bool_rscorrection = True
-    if date2 >= '2006-03-08 ':
-        bool_rscorrection = False
-
-    if bool_rscorrection:
-        df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'GPHeight', rsmodel)
-        df['Pair'] = df['Pair'] - df['Crs']
+    # rsmodel = ''
+    # bool_rscorrection = ''
+    # if date2 <= '2006-03-01':
+    #     # rsmodel = 'RS80'
+    #     bool_rscorrection = True
+    # if date2 >= '2006-03-08 ':
+    #     bool_rscorrection = False
+    #
+    # if bool_rscorrection:
+    #     df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'GPHeight', rsmodel)
+    #     df['Pair'] = df['Pair'] - df['Crs']
 
     df['alpha_o3'], df['unc_alpha_o3'] = absorption_efficiency(df, 'Pair', 3.0)
     # correction to the metadata from the station PI:
@@ -171,6 +250,7 @@ for (filename) in (allFiles):
     #       background correction       #
     df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2')
     df['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    # print('corrected ibc', df.at[df.first_valid_index(), 'iBc'] )
 
     #       pump temperature correction       #
     df['Tpump_cor'], df['unc_Tpump_cor'] = pumptemp_corr(df, string_pump_location, 'Tpump', 'unc_Tpump', 'Pair')
@@ -206,20 +286,36 @@ for (filename) in (allFiles):
     df['dEta'] = (df['unc_eta_c'] / df['eta_c']) ** 2
     df['dPhi_cor'] = (df['unc_Phip_cor'] / df['Phip_cor']) ** 2
     df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor']) ** 2
-    dp1 = 0.05 ; dp2 = 0.1 ; dp3 = 0.5
-    if bool_rscorrection:
-        df['eps1'] = (df[df.Pair == df.Pair + dp1]['O3'] - df[df.Pair == df.Pair - dp1]['O3'] )/\
-                     (df[df.Pair == df.Pair + dp1]['O3'] + df[df.Pair == df.Pair - dp1]['O3'])
-        df['eps2'] = (df[df.Pair == df.Pair + dp2]['O3'] - df[df.Pair == df.Pair - dp2]['O3']) / \
-                     (df[df.Pair == df.Pair + dp2]['O3'] + df[df.Pair == df.Pair - dp2]['O3'])
-        df['eps3'] = (df[df.Pair == df.Pair + dp3]['O3'] - df[df.Pair == df.Pair - dp3]['O3']) / \
-                     (df[df.Pair == df.Pair + dp3]['O3'] + df[df.Pair == df.Pair - dp3]['O3'])
 
     # final uncertainity on O3
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
 
     #part for TON
     # print('min Pair', df.Pair.min())
+
+
+    # dfm['O3Sonde_burst'] = (3.9449 * (df.O3.shift() + df.O3) * np.log(df.Pair.shift() / df.Pair)).sum()
+    # dfm['O3Sonde_burst_raw'] = (3.9449 * (df.O3_nc.shift() + df.O3_nc) * np.log(df.Pair.shift() / df.Pair)).sum()
+    #
+    # dfm['O3Sonde_hom_burst'] = (3.9449 * (df.O3c.shift() + df.O3c) * np.log(df.Pair.shift() / df.Pair)).sum()
+    # dfm['O3Sonde_burst_eta'] = (3.9449 * (df.O3c_eta.shift() + df.O3c_eta) * np.log(df.Pair.shift() / df.Pair)).sum()
+    # dfm['O3Sonde_burst_etabkg'] = (3.9449 * (df.O3c_etabkg.shift() + df.O3c_etabkg) * np.log(df.Pair.shift() / df.Pair)).sum()
+    # dfm['O3Sonde_burst_etabkgtpump'] = (3.9449 * (df.O3c_etabkgtpump.shift() + df.O3c_etabkgtpump) * np.log(df.Pair.shift() / df.Pair)).sum()
+    # dfm['O3Sonde_burst_etabkgtpumpphigr'] = (3.9449 * (df.O3c_etabkgtpumpphigr.shift() + df.O3c_etabkgtpumpphigr) * np.log(df.Pair.shift() / df.Pair)).sum()
+    # dfm['O3Sonde_burst_etabkgtpumpphigref'] = (3.9449 * (df.O3c_etabkgtpumpphigref.shift() + df.O3c_etabkgtpumpphigref) * np.log(df.Pair.shift() / df.Pair)).sum()
+
+    dfm['O3Sonde_burst'] = o3_integrate(df, 'O3')
+    dfm['O3Sonde_burst_raw'] = o3_integrate(df, 'O3_nc')
+
+    dfm['O3Sonde_hom_burst'] = o3_integrate(df, 'O3c')
+    dfm['O3Sonde_burst_eta'] = o3_integrate(df, 'O3c_eta')
+
+    dfm['O3Sonde_burst_etabkg'] = o3_integrate(df, 'O3c_etabkg')
+    dfm['O3Sonde_burst_etabkgtpump'] = o3_integrate(df, 'O3c_etabkgtpump')
+    dfm['O3Sonde_burst_etabkgtpumpphigr'] = o3_integrate(df, 'O3c_etabkgtpumpphigr')
+    dfm['O3Sonde_burst_etabkgtpumpphigref'] = o3_integrate(df, 'O3c_etabkgtpumpphigref')
+
+    dfm['burst'] = df.Pair.min()
 
     if df.Pair.min () <= 10:
         # print('and now how to calculate TON', df.Pair.min())
@@ -238,6 +334,16 @@ for (filename) in (allFiles):
         dfm['O3SondeTotal_raw'] = dfm['O3Sonde_raw'] + dfm['ROC']
         dfm['O3ratio_raw'] = dfm['BrewO3'] / dfm['O3SondeTotal_raw']
 
+        dfm['O3Sonde_10hpa'] = o3_integrate(dft, 'O3')
+        dfm['O3Sonde_10hpa_raw'] = o3_integrate(dft, 'O3_nc')
+
+        dfm['O3Sonde_hom_10hpa'] = o3_integrate(dft, 'O3c')
+        dfm['O3Sonde_10hpa_eta'] = o3_integrate(dft, 'O3c_eta')
+        dfm['O3Sonde_10hpa_etabkg'] = o3_integrate(dft, 'O3c_etabkg')
+        dfm['O3Sonde_10hpa_etabkgtpump'] = o3_integrate(dft, 'O3c_etabkgtpump')
+        dfm['O3Sonde_10hpa_etabkgtpumpphigr'] = o3_integrate(dft, 'O3c_etabkgtpumpphigr')
+        dfm['O3Sonde_10hpa_etabkgtpumpphigref'] = o3_integrate(dft, 'O3c_etabkgtpumpphigref')
+
         # print('o3sonde', dfm[['O3Sonde', 'O3Sonde_hom']])
 
 
@@ -249,6 +355,9 @@ for (filename) in (allFiles):
         dfm['O3Sonde_hom'] = 9999
         dfm['O3SondeTotal_hom'] = 9999
         dfm['O3ratio_hom'] = 9999
+        dfm['O3Sonde_raw'] = 9999
+        dfm['O3SondeTotal_raw'] = 9999
+        dfm['O3ratio_raw'] = 9999
 
         # print('o3sonde', dfm[['O3Sonde', 'O3Sonde_hom']])
 
@@ -256,44 +365,46 @@ for (filename) in (allFiles):
 
     dfm['iBc'] = df.at[df.first_valid_index(), 'iBc']
 
-    dfm.to_csv(path + '/DQA/'+ date_out + "_o3smetadata_rs80.csv")
+    dfm.to_csv(path + '/DQA_final/'+ date_out + "_o3smetadata_nors80.csv")
 
     metadata.append(dfm)
 
 
-    df.to_hdf(path + '/DQA/' + date_out + "_all_hom_rs80.hdf", key = 'df')
-
-    df['Tbox'] = df['Tpump_cor'] - k
-    df['O3'] = df['O3c']
-
-    if bool_rscorrection:
-
-        df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
-                      'unc_cPH', 'unc_cPL', 'unc_Tpump', 'Crs', 'unc_Crs', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich',
-                      'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi',
-                      'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground',
-                      'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta', 'O3c_etabkg',
-                      'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor', 'dO3'],axis=1)
-
-    if not bool_rscorrection:
-        df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
-                      'unc_cPH', 'unc_cPL', 'unc_Tpump',  'unc_alpha_o3', 'alpha_o3', 'stoich',
-                      'unc_stoich',
-                      'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat',
-                      'unc_deltat', 'deltat_ppi',
-                      'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL',
-                      'Phip_ground',
-                      'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta',
-                      'O3c_etabkg',
-                      'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta',
-                      'dPhi_cor', 'dTpump_cor', 'dO3'], axis=1)
-
-
-    df.to_hdf(path + '/DQA/' + date_out + "_o3sdqa_rs80.hdf", key = 'df')
-
-dfall = pd.concat(metadata, ignore_index=True)
-
-name_out = 'Madrid_Metada_DQA_rs80'
-
-dfall.to_csv(path + "DQA/" + name_out + ".csv")
-dfall.to_hdf(path + "DQA/" + name_out + ".h5", key = 'df')
+#     df.to_hdf(path + '/DQA_final/' + date_out + "_all_hom_nors80.hdf", key = 'df')
+#
+#     df['Tbox'] = df['Tpump_cor'] - k
+#     df['O3'] = df['O3c']
+#
+#     if bool_rscorrection:
+#
+#         df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
+#                       'unc_cPH', 'unc_cPL', 'unc_Tpump', 'Crs', 'unc_Crs', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich',
+#                       'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi',
+#                       'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground',
+#                       'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta', 'O3c_etabkg',
+#                       'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor', 'dO3'],axis=1)
+#
+#     if not bool_rscorrection:
+#         df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
+#                       'unc_cPH', 'unc_cPL', 'unc_Tpump',  'unc_alpha_o3', 'alpha_o3', 'stoich',
+#                       'unc_stoich',
+#                       'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat',
+#                       'unc_deltat', 'deltat_ppi',
+#                       'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL',
+#                       'Phip_ground',
+#                       'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta',
+#                       'O3c_etabkg',
+#                       'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta',
+#                       'dPhi_cor', 'dTpump_cor', 'dO3'], axis=1)
+#
+#
+#     df.to_hdf(path + '/DQA_final/' + date_out + "_o3sdqa_nors80.hdf", key = 'df')
+#
+# dfall = pd.concat(metadata, ignore_index=True)
+#
+# name_out = 'Madrid_Metada_DQA_final_nors80'
+#
+# dfall.to_csv(path + "DQA_final/" + name_out + ".csv")
+# dfall.to_hdf(path + "DQA_final/" + name_out + ".h5", key = 'df')
+#
+# print('missing tpump dates', dates_missingtpump)

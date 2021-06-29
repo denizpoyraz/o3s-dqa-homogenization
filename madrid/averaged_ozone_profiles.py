@@ -57,8 +57,8 @@ def Calc_average_profile_pressure(dft, xcolumn):
 
 dfm = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA/Madrid_Metada_DQA.csv')
 
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# allFiles = sorted(glob.glob(path + "DQA/*_all_hom_nors80.hdf"))
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+# allFiles = sorted(glob.glob(path + "DQA_final/*all_hom_nors80.hdf"))
 #
 # listall = []
 #
@@ -69,11 +69,11 @@ dfm = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQ
 #
 # name_out = 'Madrid_AllData_DQA_nors80'
 # dfall = pd.concat(listall, ignore_index=True)
-#
-# dfall.to_csv(path + "DQA/" + name_out + ".csv")
-# dfall.to_hdf(path + "DQA/" + name_out + ".hdf", key = 'df')
 
-df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA/Madrid_AllData_DQA_rs80.hdf')
+# dfall.to_csv(path + "DQA/" + name_out + ".csv")
+# dfall.to_hdf(path + "DQA_final/" + name_out + ".hdf", key = 'df')
+
+df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_final/Madrid_AllData_DQA_nors80.hdf')
 # df2 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA/Madrid_AllData_DQA_nors80.hdf')
 
 # print(len(df), len(df.drop_duplicates(['Date'])))
@@ -96,25 +96,37 @@ df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQ
 # if date2 >= '2006-03-08 ':
 #     bool_rscorrection = False
 
-df1 = df1[df1.Date < '1998-12-02' ]
+df1 = df1[df1.Date < '1995-12-31' ]
+# df1 = df1[df1.Date < '2005-01-01' ]
+# df1['DQA_minus_WOUDC'] = df1['O3Sonde_hom_burst'] - df1['O3Sonde_burst']
+
+# df1 = df1[df1.DQA_minus_WOUDC < 0]
+
 # df1r = df1[df1.Date < '2006-03-01' ]
 # df2 = df2[df2.Date < '2006-03-01' ]
 
 # o3, o3err, y = Calc_average_profile_pressure(df1r, 'O3c')
 # o3c, o3cerr, y = Calc_average_profile_pressure(df2, 'O3c')
 
-o3, o3err, y = Calc_average_profile_pressure(df1, 'O3c_etabkg')
-o3c, o3cerr, y = Calc_average_profile_pressure(df1, 'O3c_etabkgtpump')
+o3, o3err, y = Calc_average_profile_pressure(df1, 'O3')
+o3c, o3cerr, y = Calc_average_profile_pressure(df1, 'O3c')
+o3nc, o3ncerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 
-Plotname = 'test_tpump_correction'
+Plotname = 'test_before95'
 # Plotname = 'RS80'
 
 fig, ax = plt.subplots(figsize=(17, 9))
 
-ax.plot(o3c, y,  label = '1994-1998 tpump', marker = 's', markersize = 6)
-ax.plot(o3, y , label = '1994-1998 no tpump', marker = 'd', markersize = 6)
+# ax.plot(o3c, y,  label = ' 1997-2005 DQA', marker = 's', markersize = 6)
+# ax.plot(o3, y , label = ' 1997-2005 WOUDC', marker = 'd', markersize = 6)
+# ax.plot(o3nc, y,  label = '1997-2005 Raw', marker = 's', markersize = 6)
+
+ax.plot(o3c, y,  label = ' < 1995 DQA', marker = 's', markersize = 6)
+ax.plot(o3, y , label = ' < 1995 WOUDC', marker = 'd', markersize = 6)
+ax.plot(o3nc, y,  label = '< 1995 Raw', marker = 's', markersize = 6)
+
 # ax.plot(o3, y,  label = '1994-2006 RS80 correction', marker = 's', markersize = 6)
 # ax.plot(o3c, y , label = '1994-2006 no RS80 correction', marker = 'd', markersize = 6)
 ax.set_ylim(1000, 5)

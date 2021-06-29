@@ -261,16 +261,70 @@ def background_correction(df, dfmeta, dfm, ib,):
     df['iBc'] = 0
     df['unc_iBc'] = 0
 
-    mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
-    std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+    # #generaly for all stations
+    # mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
+    # std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+    #
+    # if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
+    #     df['iBc'] = mean
+    #     df['unc_iBc'] = 2 * std
+    # if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
+    #     df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
+    #     df['unc_iBc'] = std
 
-    if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
-        df['iBc'] = mean
-        df['unc_iBc'] = 2 * std
-    if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
-        df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
-        df['unc_iBc'] = std
+    #special section for Madrid
+    mean1 = np.nanmean(dfmeta[dfmeta.Date < '2004'][ib])
+    std1 = np.nanstd(dfmeta[dfmeta.Date < '2004'][ib])
+    mean2 = np.nanmean(dfmeta[dfmeta.Date >= '2004'][ib])
+    std2 = np.nanstd(dfmeta[dfmeta.Date >= '2004'][ib])
 
+    # print(mean1, std1, mean2, std2)
+
+    # print('in the function, date', df.Date[0:2])
+    # print('in the function, ib', df.iB2[0:2])
+
+    dfm['Date2'] = dfm['Date2'].astype(str)
+
+    # print('before 2004 mean1 + 2 * std1', mean1 + 2 * std1)
+
+    if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
+        df.loc[df.Date < '2004', 'iBc'] = mean1
+        df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
+
+        # print('bkg correction before 2004 ', mean1)
+        # df['iBc'] = mean1
+        # df['unc_iBc'] = 2 * std1
+    if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
+        df.loc[df.Date < '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+        df.loc[df.Date < '2004', 'unc_iBc'] = std1
+        # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
+
+        # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
+        # df['unc_iBc'] = std1
+
+    if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
+        df.loc[df.Date >= '2004', 'iBc'] = mean2
+        df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
+        # print('after 2004 bkg correction', mean1)
+
+
+    if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
+        df.loc[df.Date >= '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+        df.loc[df.Date >= '2004', 'unc_iBc'] = std2
+        # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
+
+
+    if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < '2004'):
+        df.loc[df.Date < '2004', 'iBc'] = mean1
+        df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
+        # print('before 2004 no bkg', mean1)
+    if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= '2004'):
+        df.loc[df.Date >= '2004', 'iBc'] = mean2
+        df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
+        # print('after 2004 no bkg', mean2)
+
+
+    # print('end of function', df.at[df.first_valid_index(), 'iBc'])
     return df['iBc'], df['unc_iBc']
 
 
@@ -336,7 +390,8 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
         df.loc[(df[pair] > 70), 'deltat'] = 20.6 - 6.7 * np.log10(df.loc[(df[pair] > 70), pair])
         df.loc[(df[pair] > 70), 'unc_deltat'] = 3.9 - 1.13 * np.log10(df.loc[(df[pair] > 70), pair])
         df.loc[(df[pair] <= 70) & (df[pair] >= 15), 'deltat'] = 8.25
-        df.loc[(df[pair] < 15) & (df[pair] >= 5), 'deltat'] = 3.25 - 4.25 * np.log10(
+        # updated formula, 17/06/2021 not 3.25 - 4.25 ... but 3.25 + 4.25
+        df.loc[(df[pair] < 15) & (df[pair] >= 5), 'deltat'] = 3.25 + 4.25 * np.log10(
             df.loc[(df[pair] < 15) & (df[pair] >= 5), pair])
         df.loc[(df[pair] <= 70), 'unc_deltat'] = 0.3 + 1.13 * np.log10(df.loc[(df[pair] <= 70), pair])
 
@@ -439,3 +494,10 @@ def conversion_efficiency(df, alpha_o3, alpha_unc_o3, stoich, stoich_unc):
 
     return df['eta_c'], df['unc_eta']
 
+
+
+def o3_integrate(df, po3):
+
+    int =  (3.9449 * (df[po3].shift() + df[po3]) * np.log(df.Pair.shift() / df.Pair)).sum()
+
+    return int

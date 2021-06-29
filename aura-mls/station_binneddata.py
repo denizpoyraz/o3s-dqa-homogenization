@@ -14,14 +14,14 @@ from functions.df_filter import filter_data
 # ozone = 'O3c_etabkgtpump' # only phip correction applied
 # ozone = 'O3c_etabkgtpumpphigr' # only tpump applied
 # ozone = 'O3c_bkgphip'
-ozone = 'O3' #all corrections applied, bkg + phip
+ozone = 'O3' #woudc
 # ozone = 'PO3_dqar'
 
 
-name_out = 'MadridInterpolated_dqa_rs80'
+name_out = 'MadridInterpolated_dqa_nors80'
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-allFiles = sorted(glob.glob(path + "DQA/*_all_hom_rs80.hdf"))
+allFiles = sorted(glob.glob(path + "DQA_final/*_all_hom_nors80.hdf"))
 print('len of files', len(allFiles))
 
 # list_data = []
@@ -35,7 +35,7 @@ for (filename) in (allFiles):
     date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     fname = filename.split('/')[-1].split('.')[0][0:8]
     fullname = filename.split('/')[-1].split('.')[0]
-    metaname = path  + fname + "_o3smetadata_rs80.csv"
+    metaname = path  + fname + "_o3smetadata_nors80.csv"
     if search("2nd", fullname): metaname = path +  fname + "_2nd_metadata.csv"
 
     date = datetime.strptime(date_tmp, '%y%m%d')
@@ -47,7 +47,7 @@ for (filename) in (allFiles):
     # if datef < '19941012': continue # no bkg values
 
 
-    if (datef > '20210428') : continue #already homogenized
+    # if (datef > '20210428') : continue #already homogenized
 
     print(datef)
 
@@ -254,8 +254,8 @@ for (filename) in (allFiles):
 # df = pd.concat(list_data, ignore_index=True)
 dfall = pd.concat(listall_data, ignore_index=True)
 
-dfall.to_csv(path + "DQA/Binned/" + name_out + ".csv")
-dfall.to_hdf(path + "DQA/Binned/" + name_out + ".h5", key = 'df')
+dfall.to_csv(path + "DQA_final/Binned/" + name_out + ".csv")
+dfall.to_hdf(path + "DQA_final/Binned/" + name_out + ".h5", key = 'df')
 
 
 
