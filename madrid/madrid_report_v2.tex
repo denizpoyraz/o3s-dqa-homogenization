@@ -51,14 +51,22 @@
 \section{Madrid Metadata timeseries}
 \label{sec:metadata}
 
-Madrid ozonesonde data is taken from WOUDC data-server and the metadata is provided by the station PI. The timeseries starts from 1992, but the homogenization
-can be done for the period starting from 1994, since before 1994 there are no background current values which does not allow the conversion from ozone partial pressure values
-to ozone raw currents.
-
-There are also missing metadata which are temperature (TLab),
-pressure (PLab) vaues of the laboratory conditions  before 2006-02-26, and humidity (ULab) of the laborotart before 2020-11-18.
+Madrid ozonesonde data is taken from WOUDC data-server and the metadata is provided by the station PI. The timeseries in WOUDC server starts from 1994.
+There are missing metadata which are temperature (TLab),
+pressure (PLab) values of the laboratory conditions  before 2006-02-26, and humidity (ULab) of the laboratory before 2020-11-18.
 For the TLab, ULab and PLab the climatological means are calculated for each month and these values are used for the missing metadata.
 
+Some of the pump temperature values in WOUDC files, before 2006, are missing.
+For those data files the climatological means of the pump temperatures
+with 2 sigma uncertainty are used.
+
+%missing tpump dates ['1995-01-11', '1995-01-18', '1995-02-03', '1995-02-07', '1995-02-16', '1995-02-20', '1995-02-22',
+%'1995-02-24', '1995-03-01', '1995-03-09', '1995-03-15', '1995-06-01', '1995-10-18', '1995-11-15', '1995-11-29', '1996-01-10',
+%'1997-01-27', '1997-02-12', '1997-07-23', '1997-10-17', '1997-11-12', '1997-12-03', '1998-01-28', '1998-03-11', '1998-05-27',
+%'1998-06-03', '1998-07-15', '1998-07-29', '1998-09-02', '1998-09-30', '1998-10-28', '1998-12-12', '1999-04-23', '1999-08-18',
+%'1999-09-15', '1999-10-27', '2000-01-19', '2001-03-14', '2001-04-04', '2001-05-09', '2001-06-20', '2001-06-27', '2001-11-07',
+%'2002-01-16', '2002-02-27', '2002-06-05', '2002-08-14', '2002-08-28', '2002-10-09', '2002-11-06', '2005-01-05', '2005-02-09',
+%'2005-02-11', '2005-05-04', '2005-06-02', '2005-09-21', '2005-12-07', '2005-12-21', '2001-02-14']
 
     \begin{figure}
         \centering
@@ -141,17 +149,10 @@ The recommended and applied O3S-DQA corrections are summarized below.
         \subsubsection{Background current}
         Background correction, using iB2, applied Madrid data is shown in Fig~\ref{fig:bkg}. If $I_B$ exceeds $I_{B,\text{Mean}}+2\sigma_{IB}$ then $I_B$, it
 should be replaced by the more representative climatological value of $I_{B,\text{Mean}}$, however with
-larger uncertainty of $2\sigma_{IB}$. For the background correction the mean of $I_B$ is calculated in the range of $I_B < 0.1$.
-Therefore to the $I_B$ values falling above $I_{B,\text{Mean}}+2\sigma_{IB}$ in Fig~\ref{fig:bkg_hom}, the background correction is applied.
+larger uncertainty of $2\sigma_{IB}$.
+%For the background correction the mean of $I_B$ is calculated in the range of $I_B < 0.1$.
+Therefore to the $I_B$ values falling above $I_{B,\text{Mean}}+2\sigma_{IB}$ in Fig~\ref{fig:iB2}, the background correction is applied.
 
-                \begin{figure}
-        \centering
-\includegraphics[width=0.9\textwidth]{../../Files/madrid/Plots/Metadata/iB2_homogenization.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Background current values used for DQA background correction}
-            \label{fig:bkg_hom}
-    \end{figure}
-This effect can be seen in  Fig~\ref{fig:bkg}.
 
                 \begin{figure}
         \centering

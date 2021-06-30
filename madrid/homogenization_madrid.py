@@ -10,10 +10,10 @@ from scipy.interpolate import interp1d
 
 
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
-    background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency,return_phipcor, RS_pressurecorrection, o3_integrate
+    background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency,return_phipcor, \
+    RS_pressurecorrection, o3_integrate, o3tocurrent
 
 from functions.df_filter import filter_data, filter_metadata
-from functions_copy import o3tocurrent
 
 
 k = 273.15
@@ -292,17 +292,6 @@ for (filename) in (allFiles):
 
     #part for TON
     # print('min Pair', df.Pair.min())
-
-
-    # dfm['O3Sonde_burst'] = (3.9449 * (df.O3.shift() + df.O3) * np.log(df.Pair.shift() / df.Pair)).sum()
-    # dfm['O3Sonde_burst_raw'] = (3.9449 * (df.O3_nc.shift() + df.O3_nc) * np.log(df.Pair.shift() / df.Pair)).sum()
-    #
-    # dfm['O3Sonde_hom_burst'] = (3.9449 * (df.O3c.shift() + df.O3c) * np.log(df.Pair.shift() / df.Pair)).sum()
-    # dfm['O3Sonde_burst_eta'] = (3.9449 * (df.O3c_eta.shift() + df.O3c_eta) * np.log(df.Pair.shift() / df.Pair)).sum()
-    # dfm['O3Sonde_burst_etabkg'] = (3.9449 * (df.O3c_etabkg.shift() + df.O3c_etabkg) * np.log(df.Pair.shift() / df.Pair)).sum()
-    # dfm['O3Sonde_burst_etabkgtpump'] = (3.9449 * (df.O3c_etabkgtpump.shift() + df.O3c_etabkgtpump) * np.log(df.Pair.shift() / df.Pair)).sum()
-    # dfm['O3Sonde_burst_etabkgtpumpphigr'] = (3.9449 * (df.O3c_etabkgtpumpphigr.shift() + df.O3c_etabkgtpumpphigr) * np.log(df.Pair.shift() / df.Pair)).sum()
-    # dfm['O3Sonde_burst_etabkgtpumpphigref'] = (3.9449 * (df.O3c_etabkgtpumpphigref.shift() + df.O3c_etabkgtpumpphigref) * np.log(df.Pair.shift() / df.Pair)).sum()
 
     dfm['O3Sonde_burst'] = o3_integrate(df, 'O3')
     dfm['O3Sonde_burst_raw'] = o3_integrate(df, 'O3_nc')

@@ -96,8 +96,8 @@ df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQ
 # if date2 >= '2006-03-08 ':
 #     bool_rscorrection = False
 
-df1 = df1[df1.Date < '1995-12-31' ]
-# df1 = df1[df1.Date < '2005-01-01' ]
+df1 = df1[df1.Date > '1997-12-31' ]
+df1 = df1[df1.Date < '2005-01-01' ]
 # df1['DQA_minus_WOUDC'] = df1['O3Sonde_hom_burst'] - df1['O3Sonde_burst']
 
 # df1 = df1[df1.DQA_minus_WOUDC < 0]
@@ -114,7 +114,7 @@ o3nc, o3ncerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 
-Plotname = 'test_before95'
+Plotname = 'test'
 # Plotname = 'RS80'
 
 fig, ax = plt.subplots(figsize=(17, 9))

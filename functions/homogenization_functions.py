@@ -4,6 +4,9 @@ import pandas as pd
 import matplotlib.pyplot as plt
 import datetime
 
+from nilu_ndacc.read_nilu_functions import ComputeIBG
+
+
 ## General guidelines for Homogenisation of O3S-Data
 # P03 = 0.043085 T_pump ( I_M - I_B) / (eta_c * Phi_p)
 # T_pump " pump temperature in Kelvin
@@ -32,6 +35,10 @@ kob_66 = np.array([1, 1.02, 1.04, 1.07, 1.11, 1.25, 1.4, 1.66, 1])  # Kobayashi
 VecP_ECC6A =    [    0,     2,     3,      5,    10,    20,    30,    50,   100,   200,   300,   500, 1000, 1100]
 VecC_ECC6A_25 = [ 1.16,  1.16, 1.124,  1.087, 1.054, 1.033, 1.024, 1.015, 1.010, 1.007, 1.005, 1.002,    1,    1]
 VecC_ECC6A_30 = [ 1.171, 1.171, 1.131, 1.092, 1.055, 1.032, 1.022, 1.015, 1.011, 1.008, 1.006, 1.004,    1,    1]
+
+# SensorType = 'DMT-Z'
+VecP_ECCZ = [0, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 1100]
+VecC_ECCZ = [1.24, 1.24, 1.124, 1.087, 1.066, 1.048, 1.041, 1.029, 1.018, 1.013, 1.007, 1.002, 1, 1]
 
 komhyr_86_unc = np.array([0,0, 0.005, 0.006, 0.008, 0.009, 0.010, 0.012, 0.014, 0.025])  # SP Komhyr
 komhyr_95_unc = np.array([0,0, 0.005, 0.005, 0.008, 0.012, 0.023, 0.024, 0.024, 0.043])  # ECC Komhyr
@@ -228,12 +235,12 @@ def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
     if effmethod == 'table_interpolate':
 
         if pumpcorrectiontag == 'komhyr_86':
-            df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_86, komhyr_86_unc,  df, pair)
-            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_86, komhyr_86_unc,  df, pair)
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_86, komhyr_86_unc,  df, pair)
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_86, komhyr_86_unc,  df, pair)
 
         if pumpcorrectiontag == 'komhyr_95':
-            df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_95, komhyr_95_unc,  df, pair)
-            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_95, komhyr_95_unc,  df, pair)
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_95, komhyr_95_unc,  df, pair)
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_95, komhyr_95_unc,  df, pair)
 
         # if pumpcorrectiontag == 'sodankayl':
         #     df['Cpf'], df['unc_Cpf'] = VecInterpolate(pval_sod, corr_sod, corr_sod_unc,  df, pair, 1)
@@ -253,7 +260,7 @@ def background_correction(df, dfmeta, dfm, ib,):
     O3S-DQA 8.2
     :param df: data df
     :param dfmeta: all metadata df
-    :param dfm: corresponding metadata df
+    :param dfm: corresponding metadata of df
     :param ib2:
     :return: df[ib]
     """
@@ -261,67 +268,67 @@ def background_correction(df, dfmeta, dfm, ib,):
     df['iBc'] = 0
     df['unc_iBc'] = 0
 
-    # #generaly for all stations
-    # mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
-    # std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+    #generaly for all stations
+    mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
+    std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+
+    if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
+        df['iBc'] = mean
+        df['unc_iBc'] = 2 * std
+    if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
+        df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
+        df['unc_iBc'] = std
+
+    # #special section for Madrid
+    # mean1 = np.nanmean(dfmeta[dfmeta.Date < '2004'][ib])
+    # std1 = np.nanstd(dfmeta[dfmeta.Date < '2004'][ib])
+    # mean2 = np.nanmean(dfmeta[dfmeta.Date >= '2004'][ib])
+    # std2 = np.nanstd(dfmeta[dfmeta.Date >= '2004'][ib])
     #
-    # if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
-    #     df['iBc'] = mean
-    #     df['unc_iBc'] = 2 * std
-    # if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
-    #     df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
-    #     df['unc_iBc'] = std
-
-    #special section for Madrid
-    mean1 = np.nanmean(dfmeta[dfmeta.Date < '2004'][ib])
-    std1 = np.nanstd(dfmeta[dfmeta.Date < '2004'][ib])
-    mean2 = np.nanmean(dfmeta[dfmeta.Date >= '2004'][ib])
-    std2 = np.nanstd(dfmeta[dfmeta.Date >= '2004'][ib])
-
-    # print(mean1, std1, mean2, std2)
-
-    # print('in the function, date', df.Date[0:2])
-    # print('in the function, ib', df.iB2[0:2])
-
-    dfm['Date2'] = dfm['Date2'].astype(str)
-
-    # print('before 2004 mean1 + 2 * std1', mean1 + 2 * std1)
-
-    if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
-        df.loc[df.Date < '2004', 'iBc'] = mean1
-        df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
-
-        # print('bkg correction before 2004 ', mean1)
-        # df['iBc'] = mean1
-        # df['unc_iBc'] = 2 * std1
-    if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
-        df.loc[df.Date < '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
-        df.loc[df.Date < '2004', 'unc_iBc'] = std1
-        # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
-
-        # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
-        # df['unc_iBc'] = std1
-
-    if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
-        df.loc[df.Date >= '2004', 'iBc'] = mean2
-        df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
-        # print('after 2004 bkg correction', mean1)
-
-
-    if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
-        df.loc[df.Date >= '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
-        df.loc[df.Date >= '2004', 'unc_iBc'] = std2
-        # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
-
-
-    if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < '2004'):
-        df.loc[df.Date < '2004', 'iBc'] = mean1
-        df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
-        # print('before 2004 no bkg', mean1)
-    if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= '2004'):
-        df.loc[df.Date >= '2004', 'iBc'] = mean2
-        df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
-        # print('after 2004 no bkg', mean2)
+    # # print(mean1, std1, mean2, std2)
+    #
+    # # print('in the function, date', df.Date[0:2])
+    # # print('in the function, ib', df.iB2[0:2])
+    #
+    # dfm['Date2'] = dfm['Date2'].astype(str)
+    #
+    # # print('before 2004 mean1 + 2 * std1', mean1 + 2 * std1)
+    #
+    # if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
+    #     df.loc[df.Date < '2004', 'iBc'] = mean1
+    #     df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
+    #
+    #     # print('bkg correction before 2004 ', mean1)
+    #     # df['iBc'] = mean1
+    #     # df['unc_iBc'] = 2 * std1
+    # if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
+    #     df.loc[df.Date < '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+    #     df.loc[df.Date < '2004', 'unc_iBc'] = std1
+    #     # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
+    #
+    #     # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
+    #     # df['unc_iBc'] = std1
+    #
+    # if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
+    #     df.loc[df.Date >= '2004', 'iBc'] = mean2
+    #     df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
+    #     # print('after 2004 bkg correction', mean1)
+    #
+    #
+    # if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
+    #     df.loc[df.Date >= '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+    #     df.loc[df.Date >= '2004', 'unc_iBc'] = std2
+    #     # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
+    #
+    #
+    # if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < '2004'):
+    #     df.loc[df.Date < '2004', 'iBc'] = mean1
+    #     df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
+    #     # print('before 2004 no bkg', mean1)
+    # if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= '2004'):
+    #     df.loc[df.Date >= '2004', 'iBc'] = mean2
+    #     df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
+    #     # print('after 2004 no bkg', mean2)
 
 
     # print('end of function', df.at[df.first_valid_index(), 'iBc'])
@@ -501,3 +508,95 @@ def o3_integrate(df, po3):
     int =  (3.9449 * (df[po3].shift() + df[po3]) * np.log(df.Pair.shift() / df.Pair)).sum()
 
     return int
+
+
+## functions copied from read_nilu_functions.py to convert PO3 to current
+
+
+def o3tocurrent(dft, dfm):
+    '''
+
+    :param dft: data df
+    :param dfm: metadata df
+    :return: dft
+    '''
+    # o3(mPa) = 4.3087 * 10e-4 * (i - ibg) * tp * t * cef * cref
+    # tp: pump temp. in K, t: pumping time for 100 ml of air in seconds, cef: correction due to reduced ambient pressure for pump
+    # cref: additional correction factor
+    # i = o3 / (4.3087 * 10e-4 * tp * t * cef * cref ) + ibg
+
+    dft['SensorType'] = 'SPC'
+    dfm['SensorType'] = 'SPC'
+
+    dft['Cef'] = ComputeCef(dft)
+
+    cref = 1
+    dft['ibg'] = 0
+    dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
+
+    # check PF values
+    if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = 28
+
+    # # by default uses iB2 as background current
+    # dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
+    # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
+    #     dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2')
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
+
+    dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+
+
+    return dft
+
+
+def ComputeCef(dft):
+    """ Computes pump efficiency correction factor based on pressure
+
+        Arguments:
+        Pressure -- air pressure [hPa]
+    """
+
+    # dft['SensorType'] = 'DMT-Z'
+    # dft['SolutionVolume'] = 3.0
+    #
+    if (dft.at[dft.first_valid_index(), 'SensorType'] == 'SPC') and (
+            dft.at[dft.first_valid_index(), 'SolutionVolume'] > 2.75):
+        dft['Cef'] = VecInterpolate(VecP_ECC6A, VecC_ECC6A_30, dft, 0)
+    if (dft.at[dft.first_valid_index(), 'SensorType'] == 'SPC') and (
+            dft.at[dft.first_valid_index(), 'SolutionVolume'] < 2.75):
+        dft['Cef'] = VecInterpolate(VecP_ECC6A, VecC_ECC6A_25, dft, 0)
+    if (dft.at[dft.first_valid_index(), 'SensorType'] == 'DMT-Z'):
+        dft['Cef'] = VecInterpolate(VecP_ECCZ, VecC_ECCZ, dft, 0)
+
+    return dft['Cef']
+
+
+def VecInterpolate(XValues, YValues, dft, LOG):
+    dft['Cef'] = 0.0
+
+    i = 1
+    ilast = len(XValues) - 1
+    # return last value if xval out of xvalues range
+    y = float(YValues[ilast])
+
+    dft = dft.reset_index()
+
+    for k in range(len(dft)):
+        for i in range(len(XValues) - 1):
+            # just check that value is in between xvalues
+            if (XValues[i] <= dft.at[k, 'Pair'] <= XValues[i + 1]):
+
+                x1 = float(XValues[i])
+                x2 = float(XValues[i + 1])
+                if LOG == 1:
+                    x = math.log(x)
+                    x1 = math.log(x1)
+                    x2 = math.log(x2)
+                y1 = float(YValues[i])
+                y2 = float(YValues[i + 1])
+
+                dft.at[k, 'Cef'] = y1 + (dft.at[k, 'Pair'] - x1) * (y2 - y1) / (x2 - x1)
+
+    return dft['Cef']

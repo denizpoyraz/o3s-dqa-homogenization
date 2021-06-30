@@ -17,7 +17,8 @@ print(columnStr)
 columnMeta = ['mDate', 'mRadioSondeNr', 'PF', 'iB0', 'iB1', 'CorrectionFactor', 'SerialECC', 'InterfaceNr','DateTime','Datenf']
 
 dfmeta = pd.read_csv("/home/poyraden/Analysis/Homogenization_public/Files/uccle/ECCprop.txt", sep = r"\t" , engine="python",skiprows=1, names=columnMeta)
-dfmeta['DateTime'] = dfmeta['mDate'].apply(lambda x: pd.to_datetime(str(x), format='%Y%m%d%H'))
+# dfmeta['DateTime'] = dfmeta['mDate'].apply(lambda x: pd.to_datetime(str(x), format='%Y%m%d%H'))
+dfmeta['DateTime'] = pd.to_datetime(dfmeta['mDate'], format='%Y%m%d%H')
 dfmeta['Datenf'] = dfmeta['DateTime'].apply(lambda x: x.strftime('%Y%m%d'))
 
 
@@ -57,7 +58,6 @@ for filename in allFiles:
     hourf = date.strftime('%H%M')
     print(datef)
     if datef < '19961001':continue #before this date it is BrewerMast
-    # if datef < '20070926': continue
 
 
     #
@@ -111,14 +111,6 @@ for filename in allFiles:
     dfm.at[0, 'TpumpLocation'] = pumplocation
     dfm.at[0,'SolutionType'] = "0.5%"
     dfm.at[0,'SolutionVolume'] = "3.0"
-
-    # print(list(dfm))
-    # for i in list(dfm):
-    #     print(i, dfm.at[0,i])
-    # print(dfm)
-    # print(dfm[['mDate', 'mRadioSondeNr', 'PF', 'iB0', 'iB1', 'CorrectionFactor', 'SerialECC', 'InterfaceNr']])
-
-
 
     df.to_hdf(path + '/Raw_upd/' + datef + ".hdf", key='df')
     dfm.to_csv(path + '/Raw_upd/' + datef + "_md.csv")

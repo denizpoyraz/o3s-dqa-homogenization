@@ -21,7 +21,7 @@ dfmeta = pd.read_csv(path + 'Metadata/All_metadata.csv')
 
 print(list(dfmeta))
 # print(dfmeta[['Date']][0:2])
-dfmeta = dfmeta[dfmeta.iB1 < 2]
+# dfmeta = dfmeta[dfmeta.iB1 < 2]
 # dfmeta = dfmeta[dfmeta.iB1 < 0.1]
 # dfmeta = dfmeta[dfmeta.iB2 > 5]
 
@@ -42,7 +42,7 @@ dfmeta = dfmeta.set_index('Date').sort_index()
 
 # print('ib0', dfmeta.iB2.median(), 'ib2', dfmeta.iB2.median())
 # print('ib0', dfmeta.iB2.mean(), 'ib2', dfmeta.iB2.mean())
-print('err', dfmeta.iB1.mean() - 2*dfmeta.iB1.std(), dfmeta.iB1.mean() + 2*dfmeta.iB1.std())
+print('err', dfmeta.iB2.mean() - 2*dfmeta.iB2.std(), dfmeta.iB2.mean() + 2*dfmeta.iB2.std())
 print(dfmeta.index)
 series = dfmeta.index.tolist()
 print(series)
@@ -50,25 +50,25 @@ print(series)
 plt.close('all')
 fig, ax = plt.subplots()
 #
-plt.fill_between(dfmeta.index, dfmeta.iB1.mean()-2 * dfmeta.iB1.std(), dfmeta.iB1.mean()+ 2 *dfmeta.iB1.std(), facecolor='#1f77b4', alpha=.2, label = r"Mean$\pm$2sigma")
+plt.fill_between(dfmeta.index, dfmeta.iB2.mean()-2 * dfmeta.iB2.std(), dfmeta.iB2.mean()+ 2 *dfmeta.iB2.std(), facecolor='#1f77b4', alpha=.2, label = r"Mean$\pm$2sigma")
 
-plt.plot(dfmeta.index, dfmeta.iB1,  label="iB1", linestyle = 'None', color = '#1f77b4',  marker="o", markersize = 3)
-ax.axhline(y=dfmeta.iB1.median(), color='grey', label = "Median iB1")
-ax.axhline(y=dfmeta.iB1.mean() + dfmeta.iB1.std(), color='#1f77b4',linestyle='--', label = "Mean iB1 + 1sigma")
-ax.axhline(y=dfmeta.iB1.mean(), color='#1f77b4', label = "Mean iB1")
-ax.axhline(y=dfmeta.iB1.mean() - dfmeta.iB1.std(), color='#1f77b4',linestyle='--', label = "Mean iB1 - 1sigma")
+plt.plot(dfmeta.index, dfmeta.iB2,  label="iB2", linestyle = 'None', color = '#1f77b4',  marker="o", markersize = 3)
+ax.axhline(y=dfmeta.iB2.median(), color='grey', label = "Median iB2")
+ax.axhline(y=dfmeta.iB2.mean() + dfmeta.iB2.std(), color='#1f77b4',linestyle='--', label = "Mean iB2 + 1sigma")
+ax.axhline(y=dfmeta.iB2.mean(), color='#1f77b4', label = "Mean iB2")
+ax.axhline(y=dfmeta.iB2.mean() - dfmeta.iB2.std(), color='#1f77b4',linestyle='--', label = "Mean iB2 - 1sigma")
 # plt.ylim([-0.1, 0.3])
 # plt.fill_between(dfmeta.index, -0.04242420503016284, 0.11795465516255485, facecolor='#1f77b4', alpha=.2, label = r"Mean$\pm$2sigma")
 
 
-plt.title('Sodankyla iB1 values')
+plt.title('Sodankyla iB2 values')
 ax.legend(loc='upper right', frameon=True, fontsize='small')
 
-plotname = 'iB1'
-#
-plt.savefig(path + 'Plots/Metadata/' + plotname + '.pdf')
-plt.savefig(path + 'Plots/Metadata/' + plotname + '.eps')
-plt.savefig(path + 'Plots/Metadata/' + plotname + '.png')
+plotname = 'iB2'
+# #
+# plt.savefig(path + 'Plots/Metadata/' + plotname + '.pdf')
+# plt.savefig(path + 'Plots/Metadata/' + plotname + '.eps')
+# plt.savefig(path + 'Plots/Metadata/' + plotname + '.png')
 
 
 plt.show()
