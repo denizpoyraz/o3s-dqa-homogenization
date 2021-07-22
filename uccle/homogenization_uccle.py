@@ -6,6 +6,8 @@ import glob
 from datetime import datetime
 import time
 
+## for ib) values that are equal to -1.0 -> assign them to 0
+
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
     return_phipcor, RS_pressurecorrection, o3_integrate
@@ -40,6 +42,9 @@ dfmeta['ROC'] = 0
 for i in range(1,13):
     dfmeta.loc[dfmeta.DateTime.dt.month == i, 'ROC'] = table[i].tolist()[0]
 
+dfmeta['Date'] = dfmeta['DateTime'].dt.strftime('%Y-%m-%d')
+
+
 allFiles = sorted(glob.glob(path + "/Raw_upd/*hdf"))
 
 
@@ -51,7 +56,6 @@ bool_rscorrection = False
 
 for (filename) in (allFiles):
     file = open(filename, 'r')
-    print(filename)
 
     date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     fname = filename.split('/')[-1].split('.')[0][0:8]
@@ -61,9 +65,11 @@ for (filename) in (allFiles):
 
     date = datetime.strptime(date_tmp, '%y%m%d')
     datef = date.strftime('%Y%m%d')
+    date2 = date.strftime('%Y-%m-%d')
+
     datestr = str(datef)
     if datef < '19961001':continue #before this date it is BrewerMast
-    # if datef > '19970501':continue #already homogenized
+    if datef < '19970301':continue #already homogenized
 
     print(filename)
 
@@ -73,11 +79,14 @@ for (filename) in (allFiles):
     dfm['Date'] = pd.to_datetime(dfm['DateTime'], format='%Y-%m-%d')
     dfm['Date'] = dfm['Date'].dt.date
     dfm['DateTime'] = pd.to_datetime(dfm['Date'], format='%Y-%m-%d')
-    dfm['ROC'] = dfmeta.loc[dfmeta.DateTime == dfm.at[0,'DateTime'], 'ROC']
+    df_tmp = dfmeta[dfmeta.Date == date2]
+    df_tmp = df_tmp.reset_index()
+    dfm['ROC'] = df_tmp['ROC']
+
+    if dfm.at[0,'iB0'] == -1: dfm.at[0,'iB0'] = 0
 
     df = filter_data(df)
-
-
+    df = df.reset_index()
 
     # to deal with data that is not complete
     if (len(df) < 200): continue
@@ -97,6 +106,9 @@ for (filename) in (allFiles):
     df['Phip'] = 100 / dfm.at[dfm.first_valid_index(),'PF']
     df['Eta'] = 1
     df['Pair'] = df['P']
+    # df['Cpf'] = 1
+    # df['unc_Cpf'] = 1
+
 
     df['dPhip'] = 0.02
     df['unc_Tpump'] = 0.5
@@ -134,6 +146,7 @@ for (filename) in (allFiles):
         string_pump_location = 'InternalPump'
     df['Tpump_cor'], df['unc_Tpump_cor'] = pumptemp_corr(df, string_pump_location, 'Tpump', 'unc_Tpump', 'Pair')
 
+
     #      pump flow corrections        #
     # ground correction
     dfm['TLab'] = 20
@@ -143,16 +156,22 @@ for (filename) in (allFiles):
     # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
     # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
     pumpflowtable = 'komhyr_95'
-    # df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'polyfit')
+    df['Cpoly'], df['unc_Coly'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'polyfit')
+
     df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
 
+    # df = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
+
     df['Phip_coreff'] = df['Phip']/df['Cpf']
+    df['Phip_corpoly'], df['unc_Phip_corpoly'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpoly', 'unc_Coly')
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
+
 
     df['iB0'] = dfm.at[dfm.first_valid_index(),'iB0']
     df['I'] = df['I'].astype('float')
     df['Tpump'] = df['Tpump'].astype('float')
     df['Tpump_cor'] = df['Tpump_cor'].astype('float')
+
 
     # all corrections
     df['O3_nc'] = currenttopo3(df, 'I', 'Tpump', 'iB0', 'Eta', 'Phip', False)
@@ -160,7 +179,11 @@ for (filename) in (allFiles):
     df['O3c_etabkg'] = currenttopo3(df, 'I', 'Tpump', 'iBc', 'eta_c', 'Phip', False)
     df['O3c_etabkgtpump'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip', False)
     df['O3c_etabkgtpumpphigr'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_ground', False)
+    df['O3cpoly'] = currenttopo3(df, 'I', 'Tpump_cor', 'iB0', 'eta_c', 'Phip_corpoly', False)
     df['O3c'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
+
+    dftest = df[['Time','P', 'I', 'Cpf','Cpoly','O3', 'O3c','O3cpoly', 'Phip_cor', 'Phip_corpoly']]
+
 
     # uncertainities
     df['dI'] = 0
@@ -209,7 +232,7 @@ for (filename) in (allFiles):
         dfm['O3Sonde_10hpa_etabkgtpump'] = o3_integrate(dft, 'O3c_etabkgtpump')
         dfm['O3Sonde_10hpa_etabkgtpumpphigr'] = o3_integrate(dft, 'O3c_etabkgtpumpphigr')
 
-        if dfm['TO_Brewer'] > 999:
+        if dfm.at[0, 'TO_Brewer'] > 999:
             dfm['O3ratio'] = 9999
             dfm['O3ratio_hom'] = 9999
             dfm['O3ratio_raw'] = 9999
@@ -239,7 +262,7 @@ for (filename) in (allFiles):
     for j in range(len(md_clist)):
         dfm[md_clist[j]] = df.at[df.first_valid_index(), md_clist[j]]
 
-    # dfm.to_csv(path + '/DQA_upd/'+ datestr + "_o3smetadata_rs80.csv")
+    dfm.to_csv(path + '/DQA_nors80/'+ datestr + "_o3smetadata_nors80.csv")
 
 
     df = df.drop(
@@ -248,18 +271,21 @@ for (filename) in (allFiles):
 
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
-    # df.to_hdf(path + '/DQA_upd/' + datestr + "_all_hom_rs80.hdf", key = 'df')
+    df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key = 'df')
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
     df['Phip'] = df['Phip_cor']
 
-    df = df.drop(['Tboxcor', 'PO3_dqar',
-    'dPO3_dqar',  'Tpump', 'Tpump_cor', 'deltat_ppi', 'TLab', 'TLabK', 'cPL', 'cPH', 'Phip_ground',
-    'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3_nc','O3c', 'O3c_eta', 'O3c_etabkg','O3c_etabkgtpump',
-    'O3c_etabkgtpumpphigr','dI', 'dIall', 'dPhi_cor', 'dTpump_cor', 'dPhip'], axis = 1)
+    # print(list(df))
+
+    df = df.drop(['Tboxcor', 'PO3_dqar', 'dPhip',
+    'dPO3_dqar',  'Tpump', 'Tpump_cor', 'deltat_ppi', 'TLab', 'TLabK', 'cPL', 'cPH', 'Phip_ground', 'deltat', 'unc_deltat',
+                  'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'TLabK', 'cPL', 'cPH', 'Phip_ground', 'unc_Phip_ground',
+     'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3_nc','O3c', 'O3c_eta', 'O3c_etabkg','O3c_etabkgtpump',
+                  'O3c_etabkgtpumpphigr','dI', 'dIall', 'dPhi_cor', 'dTpump_cor', 'dPhip'], axis = 1)
     # , 'Crs', 'unc_Crs', 'dPrs'
     # df to be converted to WOUDC format together with the metadata
 
-    # df.to_hdf(path + '/DQA_upd/' + datestr + "_o3sdqa_rs80.hdf", key = 'df')
+    df.to_hdf(path + '/DQA_nors80/' + datestr + "_o3sdqa_nors80.hdf", key = 'df')
 

@@ -24,7 +24,7 @@ for filename in allFiles:
     for lines,j in zip((all_lines), range(len(all_lines))):
         if search(tmp, all_lines[j]):
             line = j
-            # print(j, all_lines[j])
+            print(j, all_lines[j])
 
     # df = pd.read_csv(filename, sep = "\s *", engine="python", skiprows=line, names=columnStr)
     df = pd.read_csv(filename, sep = "\s *", engine="python", skiprows=line+2, names=columnStr)
@@ -54,7 +54,7 @@ for filename in allFiles:
     # print(date, date2, dfm.at[0,'Launch Date'])
     # print(dfm[0:5])
 
-    df.to_hdf(path  + date2 + ".hdf", key='df')
-    dfm.to_csv(path  + date2 + "_metadata.csv")
+    # df.to_hdf(path  + date2 + ".hdf", key='df')
+    # dfm.to_csv(path  + date2 + "_metadata.csv")
 
 

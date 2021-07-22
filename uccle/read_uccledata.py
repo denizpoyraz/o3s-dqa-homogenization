@@ -50,7 +50,7 @@ dfo['DatenTime'] = dfo['Datenf'].apply(lambda x: x.strftime('%Y%m%d'))
 
 for filename in allFiles:
     file = open(filename,'r')
-    # print(filename)
+    print(filename)
     date_tmp  = filename.split('.dat')[0].split("/")[-1]
     if len(date_tmp) != 12: continue
     date = datetime.strptime(date_tmp, '%Y%m%d%H%M')
@@ -76,6 +76,8 @@ for filename in allFiles:
     dfm2 = dfo[dfo.DatenTime == datef]
     dfm2 = dfm2.reset_index()
 
+    # print(len(dfm), len(dfm2))
+    # print('dfm2', dfm2)
 
     if len(dfm2) == 0:
         dfm.at[0, 'TO_Brewer'] = 9999
@@ -95,7 +97,18 @@ for filename in allFiles:
         dfm.at[0, 'SondeO3'] = dfm.at[0, 'TO_Brewer'] / dfm.at[0, 'TON']
         dfm.at[0, 'IntegratedO3'] = dfm.at[0, 'SondeO3'] - dfm.at[0, 'RO_aboveburst']
 
+    if len(dfm2) == 2:
+        dfm.at[0, 'TO_Brewer'] = dfm2.at[0, 'TO_Brewer']
+        dfm.at[0, 'RO_aboveburst'] = dfm2.at[0, 'RO_aboveburst']
+        dfm.at[0, 'TON'] = dfm2.at[0, 'TON']
+        dfm.at[0, 'LaunchTime'] = dfm2.at[0, 'LaunchTime']
+        dfm.at[0, 'Date'] = dfm2.at[0, 'Datenf']
+        dfm.at[0, 'SondeO3'] = dfm.at[0, 'TO_Brewer'] / dfm.at[0, 'TON']
+        dfm.at[0, 'IntegratedO3'] = dfm.at[0, 'SondeO3'] - dfm.at[0, 'RO_aboveburst']
+
     # print(dfm.at[dfm.first_valid_index(),'Datenf'], dfm2.at[dfm2.first_valid_index(),'DatenTime'], )
+
+    # print(dfm)
 
     # print(list(dfm2))
     rsmodel = ''
@@ -109,8 +122,8 @@ for filename in allFiles:
 
     dfm.at[0,'RadiosondeModel'] = rsmodel
     dfm.at[0, 'TpumpLocation'] = pumplocation
-    dfm.at[0,'SolutionType'] = "0.5%"
-    dfm.at[0,'SolutionVolume'] = "3.0"
+    dfm.at[0,'SolutionType'] = 5
+    dfm.at[0,'SolutionVolume'] = 3.0
 
     df.to_hdf(path + '/Raw_upd/' + datef + ".hdf", key='df')
     dfm.to_csv(path + '/Raw_upd/' + datef + "_md.csv")

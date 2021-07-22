@@ -55,9 +55,11 @@ def Calc_average_profile_pressure(dft, xcolumn):
     return Xgrid, Xsigma, Ygrid
 
 
+# dfm = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Uccle_Metada_DQA_nors80.csv')
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# allFiles = sorted(glob.glob(path + "/DQA_nors80/*all_hom_nors80.hdf"))
+
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
+# allFiles = sorted(glob.glob(path + "DQA_nors80/*all_hom_nors80.hdf"))
 #
 # listall = []
 #
@@ -66,15 +68,22 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 #
 #     listall.append(df)
 #
-# name_out = 'Madrid_AllData_DQA_nors80'
+# name_out = 'Uccle_AllData_DQA_nors80'
 # dfall = pd.concat(listall, ignore_index=True)
 #
-# dfall.to_csv(path + "/DQA_nors80/" + name_out + ".csv")
-# dfall.to_hdf(path + "/DQA_nors80/" + name_out + ".hdf", key = 'df')
+# dfall.to_hdf(path + "DQA_nors80/" + name_out + ".hdf", key = 'df')
 
-df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_DQA_nors80.hdf')
+df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Uccle_AllData_DQA_nors80.hdf')
+# df2 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA/Uccle_AllData_DQA_nors80.hdf')
 
-
+# print(len(df), len(df.drop_duplicates(['Date'])))
+#
+# dft = df[df.Pair < 10]
+#
+# print(len(dft), len(dft.drop_duplicates(['Date'])))
+#
+# print(list(df))
+# print(df.index)
 
 # if date2 < '1998-12-02':
 #     string_pump_location = 'case3'
@@ -87,8 +96,9 @@ df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQ
 # if date2 >= '2006-03-08 ':
 #     bool_rscorrection = False
 
-df1 = df1[df1.Date > '1998-12-02' ]
-df1 = df1[df1.Date < '2005-06-01' ]
+# df2 = df1[df1.Date >= '1998-12-01' ]
+
+df1 = df1[df1.Date > '1997-12-01' ]
 
 
 # print(len(df1), len(df2))
@@ -102,53 +112,56 @@ df1 = df1[df1.Date < '2005-06-01' ]
 # o3, o3err, y = Calc_average_profile_pressure(df1r, 'O3c')
 # o3c, o3cerr, y = Calc_average_profile_pressure(df2, 'O3c')
 
-o3, o3err, y = Calc_average_profile_pressure(df1, 'O3')
+# o3, o3err, y = Calc_average_profile_pressure(df1, 'O3')
 o3c, o3cerr, y = Calc_average_profile_pressure(df1, 'O3c')
 o3nc, o3cerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
 
 # o3c2, o3cerr2, y = Calc_average_profile_pressure(df2, 'O3c')
 
-# dfp = pd.DataFrame()
-# dfp['o3c'] = o3c
-# dfp['y'] = y
-# dfp['o3nc'] = o3nc
-# dfp['o3'] = o3
-#
-# # dfp['y'] = y
-# int1 =  int((3.9449 * (dfp.o3.shift() + dfp.o3) * np.log(dfp.y.shift() / dfp.y)).sum())
-# int2 =  int((3.9449 * (dfp.o3c.shift() + dfp.o3c) * np.log(dfp.y.shift() / dfp.y)).sum())
-# int3 =  int((3.9449 * (dfp.o3nc.shift() + dfp.o3nc) * np.log(dfp.y.shift() / dfp.y)).sum())
+df1 = pd.DataFrame()
+df1['o3c'] = o3c
+df1['y'] = y
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+# df2 = pd.DataFrame()
+df1['o3nc'] = o3nc
+# df1['y'] = y
 
-Plotname = 'AllPeriod_DQA_WOUDC'
+int1 =  int((3.9449 * (df1.o3c.shift() + df1.o3c) * np.log(df1.y.shift() / df1.y)).sum())
+int2 =  int((3.9449 * (df1.o3nc.shift() + df1.o3nc) * np.log(df1.y.shift() / df1.y)).sum())
+
+print('before 1998',     int1)
+print('after 1998',     int2)
+
+# o3nc, o3ncerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
+
+path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
+
+Plotname = 'After_1998_hom_vs_raw'
 # Plotname = 'RS80'
 
 fig, ax = plt.subplots(figsize=(17, 9))
 
-# ax.plot(o3c, y,  label = '> 2008 DQA TO=' + str(int2), marker = 's', markersize = 6)
-# ax.plot(o3, y , label = ' > 2008 WOUDC TO=' + str(int1), marker = 'd', markersize = 6)
-# ax.plot(o3nc, y,  label = '> 2008 Raw TO=' + str(int3), marker = 's', markersize = 6)
+# ax.plot(o3c, y,  label = ' 1997-2005 DQA', marker = 's', markersize = 6)
+# ax.plot(o3, y , label = ' 1997-2005 WOUDC', marker = 'd', markersize = 6)
+# ax.plot(o3nc, y,  label = '1997-2005 Raw', marker = 's', markersize = 6)
 
-# ax.plot(o3c, y,  label = '1998-2006 DQA TO=' + str(int2), marker = 's', markersize = 6)
-# ax.plot(o3, y , label = ' 1998-2006 WOUDC TO=' + str(int1), marker = 'd', markersize = 6)
-# ax.plot(o3nc, y,  label = '1998-2006 Raw TO=' + str(int3), marker = 's', markersize = 6)
+ax.plot(o3c, y,  label = ' > 1998 DQA ' + 'TO=' + str(int1), marker = 's', markersize = 6)
+ax.plot(o3nc, y,  label = ' > 1998 Raw ' + 'TO=' + str(int2), marker = 's', markersize = 6)
 
-# ax.plot(o3, y,  label = '1994-2021 WOUDC corrections', marker = 's', markersize = 6)
-ax.plot(o3c, y , label = '1994-2021 DQA corrections', marker = 'd', markersize = 6)
-ax.plot(o3, y,  label = '1994-2021 WOUDC corrections', marker = 's', markersize = 6)
+# ax.plot(o3, y , label = ' < 1995 WOUDC', marker = 'd', markersize = 6)
+# ax.plot(o3nc, y,  label = '< 1995 Raw', marker = 's', markersize = 6)
 
-# ax.plot(o3nc, y , label = '1994-2021 No Correction', marker = 'd', markersize = 6)
-
+# ax.plot(o3, y,  label = '1994-2006 RS80 correction', marker = 's', markersize = 6)
+# ax.plot(o3c, y , label = '1994-2006 no RS80 correction', marker = 'd', markersize = 6)
 ax.set_ylim(1000, 5)
 ax.set_yscale('log')
 ax.legend(loc="best")
 ax.set_ylabel('Pressure [hPa]')
 ax.set_xlabel('PO3 [mPa]')
-#
-# plt.savefig(path + 'Plots/' + Plotname + '.png')
-# plt.savefig(path + 'Plots/' + Plotname + '.eps')
-# plt.savefig(path + 'Plots/  ' + Plotname + '.pdf')
+
+plt.savefig(path + 'Plots/' + Plotname + '.png')
+plt.savefig(path + 'Plots/' + Plotname + '.eps')
+plt.savefig(path + 'Plots/  ' + Plotname + '.pdf')
 
 plt.show()
 

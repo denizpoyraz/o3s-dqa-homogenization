@@ -18,10 +18,13 @@ ozone = 'O3' #woudc
 # ozone = 'PO3_dqar'
 
 
-name_out = 'MadridInterpolated_dqa_nors80'
+name_out = 'SodankylaInterpolated_dqa_nors80'
+# name_out = 'UccleInterpolated_dqa_nors80'
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-allFiles = sorted(glob.glob(path + "DQA_final/*_all_hom_nors80.hdf"))
+
+path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
+allFiles = sorted(glob.glob(path + "DQA_nors80/*_all_hom_nors80.hdf"))
 print('len of files', len(allFiles))
 
 # list_data = []
@@ -55,15 +58,20 @@ for (filename) in (allFiles):
     # print(filename)
     df = pd.read_hdf(filename)
 
-    df['Height'] = df['GPHeight']
+    # print(list(df))
+    # #madrid
+    # df['Height'] = df['GPHeight']
+    # df['TboxC'] = df['SampleTemperature']
 
-    df = filter_data(df)
+    # df = filter_data(df)
+    df = df[df.Pair != -9999]
+    df = df[df.I != -9999 ]
     if len(df) < 10:
         print(date, len(df))
         continue
 
 
- # now downsample the uccle data remove descent list
+ # now downsample the madrid data remove descent list
     dfn = df[df.Height > 0]
     maxh = dfn.Height.max()
 
@@ -81,10 +89,6 @@ for (filename) in (allFiles):
 
 
     # previous
-    yref = [1000.000, 825.404,681.292,562.341,464.159,383.119,316.228,261.016,215.443,177.828,146.780,121.153,100.000,
-             82.5404,68.1292,56.2341,46.4159,38.3119,31.6228,26.1016,21.5443,17.7828,14.6780,12.1153,10.0000,8.25404,
-             6.81292,  5.62341]
-
     yref = [1000.000, 825.404,681.292,562.341,464.159,383.119,316.228,261.016,215.443,177.828,146.780,121.153,100.000,
              82.5404,68.1292,56.2341,46.4159,38.3119,31.6228,26.1016,21.5443,17.7828,14.6780,12.1153,10.0000,8.25404,
              6.81292,  5.62341]
@@ -135,27 +139,28 @@ for (filename) in (allFiles):
             # print(dfas.iloc[0]['Header_Date'],uybin[aa], aa, xmean[aa])
             xmean[aa] = np.nan
 
-    xuccle = dfa[ozone].tolist()
-    yuccle = dfa['Pair'].tolist()
+    xmadrid = np.array(dfa[ozone].tolist())
+    ymadrid = np.array(dfa['Pair'].tolist())
 
-    xuccle_nc = np.array(dfa['O3_nc'].tolist())
-    xuccle_eta = np.array(dfa['O3c_eta'].tolist())
-    xuccle_etabkg = np.array(dfa['O3c_etabkg'].tolist())
-    xuccle_etabkgtpump = np.array(dfa['O3c_etabkgtpump'].tolist())
-    xuccle_etabkgtpumpphigr = np.array(dfa['O3c_etabkgtpumpphigr'].tolist())
-    xuccle_dqa = dfa['O3c'].tolist()
+    xmadrid_nc = np.array(dfa['O3_nc'].tolist())
+    xmadrid_eta = np.array(dfa['O3c_eta'].tolist())
+    xmadrid_etabkg = np.array(dfa['O3c_etabkg'].tolist())
+    xmadrid_etabkgtpump = np.array(dfa['O3c_etabkgtpump'].tolist())
+    xmadrid_etabkgtpumpphigr = np.array(dfa['O3c_etabkgtpumpphigr'].tolist())
+    xmadrid_dqa = np.array(dfa['O3c'].tolist())
+    # xmadrid_woudc = np.array(dfa['O3c_woudc'].tolist())
+    # xmadrid_woudc_v2 = np.array(dfa['O3c_woudc_v2'].tolist())
 
-    xuccle = np.array(xuccle)
-    yuccle = np.array(yuccle)
-    if ((len(xuccle) < 15) | (len(xuccle) == 0)):
+
+    if ((len(xmadrid) < 15) | (len(xmadrid) == 0)):
         print('Problem here ? ', header_date)
         continue
 
-    indu = np.where(xuccle < 0)[0]
+    indu = np.where(xmadrid < 0)[0]
 
-    xuccle = np.delete(xuccle, indu)
-    yuccle = np.delete(yuccle, indu)
-    if ((len(xuccle) < 10) | (len(xuccle) == 0)):
+    xmadrid = np.delete(xmadrid, indu)
+    ymadrid = np.delete(ymadrid, indu)
+    if ((len(xmadrid) < 10) | (len(xmadrid) == 0)):
         print('here one')
         continue
 
@@ -163,20 +168,18 @@ for (filename) in (allFiles):
              82.5404,68.1292,56.2341,46.4159,38.3119,31.6228,26.1016,21.5443,17.7828,14.6780,12.1153,10.0000,8.25404,
              6.81292,  5.62341]
 
-    # if (max(yuccle) < max(yref)):
-    #     print('here two',max(yuccle) , max(yref) )
-    #     continue
-    # if(min(yuccle) > min(ymain)):continue
-
     # linear interpolations
     try:
-        fl = interp1d(yuccle, xuccle)
-        fl_nc = interp1d(yuccle, xuccle_nc)
-        fl_eta = interp1d(yuccle, xuccle_eta)
-        fl_etabkg = interp1d(yuccle, xuccle_etabkg)
-        fl_etabkgtpump = interp1d(yuccle, xuccle_etabkgtpump)
-        fl_etabkgtpumpphigr = interp1d(yuccle, xuccle_etabkgtpumpphigr)
-        fl_dqa = interp1d(yuccle, xuccle_dqa)
+        fl = interp1d(ymadrid, xmadrid)
+        fl_nc = interp1d(ymadrid, xmadrid_nc)
+        fl_eta = interp1d(ymadrid, xmadrid_eta)
+        fl_etabkg = interp1d(ymadrid, xmadrid_etabkg)
+        fl_etabkgtpump = interp1d(ymadrid, xmadrid_etabkgtpump)
+        fl_etabkgtpumpphigr = interp1d(ymadrid, xmadrid_etabkgtpumpphigr)
+        fl_dqa = interp1d(ymadrid, xmadrid_dqa)
+        # fl_woudc = interp1d(ymadrid, xmadrid_woudc)
+        # fl_woudc_v2 = interp1d(ymadrid, xmadrid_woudc_v2)
+
     except ValueError:
         print('Value Error: ', datef)
         continue
@@ -190,6 +193,8 @@ for (filename) in (allFiles):
     xinter_linear_etabkgtpump = [0] * len(ymain);
     xinter_linear_etabkgtpumpphigr = [0] * len(ymain);
     xinter_linear_dqa = [0] * len(ymain);
+    # xinter_linear_woudc = [0] * len(ymain);
+    # xinter_linear_woudc_v2 = [0] * len(ymain);
 
 
     for ix in range(len(ymain)):
@@ -203,6 +208,9 @@ for (filename) in (allFiles):
             xinter_linear_etabkgtpump[ix] = fl_etabkgtpump(ymain[ix])
             xinter_linear_etabkgtpumpphigr[ix] = fl_etabkgtpumpphigr(ymain[ix])
             xinter_linear_dqa[ix] = fl_dqa(ymain[ix])
+            # xinter_linear_woudc[ix] = fl_woudc(ymain[ix])
+            # xinter_linear_woudc_v2[ix] = fl_woudc_v2(ymain[ix])
+
 
             # if ymain[ix] > 215:
             #     print(date, 'one',  ymain[ix], xinter_linear[ix])
@@ -214,6 +222,9 @@ for (filename) in (allFiles):
             xinter_linear_etabkgtpump[ix] = np.nan
             xinter_linear_etabkgtpumpphigr[ix] = np.nan
             xinter_linear_dqa[ix] = np.nan
+            # xinter_linear_woudc[ix] = np.nan
+            # xinter_linear_woudc_v2[ix] = np.nan
+
 
     for ir in range(len(xinter_linear)):
         if (xinter_linear[ir] <= 0):
@@ -225,13 +236,15 @@ for (filename) in (allFiles):
             xinter_linear_etabkgtpump[ir] = np.nan
             xinter_linear_etabkgtpumpphigr[ir] = np.nan
             xinter_linear_dqa[ir] = np.nan
+            # xinter_linear_woudc[ix] = np.nan
+            # xinter_linear_woudc_v2[ix] = np.nan
 
 
     header_date = df.at[df.first_valid_index(), 'Date']
     ddate = [df.at[df.first_valid_index(), 'Date']] * len(ymain)
 
     dfl = pd.DataFrame(
-        columns=['Date', 'PreLevel', 'PO3_UcMean', 'PO3_UcMedian', 'PO3_UcIntLin'])
+        columns=['Date', 'PreLevel', 'PO3_UcIntLin'])
 
     dfl['Date'] = ddate
     dfl['PreLevel'] = np.asarray(ymain)
@@ -239,12 +252,13 @@ for (filename) in (allFiles):
     # dfl['PO3_UcMedian'] = xmedian
     dfl['PO3_UcIntLin'] = xinter_linear
     dfl['PO3_UcIntLin_nc'] = xinter_linear_nc
-
     dfl['PO3_UcIntLin_eta'] = xinter_linear_eta
     dfl['PO3_UcIntLin_etabkg'] = xinter_linear_etabkg
     dfl['PO3_UcIntLin_etabkgtpump'] = xinter_linear_etabkgtpump
     dfl['PO3_UcIntLin_etabkgtpumpphigr'] = xinter_linear_etabkgtpumpphigr
     dfl['PO3_UcIntLin_dqa'] = xinter_linear_dqa
+    # dfl['PO3_UcIntLin_woudc'] = xinter_linear_woudc
+    # dfl['PO3_UcIntLin_woudc_v2'] = xinter_linear_woudc_v2
 
 
     listall_data.append(dfl)
@@ -253,9 +267,9 @@ for (filename) in (allFiles):
 
 # df = pd.concat(list_data, ignore_index=True)
 dfall = pd.concat(listall_data, ignore_index=True)
-
-dfall.to_csv(path + "DQA_final/Binned/" + name_out + ".csv")
-dfall.to_hdf(path + "DQA_final/Binned/" + name_out + ".h5", key = 'df')
+#
+dfall.to_csv(path + "DQA_nors80/Binned/" + name_out + ".csv")
+dfall.to_hdf(path + "DQA_nors80/Binned/" + name_out + ".h5", key = 'df')
 
 
 

@@ -12,7 +12,7 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
 efile = open("errorfile.txt", "w")
 
 
-allFiles = sorted(glob.glob(path + "MD/*.csv"))
+allFiles = sorted(glob.glob(path + "/2013*.csv"))
 
 # /home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/20050406_testwoudc.csv
 
@@ -24,6 +24,8 @@ fi = 0
 
 for filename in allFiles:
     print(filename)
+    tmp = filename.split('.')[0][-8:]
+    if tmp == 'MD010613': continue
     # try except is applied for the cases when there is formatting error: WOUDCExtCSVReaderError
     extcsv_to = load(filename)
 

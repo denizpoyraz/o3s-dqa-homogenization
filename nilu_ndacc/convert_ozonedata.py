@@ -16,6 +16,8 @@ from utils import get_arguments
 # python convert_ozonedata.py path
 # filename convention: /example/path/tofiles/uc212903.xyz general ames output format
 
+#testing tool in case neede for egexp: https://regex101.com/
+
 
 @dataclass
 class Header:

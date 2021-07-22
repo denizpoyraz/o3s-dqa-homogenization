@@ -8,7 +8,7 @@ import time
 
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
-    return_phipcor, RS_pressurecorrection
+    return_phipcor, o3_integrate
 
 from functions.df_filter import filter_data, filter_metadata
 
@@ -16,15 +16,36 @@ from functions.df_filter import filter_data, filter_metadata
 path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 
 dfmeta = pd.read_hdf(path + 'Metadata/All_metadata.hdf')
-# dfmeta = filter_metadata(dfmeta)
+dfmeta = dfmeta[dfmeta.iB2 < 9]
+# # dfmeta = filter_metadata(dfmeta)
+# print('metadata', list(dfmeta))
+# to get ROC from the corresponding station roc table
+clms = [i for i in range(1,13)]
+table = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt',  skiprows=1,
+                    sep="\s *", names = clms,  header=None, engine='python')
+# take roc at 10hpa values
+table = table[table.index ==10]
+# assign ROC values to dfmeta
+dfmeta['Date2'] =  pd.to_datetime(dfmeta['Date'], format='%Y-%m-%d')
+dfmeta['Date2'] =  dfmeta['Date2'].dt.date
+dfmeta['DateTime'] =  pd.to_datetime(dfmeta['Date2'], format='%Y-%m-%d')
+dfmeta['ROC'] = 0
+roc_values = [0]*12
+for i in range(1,13):
+    j = i-1
+    roc_values[j] = table[i].tolist()[0]
+    dfmeta.loc[dfmeta.DateTime.dt.month == i, 'ROC'] = table[i].tolist()[0]
 
-## use climatological means for missing PLab, TLab, ULab values
+# dfmeta['Date'] = dfmeta['DateTime'].dt.strftime('%Y-%m-%d')
+
 series = dfmeta[['Date', 'Pground', 'TLab','ULab','PF']]
+series[['Pground', 'TLab','ULab','PF']] = series[['Pground', 'TLab','ULab','PF']].astype('float')
 series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
 series = series.set_index('Date')
 upsampled = series.resample('1M').mean()
 
 series04 = dfmeta[dfmeta.Date < '20040101'][['Date', 'Pground', 'TLab','ULab','PF']]
+series04[['Pground', 'TLab','ULab','PF']] = series04[['Pground', 'TLab','ULab','PF']].astype('float')
 series04['Date']  = series04['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
 series04 = series04.set_index('Date')
 upsampled04 = series04.resample('1M').mean()
@@ -87,6 +108,8 @@ for (filename) in (allFiles):
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
+    dfm['ROC'] = roc_values[date.month-1]
+
     ## missing PTU lab and PF values for values before 1999 and 1997
     if datef < '19970107':
         dfm['PF'] = pf[date.month-1]
@@ -103,7 +126,7 @@ for (filename) in (allFiles):
     if (len(df) < 100): continue
 
     df['Date'] = datef
-    df['Datedt'] = pd.to_datetime(df['Date'], format='%Y%m%d').dt.date
+    # df['Datedt'] = pd.to_datetime(df['Date'], format='%Y%m%d').dt.date
 
     # input variables for hom.
     df['Tpump'] = df['TboxK']
@@ -126,38 +149,45 @@ for (filename) in (allFiles):
     #      radiosonde RS80 correction   #
     # Electronic o3 sonde interface  was replaced with the transfer from RS80 to RS92  in 24 Nov 2005.
     rsmodel = ''
-    # bool_rscorrection = ''
-    if datef <= '20051124':
-        # rsmodel = 'RS80'
-        bool_rscorrection = True
-    if datef > '20051124':
-        bool_rscorrection = False
+    # # bool_rscorrection = ''
+    # if datef <= '20051124':
+    #     # rsmodel = 'RS80'
+    #     bool_rscorrection = True
+    # if datef > '20051124':
+    #     bool_rscorrection = False
     #
-    # bool_rscorrection = False
+    bool_rscorrection = False
 
-    if bool_rscorrection:
-        df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'Height', rsmodel)
-        df['Pair'] = df['Pair'] - df['Crs']
+    # if bool_rscorrection:
+    #     df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'Height', rsmodel)
+    #     df['Pair'] = df['Pair'] - df['Crs']
 
 
     #      conversion efficiency        #
     try: df['alpha_o3'], df['unc_alpha_o3'] = absorption_efficiency(df, 'Pair', 3.0)
     except KeyError: df['alpha_o3'], df['unc_alpha_o3'] = absorption_efficiency(df, 'Pair', 3.0)
     #correction to the metadata from the station PI:
+
+
     # All z-sondes before so06020112 were flown with 1 %KI
-    if (datef < '20060201') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z' ): dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 10
-    if (datef >= '20060201') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z' ): dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 5
-    if (datef < '20060201') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC' ): dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 10
+    if (datef < '20060201') & (dfm.at[0, 'SensorType'] == 'DMT-Z' ): dfm.at[0, 'SolutionConcentration'] = 10
+    if (datef >= '20060201') & (dfm.at[0, 'SensorType'] == 'DMT-Z' ): dfm.at[0, 'SolutionConcentration'] = 5
+    if (datef < '20060201') & (dfm.at[0, 'SensorType'] == 'SPC' ): dfm.at[0, 'SolutionConcentration'] = 10
 
 
-    df['stoich'], df['unc_stoich'] = stoichmetry_conversion(df, 'Pair', dfm.at[dfm.first_valid_index(), 'SensorType'],
-                                                            dfm.at[dfm.first_valid_index(), 'SolutionConcentration'], 'ENSCI05')
+
+    df['stoich'], df['unc_stoich'] = stoichmetry_conversion(df, 'Pair', dfm.at[0, 'SensorType'],
+                                                            dfm.at[0, 'SolutionConcentration'], 'ENSCI05')
+
+
+
     df['eta_c'], df['unc_eta_c'] = conversion_efficiency(df, 'alpha_o3', 'unc_alpha_o3', 'stoich', 'unc_stoich')
 
     #       background correction       #
+    # check the function to change the date where to have 2 different background means, stds (for sod. 2005)
     if string_bkg_used == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2')
     if string_bkg_used == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0')
-    df['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    df['iB2'] = dfm.at[0, 'iB2']
 
     #       pump temperature correction       #
     df['Tpump_cor'], df['unc_Tpump_cor'] = pumptemp_corr(df, string_pump_location, 'Tpump', 'unc_Tpump', 'Pair')
@@ -168,8 +198,8 @@ for (filename) in (allFiles):
                                                                    'ULab', True)
     # efficiency correction
     pumpflowtable = ''
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
+    if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
+    if dfm.at[0, 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
     df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
 
@@ -197,6 +227,61 @@ for (filename) in (allFiles):
     # final uncertainity on O3
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
 
+
+    #TON calculations
+    dfm['O3Sonde_burst'] = o3_integrate(df, 'O3')
+    dfm['O3Sonde_burst_raw'] = o3_integrate(df, 'O3_nc')
+    dfm['O3Sonde_burst_hom'] = o3_integrate(df, 'O3c')
+
+    if df.Pair.min() <= 10:
+        # print('and now how to calculate TON', df.Pair.min())
+        dft = df[df.Pair >= 10]
+
+        # for woudc O3 values
+        dfm['O3Sonde'] = o3_integrate(dft, 'O3')
+        dfm['O3SondeTotal'] = dfm['O3Sonde'] + dfm['ROC']
+        # the same for the homogenized O3 values
+        dfm['O3Sonde_hom'] = o3_integrate(dft, 'O3c')
+        dfm['O3SondeTotal_hom'] = dfm['O3Sonde_hom'] + dfm['ROC']
+
+        # the same for raw no corrected o3 values
+        dfm['O3Sonde_raw'] = o3_integrate(dft, 'O3_nc')
+        dfm['O3SondeTotal_raw'] = dfm['O3Sonde_raw'] + dfm['ROC']
+        try:
+            dfm['O3ratio'] = dfm['TotalO3_Col2A'] / dfm['O3SondeTotal']
+            dfm['O3ratio_hom'] = dfm['TotalO3_Col2A'] / dfm['O3SondeTotal_hom']
+            dfm['O3ratio_raw'] = dfm['TotalO3_Col2A'] / dfm['O3SondeTotal_raw']
+            if dfm.at[0, 'TotalO3_Col2A'] > 999:
+                dfm['O3ratio'] = 9999
+                dfm['O3ratio_hom'] = 9999
+                dfm['O3ratio_raw'] = 9999
+        except KeyError:
+            dfm['O3ratio'] = 9999
+            dfm['O3ratio_hom'] = 9999
+            dfm['O3ratio_raw'] = 9999
+
+
+
+        dfm['O3Sonde_10hpa'] = o3_integrate(dft, 'O3')
+        dfm['O3Sonde_10hpa_raw'] = o3_integrate(dft, 'O3_nc')
+        dfm['O3Sonde_10hpa_hom'] = o3_integrate(dft, 'O3c')
+
+
+
+    if df.Pair.min() > 10:
+        dfm['O3Sonde'] = 9999
+        dfm['O3SondeTotal'] = 9999
+        dfm['O3ratio'] = 9999
+        # the same for the homogenized O3 values
+        dfm['O3Sonde_hom'] = 9999
+        dfm['O3SondeTotal_hom'] = 9999
+        dfm['O3ratio_hom'] = 9999
+        dfm['O3Sonde_raw'] = 9999
+        dfm['O3SondeTotal_raw'] = 9999
+        dfm['O3ratio_raw'] = 9999
+
+
+
     md_clist = ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
                 'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'TLab', 'deltat', 'unc_deltat', 'unc_deltat_ppi', 'dEta']
 
@@ -204,37 +289,20 @@ for (filename) in (allFiles):
     for j in range(len(md_clist)):
         dfm[md_clist[j]] = df.at[df.first_valid_index(), md_clist[j]]
 
-    # dfm.to_csv(path + '/DQA_upd/'+ datestr + "_o3smetadata_rs80.csv")
+    dfm.to_csv(path + '/DQA_nors80/'+ datestr + "_o3smetadata_nors80.csv")
 
     df = df.drop(
         ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
          'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'dEta'], axis=1)
     
      # data file that has data and uncertainties that depend on Pair or Height or Temperature
-    # df.to_hdf(path + '/DQA_upd/' + datestr + "_all_hom_rs80.hdf", key = 'df')
+    df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key = 'df')
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
     df = df.drop(['TboxC', 'Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor'], axis = 1)
     # df to be converted to WOUDC format together with the metadata
-    # df.to_hdf(path + '/DQA_upd/' + datestr + "_o3sdqa_rs80.hdf", key = 'df')
+    df.to_hdf(path + '/DQA_nors80/' + datestr + "_o3sdqa_nors80.hdf", key = 'df')
 
 ################################################################################################################################
 
- ##exceptions for sodankyla
-    # try:
-    #     if dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] == 3:
-    #         if (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC') & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] == 3):
-    #             dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 10
-    #         if (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z') & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] == 3):
-    #             dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 5
-    # except KeyError:
-    #     if (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC'): dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 10
-    #     if (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'): dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 5
-    #
-    # if (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z') & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 5)\
-    #         & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 10) & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 3):
-    #     dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 5
-    # if (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC') & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 5)\
-    #         & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 10) & (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 3):
-    #     dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] = 10

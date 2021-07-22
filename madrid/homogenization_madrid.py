@@ -11,7 +11,7 @@ from scipy.interpolate import interp1d
 
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency,return_phipcor, \
-    RS_pressurecorrection, o3_integrate, o3tocurrent
+    RS_pressurecorrection, o3_integrate, o3tocurrent, ComputeCef
 
 from functions.df_filter import filter_data, filter_metadata
 
@@ -20,9 +20,9 @@ k = 273.15
 
 # to calculate climatalogical means
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-
-allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
-
+#
+# allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
+#
 # listall = []
 #
 # for (filename) in (allFiles):
@@ -34,18 +34,18 @@ allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
 # name_out = 'Madrid_AllData_woudc'
 # dfall = pd.concat(listall, ignore_index=True)
 #
-# dfall.to_hdf(path + "DQA_final/" + name_out + ".hdf", key = 'df')
+# dfall.to_hdf(path + "DQA_nors80/" + name_out + ".hdf", key = 'df')
 
-dfmain = pd.read_hdf("/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_final/Madrid_AllData_woudc.hdf")
+dfmain = pd.read_hdf("/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf")
 
 df = dfmain[['Date', 'Pressure', 'SampleTemperature']]
 df['DateTime'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
+df = df[df.DateTime < '2007']
 
 dfmean = {}
 for i in range(1,13):
     dfmean[i-1] = df[df.DateTime.dt.month == i]
     dfmean[i-1] = dfmean[i-1].groupby(['Pressure']).mean()
-
 
 
 dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
@@ -122,9 +122,12 @@ metadata = []
 for (filename) in (allFiles):
     file = open(filename, 'r')
 
+    print(filename)
+
+
     df = pd.read_hdf(filename)
 
-    # if df.at[df.first_valid_index(),'Date'] < '2011-03-01': continue
+    # if df.at[df.first_valid_index(),'Date'] < '1998-03-01': continue
     if df.at[df.first_valid_index(),'Date'] == '2011-04-06': continue
     if df.at[df.first_valid_index(),'Date'] == '2014-06-04': continue
     if df.at[df.first_valid_index(),'Date'] == '2014-04-02': continue
@@ -146,6 +149,7 @@ for (filename) in (allFiles):
 
     df['Pair'] = df['Pressure']
     df['O3'] = df['O3PartialPressure']
+    df['SampleTemperature_gen'] = 0
 
     # if the pump temp is missing use the interpolated climatological mean:
     df['DateTime'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
@@ -155,9 +159,11 @@ for (filename) in (allFiles):
 
     # print(df[df.value_is_NaN == 'Yes'][['Pressure','Date', 'I', 'SampleTemperature']])
     pair_missing = df[df.value_is_NaN == 1].Pressure.tolist()
+
+    # print('missing temp len' , len(pair_missing))
     if len(pair_missing) > 1000:
         month_index = df['DateTime'].dt.month.tolist()[0]
-        print('no sample temperature', month_index, len(pair_missing), len(df))
+        # print('no sample temperature', month_index, len(pair_missing), len(df))
         x = dfmean[month_index - 1]['SampleTemperature'].tolist()
         y = dfmean[month_index - 1].index.tolist()
         fb = interp1d(y, x)
@@ -166,11 +172,44 @@ for (filename) in (allFiles):
             df_pair = df[(df.value_is_NaN == 1) & df.Pressure >= min(y)].Pressure.tolist()
             df_samptemp = fb(df_pair)
             df.loc[(df.value_is_NaN == 1) & df.Pressure >= min(y), 'SampleTemperature'] = df_samptemp
-        # if max(df_pair) > max(y):
-        #     df_pair = df[(df.value_is_NaN == 1) & df.Pressure < max(y)].Pressure.tolist()
-        df_samptemp = fb(df_pair)
-        df.loc[df.value_is_NaN == 1, 'SampleTemperature'] = df_samptemp
-        dates_missingtpump.append(date2)
+
+        elif max(df_pair) > max(y):
+            df_pair = df[(df.value_is_NaN == 1) & (df.Pressure < max(y))].Pressure.tolist()
+            df_samptemp = fb(df_pair)
+            df.loc[(df.value_is_NaN == 1) & (df.Pressure < max(y)), 'SampleTemperature'] = df_samptemp
+
+        else:
+            df_pair = df[(df.value_is_NaN == 1)].Pressure.tolist()
+            fb = interp1d(y, x)
+            df_samptemp = fb(df_pair)
+            df.loc[df.value_is_NaN == 1, 'SampleTemperature'] = df_samptemp
+            df.loc[df.value_is_NaN == 1, 'SampleTemperature_gen'] = df_samptemp
+        #
+    if (len(pair_missing) < 1000) & (len(pair_missing) > 50):
+        print('no sample temperature', len(pair_missing), len(df))
+
+        x = df[df.value_is_NaN == 0]['SampleTemperature'].tolist()
+        y = df[df.value_is_NaN == 0]['Pressure'].tolist()
+        fb = interp1d(y, x)
+        df_pair = df[df.value_is_NaN == 1].Pressure.tolist()
+
+        if min(df_pair) < min(y):
+            df_pair = df[(df.value_is_NaN == 1) & (df.Pressure >= min(y))].Pressure.tolist()
+            df_samptemp = fb(df_pair)
+            df.loc[(df.value_is_NaN == 1) & (df.Pressure >= min(y)), 'SampleTemperature'] = df_samptemp
+
+        elif max(df_pair) > max(y):
+            df_pair = df[(df.value_is_NaN == 1) & (df.Pressure < max(y))].Pressure.tolist()
+            df_samptemp = fb(df_pair)
+            df.loc[(df.value_is_NaN == 1) & (df.Pressure < max(y)), 'SampleTemperature'] = df_samptemp
+
+        else:
+            df_pair = df[(df.value_is_NaN == 1)].Pressure.tolist()
+            fb = interp1d(y, x)
+            df_samptemp = fb(df_pair)
+
+            df.loc[df.value_is_NaN == 1, 'SampleTemperature'] = df_samptemp
+            df.loc[df.value_is_NaN == 1, 'SampleTemperature_gen'] = df_samptemp
 
 
     df['TboxK'] = df['SampleTemperature'] + k
@@ -187,7 +226,6 @@ for (filename) in (allFiles):
 
     # if df.at[df.first_valid_index(),'Date'] < '2019-01-01': continue # no bkg values
 
-    print(filename)
 
 
     # to deal with data that is not complete
@@ -240,7 +278,10 @@ for (filename) in (allFiles):
     # correction to the metadata from the station PI:
     # All z-sondes before so06020112 were flown with 1 %KI
     dfm['SolutionConcentration'] = 10
+    df['SensorType'] = 'SPC'
+    df['SolutionVolume'] = 3.0
     dfm['SensorType'] = 'SPC'
+
     df['stoich'], df['unc_stoich'] = stoichmetry_conversion(df, 'Pair', dfm.at[dfm.first_valid_index(), 'SensorType'],
                                                             dfm.at[dfm.first_valid_index(), 'SolutionConcentration'],
                                                             'ENSCI05')
@@ -266,6 +307,8 @@ for (filename) in (allFiles):
     if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
     df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
+    df['Cef'] = ComputeCef(df)
+    df['Phip_eff'], df['unc_Phip_eff'] = return_phipcor(df, 'Phip', 'dPhip', 'Cef', 'unc_Cpf')
 
     # all corrections
     df['O3_nc'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip', False)
@@ -275,6 +318,8 @@ for (filename) in (allFiles):
     df['O3c_etabkgtpumpphigr'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_ground', False)
     df['O3c_etabkgtpumpphigref'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
     df['O3c'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
+    df['O3c_woudc'] = currenttopo3(df, 'I', 'Tpump', 'ibg', 'Eta', 'Phip_eff', False)
+    df['O3c_woudc_v2'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip_eff', False)
 
     if len(df[df['O3c'] < 0]) > 0: print('why', filename)
 
@@ -354,46 +399,46 @@ for (filename) in (allFiles):
 
     dfm['iBc'] = df.at[df.first_valid_index(), 'iBc']
 
-    dfm.to_csv(path + '/DQA_final/'+ date_out + "_o3smetadata_nors80.csv")
+    dfm.to_csv(path + '/DQA_nors80/'+ date_out + "_o3smetadata_nors80.csv")
 
     metadata.append(dfm)
 
 
-#     df.to_hdf(path + '/DQA_final/' + date_out + "_all_hom_nors80.hdf", key = 'df')
-#
-#     df['Tbox'] = df['Tpump_cor'] - k
-#     df['O3'] = df['O3c']
-#
-#     if bool_rscorrection:
-#
-#         df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
-#                       'unc_cPH', 'unc_cPL', 'unc_Tpump', 'Crs', 'unc_Crs', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich',
-#                       'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi',
-#                       'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground',
-#                       'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta', 'O3c_etabkg',
-#                       'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor', 'dO3'],axis=1)
-#
-#     if not bool_rscorrection:
-#         df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
-#                       'unc_cPH', 'unc_cPL', 'unc_Tpump',  'unc_alpha_o3', 'alpha_o3', 'stoich',
-#                       'unc_stoich',
-#                       'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat',
-#                       'unc_deltat', 'deltat_ppi',
-#                       'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL',
-#                       'Phip_ground',
-#                       'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta',
-#                       'O3c_etabkg',
-#                       'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta',
-#                       'dPhi_cor', 'dTpump_cor', 'dO3'], axis=1)
-#
-#
-#     df.to_hdf(path + '/DQA_final/' + date_out + "_o3sdqa_nors80.hdf", key = 'df')
-#
+    df.to_hdf(path + '/DQA_nors80/' + date_out + "_all_hom_nors80.hdf", key = 'df')
+
+    df['Tbox'] = df['Tpump_cor'] - k
+    df['O3'] = df['O3c']
+
+    if bool_rscorrection:
+
+        df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
+                      'unc_cPH', 'unc_cPL', 'unc_Tpump', 'Crs', 'unc_Crs', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich',
+                      'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi',
+                      'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground',
+                      'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta', 'O3c_etabkg',
+                      'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor'],axis=1)
+
+    if not bool_rscorrection:
+        df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
+                      'unc_cPH', 'unc_cPL', 'unc_Tpump',  'unc_alpha_o3', 'alpha_o3', 'stoich',
+                      'unc_stoich',
+                      'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat',
+                      'unc_deltat', 'deltat_ppi',
+                      'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL',
+                      'Phip_ground',
+                      'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta',
+                      'O3c_etabkg',
+                      'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta',
+                      'dPhi_cor', 'dTpump_cor'], axis=1)
+
+
+    df.to_hdf(path + '/DQA_nors80/' + date_out + "_o3sdqa_nors80.hdf", key = 'df')
+
 # dfall = pd.concat(metadata, ignore_index=True)
 #
-# name_out = 'Madrid_Metada_DQA_final_nors80'
+# name_out = 'Madrid_Metada_DQA_nors80_nors80'
 #
-# dfall.to_csv(path + "DQA_final/" + name_out + ".csv")
-# dfall.to_hdf(path + "DQA_final/" + name_out + ".h5", key = 'df')
+# dfall.to_csv(path + "DQA_nors80/" + name_out + ".csv")
+# dfall.to_hdf(path + "DQA_nors80/" + name_out + ".h5", key = 'df')
 #
 # print('missing tpump dates', dates_missingtpump)

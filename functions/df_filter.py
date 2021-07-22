@@ -9,13 +9,19 @@ def filter_data(df):
     :return: filtered data df
     '''
 
+    df['P'] = df['Pair']
+
     # print(list(df))
-    # df['P'] = df['Pair']
+    #for uccle
     df = df[df.P != -9999]
-    # df = df[df.Time != -9999]
     df = df[df.I != -9999 ]
-    # df = df[df.TboxC != -9999 ]
     # df = df[df.Tbox != -9999 ]
+    #
+    # df = df[df.Time != -9999]
+    # df = df[df.TboxC != -9999 ]
+
+
+
 
     # ['Pair', 'Time', 'Height', 'TboxK', 'TboxC', 'WindDirection', 'WindSpeed', 'O3', 'T', 'U', 'SensorType',
     #  'SolutionVolume', 'Cef', 'ibg', 'I', 'Date']

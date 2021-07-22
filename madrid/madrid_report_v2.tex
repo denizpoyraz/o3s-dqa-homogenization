@@ -58,7 +58,8 @@ For the TLab, ULab and PLab the climatological means are calculated for each mon
 
 Some of the pump temperature values in WOUDC files, before 2006, are missing.
 For those data files the climatological means of the pump temperatures
-with 2 sigma uncertainty are used.
+with 2 sigma uncertainty are used. Among these files, if the number of data points are considerably less with respect to the total number
+of points (less than $~20\%$), the missing pump temperature values are interpolated.
 
 %missing tpump dates ['1995-01-11', '1995-01-18', '1995-02-03', '1995-02-07', '1995-02-16', '1995-02-20', '1995-02-22',
 %'1995-02-24', '1995-03-01', '1995-03-09', '1995-03-15', '1995-06-01', '1995-10-18', '1995-11-15', '1995-11-29', '1996-01-10',
@@ -138,8 +139,24 @@ The recommended and applied O3S-DQA corrections are summarized below.
         \item Pump flow efficiency at low pressures
         \item Total ozone normalization: in O3S-DQA guide this correction factor is recommended to added in the data-set,
         but this is not extracted yet.
-        \item Radiosonde changes: RS80 radiosonde correction is tested but not applied yet.
+%        \item Radiosonde changes: RS80 radiosonde correction is tested but not applied yet.
 \end{enumerate}
+
+The O3S-DQA corrections are applied to the raw current measured by the ECC's. The raw current values are determined from converting partial ozone values that are
+in the WOUDC files using pump temperature
+values, pump flow rate and background values (iB2). The corrections that had been applied to have the WOUDC ozone partial pressure values, are un-corrected to
+get the raw current values. These un-corrections correspond to the corrections applied in the Vaisala software, which are:
+pressure dependent background correction and pump flow
+efficiency correction. The pump flow efficiency correction table used at this stage is slightly different than the table used
+for O3S-DQA pump efficiency corrcetions.
+The correction applied for uncorrecting the WOUDC pump flow efficiency can be seen in Ozone Sounding with Vaisala
+Radiosonde RS41 User's Guide M211486EN, page 74 and the correction table
+used for O3S-DQA can be seen in O3S-DQA Activity: Guide Lines for Homogenization of Ozone Sonde Data (Version 2.0)
+at page 34. The ozone partial pressures converted from raw current
+wihout applying any correction is denoted as 'Raw' or 'No correction', the values taken from WOUDC file-server is denoted
+by 'WOUDC' and the ozone partial values that have all the DQA corrections
+are denoted by 'DQA' in the rest of the manuscript.
+
 
     \subsubsection{Conversion efficiency}
  The stoichiometry correction is not needed since SPC $1.0\%-0.1$B ECC's have always been launched.
@@ -151,12 +168,14 @@ The recommended and applied O3S-DQA corrections are summarized below.
 should be replaced by the more representative climatological value of $I_{B,\text{Mean}}$, however with
 larger uncertainty of $2\sigma_{IB}$.
 %For the background correction the mean of $I_B$ is calculated in the range of $I_B < 0.1$.
-Therefore to the $I_B$ values falling above $I_{B,\text{Mean}}+2\sigma_{IB}$ in Fig~\ref{fig:iB2}, the background correction is applied.
+Therefore to the $I_B$ values falling above $I_{B,\text{Mean}}+2\sigma_{IB}$ in Fig~\ref{fig:iB2}, the background correction is applied. For the mean and standard deviations
+of the iB2 values, 2 different period is considered. As it can be seen in Fig~\ref{fig:iB2}, iB2 values are larger for the period before 2004 and smaller for the period after
+2004. Therefore the mean and corresponding standar deviations are calculated and applied seperately in these 2 periods.
 
 
                 \begin{figure}
         \centering
-\includegraphics[width=1.3\textwidth]{../../Files/madrid/DQA/Binned/Plots/EtaBkg_vs_Eta_alltimerange.png}
+\includegraphics[width=1.3\textwidth]{../../Files/madrid/DQA_nors80/Binned/Plots/EtaBkg_vs_Eta_alltimerange_rs.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Background current correction}
             \label{fig:bkg}
@@ -171,7 +190,7 @@ is shown in  Fig~\ref{fig:tpump}.
 %
                     \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA/Binned/Plots/EtaBkgTpump_vs_EtaBkg_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA_nors80/Binned/Plots/EtaBkgTpump_vs_EtaBkg_alltimerange_rs.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Pump temperature correction applied}
             \label{fig:tpump}
@@ -183,7 +202,7 @@ is shown in  Fig~\ref{fig:tpump}.
 
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA/Binned/Plots/EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA_nors80/Binned/Plots/EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange_rs.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Pump flow rate correction applied}
             \label{fig:pf_ptu}
@@ -196,31 +215,31 @@ and polynomial fit with an error of less than $0.03\%$. The effect of this corre
 
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA/Binned/Plots/EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA_nors80/Binned/Plots/EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange_rs.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Pump flow rate correction applied}
             \label{fig:pf_eff}
     \end{figure}
 %
- \subsubsection{Radiosonde correction}
-    This correction (give a reference to the paper) is applied to correct the pressure offset difference. It's uncertainity is not implemented in the
-total uncertainity of the ozone partial pressure. The effect of RS80 correction is shown in Fig~\ref{fig:rs80}. \\
-
-                        \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA/Binned/Plots/RS80_vs_noRS80.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{RS80 correction applied}
-            \label{fig:rs80}
-    \end{figure}
+% \subsubsection{Radiosonde correction}
+%    This correction (give a reference to the paper) is applied to correct the pressure offset difference. It's uncertainity is not implemented in the
+%total uncertainity of the ozone partial pressure. The effect of RS80 correction is shown in Fig~\ref{fig:rs80}. \\
 %
+%                        \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA_nors80/Binned/Plots/RS80_vs_noRS80.png}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{RS80 correction applied}
+%            \label{fig:rs80}
+%    \end{figure}
+%%
 
-The effect of all DQA correction with respect to no correction is shown in Fig~\ref{fig:dqa_all} and the comparison of DQA corrected and WOUDC O3S values is shown in Fig~
-\ref{fig:fig_dqa_ndacc}.
+The effect of all DQA correction with respect to no correction is shown in Fig~\ref{fig:dqa_all} and the comparison of DQA corrected and
+WOUDC O3S values is shown in Fig~\ref{fig:fig_dqa_ndacc}.
 
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA/Binned/Plots/DQA_vs_Raw_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA_nors80/Binned/Plots/DQA_vs_Raw_alltimerange_unzoom_rs.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Effect of all DQA corrections}
             \label{fig:dqa_all}
@@ -228,122 +247,83 @@ The effect of all DQA correction with respect to no correction is shown in Fig~\
 
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA/Binned/Plots/DQA_vs_WOUDC_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/DQA_nors80/Binned/Plots/DQA_vs_WOUDC_alltimerange_rs.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Comparison of DQA and WOUDC O3S values}
             \label{fig:fig_dqa_ndacc}
     \end{figure}
 
 
-    \section{Effect of each DQA correction to ozone profiles }
+    \section{Effect DQA corrections to ozone profiles }
 
-    In order to see the effect of each DQA correction, explained in Sec.\ref{sec:v04}, the ozone profiles after and before each correction
-    have been explored. The RS80 and pump temperatuure location corrections are applied for the srelevant specific period.
-    All the plots are summarized between Fig.\ref{fig:op_rs80} to Fig.\ref{fig:op_dqawoudc}.
+    In order to see the effect of DQA corrections, explained in Sec.\ref{sec:v04}, on the ozone profiles the ozone profiles have been
+explored with and without DQA corrections. The pump temperature location correction is checked for the 2 different periods, before and after 1998, when there was a change
+in the pump temperature location.
+    All the plots are summarized between Fig.\ref{fig:pl_before} to Fig.\ref{fig:op_all}.
 
-                            \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/RS80.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{RS80 correction between 1994-2006}
-            \label{fig:op_rs80}
-    \end{figure}
 
                                 \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/94-98_PumpLocation_case3.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/Before_1998_effectPTC.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Pump temperature location between 1994-1998}
-            \label{fig:op_pt94}
+    \caption{Pump temperature location correction between 1994-1998}
+            \label{fig:pl_before}
     \end{figure}
 
                                     \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/98-21_PumpLocation_case5.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/After_1998_effectPTC.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Pump temperature location between 1998-2021}
-            \label{fig:op_pt21}
+    \caption{Pump temperature location correction between 1998-2021}
+            \label{fig:pl_after}
     \end{figure}
-
                                     \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/Background_Correction.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Effect of background correction}
-            \label{fig:op_bkg}
-    \end{figure}
-
-                                        \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/PumpTemp_Correction.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Pump temperature location between 1994-2021}
-            \label{fig:op_ptall}
-    \end{figure}
-
-                                            \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/PFR_Correction.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Pump flow rate (humidity) correction}
-            \label{fig:op_pfr}
-    \end{figure}
-
-                                                \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/PFEff_Correction.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Pump flow efficiency correction}
-            \label{fig:op_pfe}
-    \end{figure}
 
 
-                                                \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/All_Corrections.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/AllPeriod_WOUDC_DQA_Raw.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Effect of all DQA corrections}
+    \caption{Effect of all DQA corrections with respect to correction applied ozone profiles and comparison to WOUDC}
             \label{fig:op_all}
     \end{figure}
 
 
-                                                \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/DQA_WOUDC.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{Comparison of WOUDC and DQA ozone profiles}
-            \label{fig:op_dqawoudc}
-    \end{figure}
+%                                                \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/DQA_WOUDC.png}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%    \caption{Comparison of WOUDC and DQA ozone profiles}
+%            \label{fig:op_dqawoudc}
+%    \end{figure}
 
 \section{Total Ozone Normalization before and after homogenization.}
 
 The Total Ozone Normalization (TON) factors have been calculated with and without DQA corrections. For the TON the ratio of the
 TO from Brewer to the TO from the sonde is taken. For the TO from the sonde, the TO is integrated until 10hPa and the residuals, calculated from
-climatological means, are added. The corresponding plots are shown between Fig.\ref{fig:ton1} and  Fig.\ref{fig:ton3}.
+climatological means, are added. The corresponding plots are shown in Fig.\ref{fig:ton1} and  Fig.\ref{fig:ton2}.
 
                                                 \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/TON/TON_allplots.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/TON_updated/TON_allplots_v1.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Comparison of WOUDC and DQA ozone profiles}
+    \caption{Comparison of WOUDC and DQA TO and TON values}
             \label{fig:ton1}
     \end{figure}
 
                                                 \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/TON/TON_ratio.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/TON_updated/TON_allplots_v2.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Comparison of WOUDC and DQA ozone profiles}
+    \caption{Comparison of DQA and Raw TO and TON values}
             \label{fig:ton2}
     \end{figure}
 
-                                                \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/TON/TON_ratio_zoom.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Comparison of WOUDC and DQA ozone profiles}
-            \label{fig:ton3}
-    \end{figure}
+%                                                \begin{figure}
+%        \centering
+%\includegraphics[width=1.2\textwidth]{../../Files/madrid/Plots/TON/TON_ratio_zoom.png}
+%%        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+%%    \caption{Comparison of WOUDC and DQA ozone profiles}
+%            \label{fig:ton3}
+%    \end{figure}
 
 \section{Comparison plots to AURA MLS v04 and v05}
 
@@ -354,7 +334,7 @@ climatological means, are added. The corresponding plots are shown between Fig.\
 
                             \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/MLS/Plots/DQA_vs_MLS_v04.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/MLS/Plots/DQA_vs_MLS_v04_nors80.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{DQA Madrid O3S vs AURA MLS v04 }
             \label{fig:rawv04}
@@ -362,7 +342,7 @@ climatological means, are added. The corresponding plots are shown between Fig.\
 
                                 \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/MLS/Plots/WOUDC_vs_MLS_v04.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/MLS/Plots/WOUDC_vs_MLS_v04_nors80.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{ WOUDC Madrid O3S vs AURA MLS v04  }
             \label{fig:ndaccv04}
@@ -371,7 +351,7 @@ climatological means, are added. The corresponding plots are shown between Fig.\
 
                                 \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/madrid/MLS/Plots/DQA_vs_MLS_v05.png}
+\includegraphics[width=1.2\textwidth]{../../Files/madrid/MLS/Plots/DQA_vs_MLS_v05_nors80.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/madrid/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{DQA-O3S Madrid vs AURA MLS v05 }
             \label{fig:o3sv04}

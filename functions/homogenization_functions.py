@@ -26,7 +26,7 @@ corr_sod_unc = np.array([0 ,0 ,0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0.05, 0
 
 
 komhyr_86 = np.array([1, 1, 1.007, 1.018, 1.022, 1.032, 1.055, 1.070, 1.092, 1.124])  # SP Komhyr
-komhyr_95 = np.array([1,1,  1.007, 1.018, 1.029, 1.041, 1.066, 1.087, 1.124, 1.241])  # ECC Komhyr
+komhyr_95 = np.array([1,1,  1.007, 1.018, 1.029, 1.041, 1.066, 1.087, 1.124, 1.241])  # ENSCI Komhyr
 john_02 = np.array([1, 1.035, 1.052, 1.072, 1.088, 1.145, 1.200, 1.1260, 1])  # ECC Johnson
 sbrecht_98 = np.array([1, 1.027, 1.075, 1.108, 1.150, 1.280, 1.5, 1.8, 1])  # BM Steinbrecht
 kob_66 = np.array([1, 1.02, 1.04, 1.07, 1.11, 1.25, 1.4, 1.66, 1])  # Kobayashi
@@ -76,8 +76,8 @@ def calculate_cph(dfmeta):
     dfmeta['x'] = ((7.5 * dfmeta['TLab'].astype('float')) / (dfmeta['TLab'].astype('float') + 237.3)) + 0.7858
     dfmeta['psaturated'] = 10 ** (dfmeta['x'])
     # Eq.17
-    # dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
-    dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['PLab'].astype('float')
+    dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
+    # dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['PLab'].astype('float')
 
     # Eq.16
     dfmeta['cPL'] = 2/(dfmeta['TLab'].astype('float') + k)
@@ -149,9 +149,11 @@ def VecInterpolate_log(XValues, YValues, unc_YValues, dft, Pair):
 
     dft = dft.reset_index()
 
+
     dft['plog'] = np.log10(dft[Pair])
 
     for k in range(len(dft)):
+        # dft.at[k, 'Cpf'] = 1
 
         for i in range(len(XValues)-1):
             # check that value is in between xvalues
@@ -163,53 +165,13 @@ def VecInterpolate_log(XValues, YValues, unc_YValues, dft, Pair):
                 y2 = float(YValues[i+1])
                 unc_y1 = float(unc_YValues[i])
                 unc_y2 = float(unc_YValues[i + 1])
-                dft.at[k,'Cpf'] = y1 + (dft.at[k,'plog'] - x1) * (y2 - y1) / (x2 - x1)
-                dft.at[k,'unc_Cpf'] = unc_y1 + (dft.at[k,'plog'] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
+                dft.loc[k,'Cpf'] = y1 + (dft.at[k,'plog'] - x1) * (y2 - y1) / (x2 - x1)
+                dft.loc[k,'unc_Cpf'] = unc_y1 + (dft.at[k,'plog'] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
+
+
 
     return dft['Cpf'], dft['unc_Cpf']
-
-def RS_pressurecorrection(dft, height, radiosondetype):
-    '''
-    correction of "Propagation of radiosonde pressure sensor errors to ozonesonde measurements" https://doi.org/10.5194/amt-7-65-2014
-    :param dft:
-    :param height:
-    :param radiosondetype:
-    :return: correction factors and their uncertainties
-    '''
-
-    dft = dft.reset_index()
-
-    dft['height_km'] = dft[height]/1000
-
-    dft['Crs'] = 0.0
-    dft['unc_Crs'] = 0.0
-
-    RS_cor = RS80_cor
-    RS_cor_err = RS80_cor_err
-
-    for k in range(len(dft)):
-
-        for i in range(len(RS_alt) - 1):
-            # just check that value is in between xvalues
-            if (RS_alt[i] <= dft.at[k, 'height_km'] < RS_alt[i + 1]):
-                # x1 = float(RS_alt[i])
-                # x2 = float(RS_alt[i + 1])
-                # y1 = float(RS_cor[i])
-                # y2 = float(RS_cor[i + 1])
-                # unc_y1 = float(RS_cor_err[i])
-                # unc_y2 = float(RS_cor_err[i + 1])
-                # dft.at[k, 'Crs'] = float(y1 + (dft.at[k, 'height_km'] - x1) * (y2 - y1) / (x2 - x1))
-                # dft.at[k, 'unc_Crs'] = float(unc_y1 + (dft.at[k, 'height_km'] - x1) * (unc_y2 - unc_y1) / (x2 - x1))
-                dft.at[k, 'Crs'] = RS_cor[i+1]
-                dft.at[k, 'unc_Crs'] = RS_cor_err[i+1]
-
-        if (dft.at[k, 'height_km'] > 30):
-            dft.at[k, 'Crs'] = -1.02
-            dft.at[k, 'unc_Crs'] = -1.43
-
-        # print('rs80',k, dft.at[k, 'height_km'], dft.at[k, 'Crs'])
-
-    return dft['Crs'], dft['unc_Crs']
+    # return dft
 
 def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
     '''
@@ -220,6 +182,9 @@ def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
     :param effmethod:
     :return:
     '''
+
+    df['Cpf'] = 1
+    df['unc_Cpf'] =1
 
     if effmethod == 'polyfit':
 
@@ -237,6 +202,7 @@ def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
         if pumpcorrectiontag == 'komhyr_86':
             # df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_86, komhyr_86_unc,  df, pair)
             df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_86, komhyr_86_unc,  df, pair)
+            # df = VecInterpolate_log(pvallog, komhyr_86, komhyr_86_unc,  df, pair)
 
         if pumpcorrectiontag == 'komhyr_95':
             # df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_95, komhyr_95_unc,  df, pair)
@@ -245,6 +211,7 @@ def pumpflow_efficiency(df, pair,  pumpcorrectiontag, effmethod ):
         # if pumpcorrectiontag == 'sodankayl':
         #     df['Cpf'], df['unc_Cpf'] = VecInterpolate(pval_sod, corr_sod, corr_sod_unc,  df, pair, 1)
 
+    # return df
     return df['Cpf'], df['unc_Cpf']
 
 def return_phipcor(df,phip_grd, unc_phip_grd, cpf, unc_cpf):
@@ -268,67 +235,68 @@ def background_correction(df, dfmeta, dfm, ib,):
     df['iBc'] = 0
     df['unc_iBc'] = 0
 
-    #generaly for all stations
-    mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
-    std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+    # #generaly for all stations
+    # mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
+    # std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+    #
+    # if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
+    #     df['iBc'] = mean
+    #     df['unc_iBc'] = 2 * std
+    # if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
+    #     df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
+    #     df['unc_iBc'] = std
 
-    if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
-        df['iBc'] = mean
-        df['unc_iBc'] = 2 * std
-    if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
-        df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
-        df['unc_iBc'] = std
+    #special section for stations that have different bkg means in different periods
+    # due to th efact that older ECC's had a larger bkg, also confirmed by JOSIE campaigns
+    dfm['Date'] = dfm['Date'].astype(str)
+    dfmeta['Date'] = dfmeta['Date'].astype(str)
+    df['Date'] = df['Date'].astype(str)
 
-    # #special section for Madrid
-    # mean1 = np.nanmean(dfmeta[dfmeta.Date < '2004'][ib])
-    # std1 = np.nanstd(dfmeta[dfmeta.Date < '2004'][ib])
-    # mean2 = np.nanmean(dfmeta[dfmeta.Date >= '2004'][ib])
-    # std2 = np.nanstd(dfmeta[dfmeta.Date >= '2004'][ib])
-    #
-    # # print(mean1, std1, mean2, std2)
-    #
-    # # print('in the function, date', df.Date[0:2])
-    # # print('in the function, ib', df.iB2[0:2])
-    #
-    # dfm['Date2'] = dfm['Date2'].astype(str)
-    #
-    # # print('before 2004 mean1 + 2 * std1', mean1 + 2 * std1)
-    #
-    # if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
-    #     df.loc[df.Date < '2004', 'iBc'] = mean1
-    #     df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
-    #
-    #     # print('bkg correction before 2004 ', mean1)
-    #     # df['iBc'] = mean1
-    #     # df['unc_iBc'] = 2 * std1
-    # if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date2'] < '2004'):
-    #     df.loc[df.Date < '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
-    #     df.loc[df.Date < '2004', 'unc_iBc'] = std1
-    #     # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
-    #
-    #     # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
-    #     # df['unc_iBc'] = std1
-    #
-    # if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
-    #     df.loc[df.Date >= '2004', 'iBc'] = mean2
-    #     df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
-    #     # print('after 2004 bkg correction', mean1)
-    #
-    #
-    # if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date2'] >= '2004'):
-    #     df.loc[df.Date >= '2004', 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
-    #     df.loc[df.Date >= '2004', 'unc_iBc'] = std2
-    #     # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
-    #
-    #
-    # if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < '2004'):
-    #     df.loc[df.Date < '2004', 'iBc'] = mean1
-    #     df.loc[df.Date < '2004', 'unc_iBc'] = 2 * std1
-    #     # print('before 2004 no bkg', mean1)
-    # if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= '2004'):
-    #     df.loc[df.Date >= '2004', 'iBc'] = mean2
-    #     df.loc[df.Date >= '2004', 'unc_iBc'] = 2 * std2
-    #     # print('after 2004 no bkg', mean2)
+    year = '2004'
+    year = '2005' #sodankyla
+    mean1 = np.nanmean(dfmeta[dfmeta.Date < year][ib])
+    std1 = np.nanstd(dfmeta[dfmeta.Date < year][ib])
+    mean2 = np.nanmean(dfmeta[dfmeta.Date >= year][ib])
+    std2 = np.nanstd(dfmeta[dfmeta.Date >= year][ib])
+
+    # print(mean1, std1, mean2, std2)
+
+
+    if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
+        df.loc[df.Date < year, 'iBc'] = mean1
+        df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+
+        # print('bkg correction before 2004 ', mean1)
+        # df['iBc'] = mean1
+        # df['unc_iBc'] = 2 * std1
+    if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
+        df.loc[df.Date < year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+        df.loc[df.Date < year, 'unc_iBc'] = std1
+        # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
+
+        # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
+        # df['unc_iBc'] = std1
+
+    if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year):
+        df.loc[df.Date >= year, 'iBc'] = mean2
+        df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+        # print('after 2004 bkg correction', mean1)
+
+
+    if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year):
+        df.loc[df.Date >= year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+        df.loc[df.Date >= year, 'unc_iBc'] = std2
+        # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
+
+
+    if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < year):
+        df.loc[df.Date < year, 'iBc'] = mean1
+        df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+        # print('before 2004 no bkg', mean1)
+    if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= year):
+        df.loc[df.Date >= year, 'iBc'] = mean2
+        df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+        # print('after 2004 no bkg', mean2)
 
 
     # print('end of function', df.at[df.first_valid_index(), 'iBc'])
@@ -473,6 +441,10 @@ def stoichmetry_conversion(df, pair, sensortype, solutionconcentration, referenc
         df['stoich'] = 1
         df['unc_stoich'] = 0.03
 
+    if (reference == 'SPC10') & (sensortype == 'SPC') & (solutionconcentration == 10):
+        df['stoich'] = 1
+        df['unc_stoich'] = 0.03
+
     if (reference == 'SPC10') & (sensortype == 'DMT-Z') & (solutionconcentration == 10):
         df.loc[df[pair] >= 30, 'stoich'] = 0.96 #Eq 7C
         df.loc[df[pair] < 30, 'stoich'] = 0.764 + 0.133 * np.log10(df[df[pair] < 30]) #Eq 7D
@@ -510,7 +482,53 @@ def o3_integrate(df, po3):
     return int
 
 
-## functions copied from read_nilu_functions.py to convert PO3 to current
+
+def RS_pressurecorrection(dft, height, radiosondetype):
+    '''
+    correction of "Propagation of radiosonde pressure sensor errors to ozonesonde measurements" https://doi.org/10.5194/amt-7-65-2014
+    :param dft:
+    :param height:
+    :param radiosondetype:
+    :return: correction factors and their uncertainties
+    '''
+
+    dft = dft.reset_index()
+
+    dft['height_km'] = dft[height]/1000
+
+    dft['Crs'] = 0.0
+    dft['unc_Crs'] = 0.0
+
+    RS_cor = RS80_cor
+    RS_cor_err = RS80_cor_err
+
+    for k in range(len(dft)):
+
+        for i in range(len(RS_alt) - 1):
+            # just check that value is in between xvalues
+            if (RS_alt[i] <= dft.at[k, 'height_km'] < RS_alt[i + 1]):
+                # x1 = float(RS_alt[i])
+                # x2 = float(RS_alt[i + 1])
+                # y1 = float(RS_cor[i])
+                # y2 = float(RS_cor[i + 1])
+                # unc_y1 = float(RS_cor_err[i])
+                # unc_y2 = float(RS_cor_err[i + 1])
+                # dft.at[k, 'Crs'] = float(y1 + (dft.at[k, 'height_km'] - x1) * (y2 - y1) / (x2 - x1))
+                # dft.at[k, 'unc_Crs'] = float(unc_y1 + (dft.at[k, 'height_km'] - x1) * (unc_y2 - unc_y1) / (x2 - x1))
+                dft.at[k, 'Crs'] = RS_cor[i+1]
+                dft.at[k, 'unc_Crs'] = RS_cor_err[i+1]
+
+        if (dft.at[k, 'height_km'] > 30):
+            dft.at[k, 'Crs'] = -1.02
+            dft.at[k, 'unc_Crs'] = -1.43
+
+        # print('rs80',k, dft.at[k, 'height_km'], dft.at[k, 'Crs'])
+
+    return dft['Crs'], dft['unc_Crs']
+
+
+
+## below functions copied from read_nilu_functions.py to convert PO3 to current, to calculate current from partial pressure
 
 
 def o3tocurrent(dft, dfm):
@@ -527,6 +545,9 @@ def o3tocurrent(dft, dfm):
 
     dft['SensorType'] = 'SPC'
     dfm['SensorType'] = 'SPC'
+
+    dft['SolutionVolume'] = 3
+    dfm['SolutionVolume'] = 3
 
     dft['Cef'] = ComputeCef(dft)
 

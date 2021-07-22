@@ -22,7 +22,7 @@ dfmeta = pd.read_csv(path + 'Metadata/All_metadata.csv')
 print(list(dfmeta))
 # print(dfmeta[['Date']][0:2])
 # dfmeta = dfmeta[dfmeta.iB1 < 2]
-# dfmeta = dfmeta[dfmeta.iB1 < 0.1]
+dfmeta = dfmeta[dfmeta.iB2 < 2]
 # dfmeta = dfmeta[dfmeta.iB2 > 5]
 
 print(list(dfmeta))

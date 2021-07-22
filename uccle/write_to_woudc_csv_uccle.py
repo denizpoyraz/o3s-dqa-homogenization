@@ -57,13 +57,14 @@ def make_summary(df, column_names):
     return field_summary
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_upd/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
+path2 = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 
-data_files = sorted(glob.glob(path + "1997*_o3sdqa_rs80.hdf"))
+data_files = sorted(glob.glob(path + "*_o3sdqa_nors80.hdf"))
 
 for (filename) in(data_files):
 
-    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_rs80.csv'
+    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_nors80.csv'
     extcsv = woudc_extcsv.Writer(template=True)
 
     df = pd.read_hdf(filename)
@@ -72,7 +73,7 @@ for (filename) in(data_files):
     # before this date it is BrewerMast
     # if dfm.at[0,'Datenf'] < 19970401: continue
     if dfm.at[0,'Datenf'] < 19961001: continue  # before this date it is BrewerMast
-    if dfm.at[0,'Datenf'] >= 19970401: continue  # already homogenized
+    # if dfm.at[0,'Datenf'] >= 19970401: continue  # already homogenized
 
     print(filename)
 
@@ -155,7 +156,7 @@ for (filename) in(data_files):
                     'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2021-04-30,RMIB,2.1.3,Roeland Van Malderen',
+                    '2021-07-16,RMIB,2.1.3,Roeland Van Malderen',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
                     'STN,053,UCCLE,BEL,6447',
@@ -194,6 +195,8 @@ for (filename) in(data_files):
     if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iB0']
     if dfm.at[dfm.first_valid_index(), 'iB0'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iBc']
     if dfm.at[dfm.first_valid_index(), 'iB0'] == -1.0: continue
+    dfm['SolutionType'] = '0.5%KIHalfBuffer'
+
         # dfm['iB0'] = 9999
         # dfm['ib_corrected'] = 0.016
     ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected'
@@ -248,12 +251,12 @@ for (filename) in(data_files):
     # FLIGHT_SUMMARY 	IntegratedO3, CorrectionCode, SondeTotalO3, NormalizationFactor, BackgroundCorrection,
     dfm['CorrectionCode'] = 6
     dfm['BackgroundCorrection'] = "constant_ib0"
-    try: dfm['TON'] = -dfm['TON']
-    except KeyError: dfm['TON'] = 9999
+    try: dfm['O3ratio_hom'] = -dfm['O3ratio_hom']
+    except KeyError: dfm['O3ratio_hom'] = 9999
     if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib0"
     if dfm.at[dfm.first_valid_index(), 'iB0'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_climatologicalmean_ib0"
     flight_field = 'IntegratedO3,CorrectionCode,SondeTotalO3,NormalizationFactor,BackgroundCorrection'
-    df_names = 'IntegratedO3', 'CorrectionCode', 'SondeO3', 'TON', 'BackgroundCorrection'
+    df_names = 'O3Sonde_hom', 'CorrectionCode', 'O3SondeTotal_hom ', 'O3ratio_hom', 'BackgroundCorrection'
     flight_summary = make_summary(dfm, df_names)
     extcsv.add_data('FLIGHT_SUMMARY', flight_summary, field=flight_field)
     #
@@ -276,8 +279,9 @@ for (filename) in(data_files):
         profile[k] = ",".join([str(i) for i in profile[k] if str(i)])
         extcsv.add_data('#PROFILE',   profile[k], field= data_names)
 
+    fileout = str(dfm.at[0,'Datenf']) + ".ECC." + dfm.at[0,'SensorType'] + "." + str(dfm.at[0,'SerialECC']) + ".RMIB.csv"
 
-    out_name = path + '/WOUDC_v2/' + str(df.at[df.first_valid_index(),'Date']) + '_uccle_woudc.csv'
+    out_name = path2 + '/WOUDC/' + fileout
     # print(out_name)
 
     woudc_extcsv.dump(extcsv, out_name)

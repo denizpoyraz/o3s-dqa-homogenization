@@ -5,20 +5,29 @@ import seaborn as sns
 import matplotlib.dates as mdates
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/MLS/'
-# df2 = pd.read_csv(path + 'MLS_MadridInterpolated_woudc_v05_rs80.csv')
-df1 = pd.read_csv(path + 'MLS_MadridInterpolated_woudc_nors80_v04.csv')
+path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/MLS/'
+# df1 = pd.read_csv(path + 'MLS_SodankylaInterpolated_dqaprevious_nors80_v04.csv')
+df1 = pd.read_csv(path + 'MLS_SodankylaInterpolated_ndacc_nors80_v04.csv')
 
 
 df1 = df1[df1.PreLevel < 216]
 df1 = df1[df1.PreLevel >= 8]
 
-Plotname = 'WOUDC_vs_MLS_v04_nors80'
+# Plotname = 'Raw_vs_MLS_v04_nors80'
+Plotname = 'NDACC_vs_MLS_v04_nors80'
+
+# Plotname = 'DQApreviousversion_vs_MLS_v04_nors80_v04'
 # Plotname = 'DQA_vs_MLS_v04_nors80'
 
+
 # plot_title = 'Madrid (tpump) - MLS comparison'
-plot_title = 'Madrid O3S-WOUDC - MLS (v04) comparison'
-# plot_title = 'Madrid O3S-DQA - MLS (v04) comparison'
+# plot_title = 'Sodankyla O3S-WOUDC - MLS (v04) comparison'
+plot_title = 'Sodankyla O3S-NDACC - MLS (v04) comparison'
+
+# plot_title = 'Sodankyla O3S-DQA - MLS (v04) comparison'
+# plot_title = 'Sodankyla Raw (no correction) - MLS (v04) comparison'
+
+# plot_title = 'Sodankyla O3S-DQA (previous version) - MLS (v04) comparison'
 
 # df1 = df1[df1.PreLevel < 57]
 # df1 = df1[df1.PreLevel >= 8]
@@ -72,7 +81,7 @@ plt.xlabel(" ")
 
 plt.savefig(path + 'Plots/' + Plotname + '.png')
 plt.savefig(path + 'Plots/' + Plotname + '.eps')
-plt.savefig(path + 'Plots/' + Plotname + '.pdf')
+# plt.savefig(path + 'Plots/' + Plotname + '.pdf')
 
 plt.show()
 
