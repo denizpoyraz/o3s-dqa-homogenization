@@ -9,13 +9,17 @@ def filter_data(df):
     :return: filtered data df
     '''
 
-    df['P'] = df['Pair']
+    # df['P'] = df['Pair']
+
+    # df['I'] = df['I'].astype('float')
 
     # print(list(df))
-    #for uccle
+    #for uccle filter importtant
     df = df[df.P != -9999]
     df = df[df.I != -9999 ]
-    # df = df[df.Tbox != -9999 ]
+    df = df[df.Tbox != -9999 ]
+    #uccle filter end
+
     #
     # df = df[df.Time != -9999]
     # df = df[df.TboxC != -9999 ]

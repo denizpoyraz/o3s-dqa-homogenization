@@ -18,8 +18,6 @@ Plotname = 'NDACC_vs_MLS_v04_nors80'
 
 # Plotname = 'DQApreviousversion_vs_MLS_v04_nors80_v04'
 # Plotname = 'DQA_vs_MLS_v04_nors80'
-
-
 # plot_title = 'Madrid (tpump) - MLS comparison'
 # plot_title = 'Sodankyla O3S-WOUDC - MLS (v04) comparison'
 plot_title = 'Sodankyla O3S-NDACC - MLS (v04) comparison'
@@ -32,10 +30,7 @@ plot_title = 'Sodankyla O3S-NDACC - MLS (v04) comparison'
 # df1 = df1[df1.PreLevel < 57]
 # df1 = df1[df1.PreLevel >= 8]
 
-# df1 = df1[df1.PreLevel < 50]
-
 df1 = df1[df1.PreLevel >= 8]
-
 
 df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df1.PO3_MLS)) / np.asarray(df1.PO3_UcIntLin)
 # df2['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin) - np.asarray(df2.PO3_MLS)) / np.asarray(df2.PO3_UcIntLin)
@@ -86,19 +81,3 @@ plt.savefig(path + 'Plots/' + Plotname + '.eps')
 plt.show()
 
 ##########################################################################################################################################################
-# for all range xtick labels
-
-# weekly
-
-
-# xtick_labels = ['2004', '2006', '2008', '2010', '2012', '2014', '2016', '2018', '2019']
-# xtick_labels = ['2004', '2005', '2006', '2007', '2008', '2009','2010', '2011', '2012', '2013', '2014', '2015', '2016', '2017' ,'2018','2019','2020']
-# xtick_labels = ['2004', '2005', '2006', '2007', '2008', '2009', '2010', '2011', '2012', '2013', '2014', '2015', '2016',
-#                 '2017', '2018', '2019', '2020','2021']
-
-##monthly
-# xticks_labels = [' 2004', '2006', '2008', '2010', '2012', '2014', '2016', '2018']
-# xfreq = 47
-# xfreq = 48
-# xfreq = 11
-# xfreq = 2

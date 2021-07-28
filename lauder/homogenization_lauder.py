@@ -14,28 +14,55 @@ from functions.homogenization_functions import absorption_efficiency, stoichmetr
 
 from functions.df_filter import filter_data
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
+
+k = 273.15
+
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')
+dfmeta = dfmeta[dfmeta.TLab < 500]
+dfmeta.loc[dfmeta.TLab > k, 'TLab'] = dfmeta.loc[dfmeta.TLab > k, 'TLab'] - k
+dfmeta['PF'] = dfmeta['Phip']
+
+# dfmeta = calculate_cph(dfmeta)
+# dfmeta['unc_cPH'] = dfmeta['cPH'].std()
+# dfmeta['unc_cPL'] = dfmeta['cPL'].std()
+
+series = dfmeta[['Date','TLab','ULab','PF']]
+series['Date'] = pd.to_datetime(series['Date'], format='%Y-%m-%d')
+
+# df['DataFrame Column'] = pd.to_datetime(df['DataFrame Column'], format=specify your format)
+series = series.set_index('Date')
+upsampled = series.resample('1M').mean()
+
+# plab = [0] * 12
+tlab = [0] * 12
+ulab = [0] * 12
+pf = [0] * 12
+
+for i in range(1,13):
+    j = i-1
+    tlab[j] = upsampled[upsampled.index.month == i].mean()[0]
+    ulab[j] = upsampled[upsampled.index.month == i].mean()[1]
+    pf[j] = upsampled[upsampled.index.month == i].mean()[2]
+
+print('TLab', tlab)
+print('ULab', ulab)
+print("PF", pf)
+
 
 ## important adjusments
 # if there was a change in the used background current or the location of the pump thermistor, please do the following
 
-# string_bkg_used = 'ib2'
-string_bkg_used = 'ib0'
-string_pump_location = 'InternalPump'
+string_bkg_used = 'ib2'
 
-
-k = 273.15
-
-dfmeta = pd.read_csv(path + 'Raw_upd/All_metadata.csv')
-print(list(dfmeta))
 
 # to get ROC from the corresponding station roc table
 clms = [i for i in range(1,13)]
-table = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt',  skiprows=1, sep="\s *", names = clms,  header=None)
+table = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt',  skiprows=1, sep="\s *", names = clms,  header=None)
 # take roc at 10hpa values
 table = table[table.index ==10]
 # assign ROC values to dfmeta
-dfmeta['Date'] =  pd.to_datetime(dfmeta['DateTime'], format='%Y-%m-%d')
+dfmeta['Date'] =  pd.to_datetime(dfmeta['Date'], format='%Y-%m-%d')
 dfmeta['Date'] =  dfmeta['Date'].dt.date
 dfmeta['DateTime'] =  pd.to_datetime(dfmeta['Date'], format='%Y-%m-%d')
 dfmeta['ROC'] = 0
@@ -45,7 +72,7 @@ for i in range(1,13):
 dfmeta['Date'] = dfmeta['DateTime'].dt.strftime('%Y-%m-%d')
 
 
-allFiles = sorted(glob.glob(path + "/Raw_upd/*hdf"))
+allFiles = sorted(glob.glob(path + "csv/*hdf"))
 
 
 size = len(allFiles)
@@ -57,36 +84,36 @@ bool_rscorrection = False
 for (filename) in (allFiles):
     file = open(filename, 'r')
 
-    date_tmp = filename.split('/')[-1].split('.')[0][2:8]
-    fname = filename.split('/')[-1].split('.')[0][0:8]
-    fullname = filename.split('/')[-1].split('.')[0]
-    metaname = path + 'Raw_upd/' + fname + "_md.csv"
-    if search("2nd", fullname): metaname = path + 'Raw_upd/' + fname + "_2nd_md.csv"
+    print(filename)
 
-    date = datetime.strptime(date_tmp, '%y%m%d')
+    date_tmp = filename.split('/')[-1].split('.')[0][0:8]
+    print(date_tmp)
+    fname = date_tmp
+    # fullname = filename.split('/')[-1].split('.')[0]
+    metaname = path + 'metadata/' + fname + "_md.csv"
+
+    date = datetime.strptime(date_tmp, '%Y%m%d')
     datef = date.strftime('%Y%m%d')
     date2 = date.strftime('%Y-%m-%d')
 
     datestr = str(datef)
-    if datef < '19961001':continue #before this date it is BrewerMast
-    if datef < '20150914_':continue #already homogenized
+    # if datef < '19961001':continue #before this date it is BrewerMast
+    # if datef < '19970301':continue #already homogenized
 
     print(filename)
 
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
-    dfm['Date'] = pd.to_datetime(dfm['DateTime'], format='%Y-%m-%d')
+    dfm['Date'] = pd.to_datetime(dfm['Date'], format='%Y-%m-%d')
     dfm['Date'] = dfm['Date'].dt.date
     dfm['DateTime'] = pd.to_datetime(dfm['Date'], format='%Y-%m-%d')
     df_tmp = dfmeta[dfmeta.Date == date2]
     df_tmp = df_tmp.reset_index()
     dfm['ROC'] = df_tmp['ROC']
 
-    if dfm.at[0,'iB0'] == -1: dfm.at[0,'iB0'] = 0
-
-    df = filter_data(df)
-    df = df.reset_index()
+    # df = filter_data(df)
+    # df = df.reset_index()
 
     # to deal with data that is not complete
     if (len(df) < 200): continue
@@ -99,40 +126,28 @@ for (filename) in (allFiles):
         print('No metadata', datef)
         continue
 
-    # for O3 use PO3 from DQA processed by Roeland
-    df['O3'] = df['PO3_dqar']
+    # for O3 use PO3 from DQA processed by station
+    df['O3'] = df['PO3']
     # input variables for hom.
-    df['Tpump'] = df['Tbox'] + k
-    df['Phip'] = 100 / dfm.at[dfm.first_valid_index(),'PF']
+    df['Tpump'] = df['TPump'] + k
+    df['Phip'] = 100 / dfm.at[dfm.first_valid_index(),'Phip']
     df['Eta'] = 1
-    df['Pair'] = df['P']
+    df['Pair'] = df['Press']
     # df['Cpf'] = 1
     # df['unc_Cpf'] = 1
 
 
     df['dPhip'] = 0.02
     df['unc_Tpump'] = 0.5
-    # no lab ptu correction is needed for uccle
     # df['unc_cph'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cph']
     # df['unc_cpl'] = dfmeta.at[dfmeta.first_valid_index(), 'unc_cpl']
 
-    #      radiosonde RS80 correction   #
-    rsmodel = ''
-    bool_rscorrection = False
-    # if datef <= '20070901':
-    #     rsmodel = 'RS80'
-    #     bool_rscorrection = True
-    # if datef > '20070901':
-    #     bool_rscorrection = False
-    # #
-    # if bool_rscorrection:
-    #     df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'Height', rsmodel)
-    #     df['Pair'] = df['Pair'] - df['Crs']
 
     #      conversion efficiency        #
     df['alpha_o3'], df['unc_alpha_o3'] = absorption_efficiency(df, 'Pair',3)
-    df['stoich'] = 1
-    df['unc_stoich'] = 0
+    df['stoich'], df['unc_stoich'] = stoichmetry_conversion(df, 'Pair', dfm.at[0, 'SensorType'],
+                                                            dfm.at[0, 'SolutionConcentration'], 'ENSCI05')
+
     df['eta_c'], df['unc_eta_c'] = conversion_efficiency(df, 'alpha_o3', 'unc_alpha_o3', 'stoich', 'unc_stoich')
 
     #       background correction       #
