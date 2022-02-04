@@ -9,7 +9,7 @@ def filter_data(df):
     :return: filtered data df
     '''
 
-    # df['P'] = df['Pair']
+    df['P'] = df['Pair']
 
     # df['I'] = df['I'].astype('float')
 

@@ -12,15 +12,19 @@ from math import log
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
 
 
 # dfmeta = pd.read_csv(path + '/Metadata/All_metadata.csv')
-dfmeta = pd.read_csv(path + '/Madrid_Metadata.csv')
+# dfmeta = pd.read_csv(path + '/Madrid_Metadata.csv')
+dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')
 
-# df1['DateTime'] = df1['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
-dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
-dfmeta['Date'] = dfmeta["Date"].dt.strftime('%Y%m%d')
+
+
+dfmeta['DateTime'] = dfmeta['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
+# dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
+dfmeta['Date'] = dfmeta["DateTime"].dt.strftime('%Y%m%d')
 
 
 # dfmeta = dfm = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/Raw_upd/All_metadata.csv')
@@ -31,10 +35,10 @@ dfmeta['Date'] = dfmeta["Date"].dt.strftime('%Y%m%d')
 
 
 # name = 'AURA_MLSData_MatchedUccle_DQA_v05'
-name = 'AURA_MLSData_MatchedMadrid_DQA_v05'
+name = 'AURA_MLSData_MatchedLauder_DQA_v04'
 
 # fname = 'aura_mls_l2gpovp_o3_v05_uccle.txt'
-fname = 'aura_mls_l2gpovp_o3_v05_madrid.barajas.txt'
+fname = 'aura_mls_l2gpovp_o3_v04_lauder.txt'
 
 file = open(path + fname, "r")
 file.readline()

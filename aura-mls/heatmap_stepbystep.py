@@ -5,19 +5,24 @@ import seaborn as sns
 import datetime
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/Binned/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Binned/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/Binned/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/Binned/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Binned/'
 
-# df1 = pd.read_csv(path + 'UccleInterpolated_dqa_nors80.csv')
-df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80.csv')
 
-# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
-df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d') #sodankyla
+# df1 = pd.read_csv(path + 'LauderInterpolated_dqa_nors80.csv')
+# df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80.csv')
+df1 = pd.read_csv(path + 'MadridInterpolated_dqa_nors80_v2.csv')
+
+
+
+df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
+# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d') #sodankyla
 
 df1['date'] = df1['DateTime'].apply(lambda x: x.date())
 df1['date2'] = df1['DateTime'].dt.strftime('%Y-%m-%d')
 
-df1 = df1[df1.date2 > '1993']
+# df1 = df1[df1.date2 > '1993']
 
 df1.date = pd.to_datetime(df1.date)
 
@@ -47,21 +52,21 @@ df1['PreLevel'] = df1['PreLevel'].astype(int)
 # Plotname = 'EtaBkg_vs_Eta_alltimerange'
 # heatmap_label = 'EtaBkg - Eta / Eta  (%)'
 # ptitle = 'Effect of Background Current Correction'
-# min = -3
-# max = 3
+# min = -5
+# max = 5
 #
 # Plotname = 'EtaBkgTpump_vs_EtaBkg_alltimerange'
 # heatmap_label = 'EtaBkgTpump - EtaBkg / EtaBkg  (%)'
 # ptitle = 'Effect of Pump Temperature Correction'
-# min = -3
-# max = 3
+# min = -5
+# max = 5
 
 # Plotname = 'EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange'
 # heatmap_label = 'EtaBkgTpumpPhigr - EtaBkgTpump / EtaBkgTpump  (%)'
 # ptitle = 'Effect of Pump Flow Rate (humidity) Correction'
-# min = -3
-# max = 3
-#
+# min = -5
+# max = 5
+# # #
 # Plotname = 'EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange'
 # heatmap_label = 'EtaBkgTpumpPhigrPhiEff - EtaBkgTpumpPhigr / EtaBkgTpumpPhigr  (%)'
 # ptitle = 'Effect of Pump Flow Efficiency Correction'
@@ -74,8 +79,8 @@ df1['PreLevel'] = df1['PreLevel'].astype(int)
 # min = -10
 # max = 10
 Plotname = 'DQA_vs_NDACC_alltimerange'
-heatmap_label = 'DQA - NDACC / NDACC  (%)'
-ptitle = 'DAQ-O3S vs NDACC-O3S'
+heatmap_label = 'DQA - Previous Version / Previos Version  (%)'
+ptitle = 'DAQ-O3S vs Previous Version-O3S'
 min = -5
 max = 5
 
@@ -137,10 +142,10 @@ plt.xticks(rotation = 90)
 plt.xlabel(" ")
 
 plt.title(ptitle)
-
-plt.savefig(path + 'Plots/' + Plotname + '.png')
-plt.savefig(path + 'Plots/' + Plotname + '.eps')
-# plt.savefig(path + 'Plots/' + Plotname + '.pdf')
+#
+# plt.savefig(path + 'Plots/' + Plotname + '.png')
+# plt.savefig(path + 'Plots/' + Plotname + '.eps')
+# # plt.savefig(path + 'Plots/' + Plotname + '.pdf')
 
 plt.show()
 

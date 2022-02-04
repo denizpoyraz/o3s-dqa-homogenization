@@ -144,10 +144,14 @@ fig, axs = plt.subplots(1, sharex=True, sharey=False, figsize=(17, 9))
 # axs.plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label = 'O3Sonde DQA 10 hPa',  marker = ".")
 # axs.plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10 hPa',  marker = ".")
 
+dfm1['R'] = (dfm1.O3Sonde_hom_10hpa - dfm1.O3Sonde_10hpa)/ dfm1.O3Sonde_hom_10hpa * 100
+
+axs.plot(dfm1.DateTime, dfm1.R, label = 'RMI - WOUDC / RMI',  marker = ".")
 
 
-axs.plot(dfm1.DateTime, dfm1.O3ratio, label = 'TON WOUDC',  marker = ".",  linestyle = 'None')
-axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".", linestyle = 'None')
+
+# axs.plot(dfm1.DateTime, dfm1.O3ratio, label = 'TON WOUDC',  marker = ".",  linestyle = 'None')
+# axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".", linestyle = 'None')
 
 # axs.plot(dfm1.DateTime, dfm1.O3ratio, label = 'TON WOUDC',  marker = ".")
 # axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".")
@@ -155,7 +159,7 @@ axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".", line
 axs.axhline(y=1, color='grey', linestyle=':')
 
 # axs.set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-axs.set_ylabel('TON')
+axs.set_ylabel('%')
 # axs.set_ylim(0.9, 1.1)
 
 # axs.set_ylabel('O3 [DU]')
@@ -177,7 +181,7 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 plt.show()
 plt.close()
 
-Plotname = 'TON_allplots_v2'
+Plotname = 'TON_allplots_v3'
 
 fig, axs = plt.subplots(4, sharex=False, sharey=False, figsize=(17, 9))
 # fig.suptitle('Sharing both axes')
@@ -185,14 +189,15 @@ fig, axs = plt.subplots(4, sharex=False, sharey=False, figsize=(17, 9))
 # axs[1].plot(x, 0.3 * y, 'o')
 # axs[2].plot(x, y, '+')
 
-#
+#original
 axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label = 'O3Sonde DQA 10hPa',  marker = ".")
-# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa, label = 'O3Sonde WOUDC 10hPa',  marker = ".")
-axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10hPa',  marker = ".")
+axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa, label = 'O3Sonde WOUDC 10hPa',  marker = ".")
+# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10hPa',  marker = ".")
 axs[0].xaxis.set_major_locator(mdates.YearLocator(1))
 axs[0].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 axs[0].set_ylabel('O3 [DU]')
 axs[0].legend(loc="upper right")
+
 
 
 axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'Total O3 DQA',  marker = ".")

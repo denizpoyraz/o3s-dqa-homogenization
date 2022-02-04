@@ -77,6 +77,7 @@ def calculate_cph(dfmeta):
     dfmeta['psaturated'] = 10 ** (dfmeta['x'])
     # Eq.17
     dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
+    #madrid
     # dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['PLab'].astype('float')
 
     # Eq.16
@@ -252,8 +253,9 @@ def background_correction(df, dfmeta, dfm, ib,):
     dfmeta['Date'] = dfmeta['Date'].astype(str)
     df['Date'] = df['Date'].astype(str)
 
-    year = '2004'
+    year = '2004' #uccle
     year = '2005' #sodankyla
+    year = '1998' #lauder
     mean1 = np.nanmean(dfmeta[dfmeta.Date < year][ib])
     std1 = np.nanstd(dfmeta[dfmeta.Date < year][ib])
     mean2 = np.nanmean(dfmeta[dfmeta.Date >= year][ib])

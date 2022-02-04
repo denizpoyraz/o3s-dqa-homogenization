@@ -6,7 +6,7 @@ from re import search
 
 #code to read in Lauder files provided by the station PI
 path = "/home/poyraden/Analysis/Homogenization_public/Files/lauder/csv/"
-allFiles = sorted(glob.glob("/home/poyraden/Analysis/Homogenization_public/Files/lauder/zipfiles_2/*"))
+allFiles = sorted(glob.glob("/home/poyraden/Analysis/Homogenization_public/Files/lauder/zipfiles/*"))
 
 # columnString = "Time Press Alt Temp RH O3 P TPump O3CellI EvapCath WindSp WindDir Lat Lon RH1 RH2 GPS Pres GPS Alt GPS Traw GPS Tcor GPS RH"
 columnStr = ['Time', 'Press', 'Alt', 'Temp', 'RH', 'PO3', 'TPump', 'O3CellI', 'EvapCath', 'WindSp', 'WindDir', 'Lat', 'Lon',
@@ -17,7 +17,6 @@ columnStr = ['Time', 'Press', 'Alt', 'Temp', 'RH', 'PO3', 'TPump', 'O3CellI', 'E
 tmp = r'EvapCath'
 for filename in allFiles:
     print('one',filename)
-
     file = open(filename,'r', encoding="ISO-8859-1")
     all_lines = file.readlines()
 
@@ -27,7 +26,7 @@ for filename in allFiles:
             # print(j, all_lines[j])
 
     # df = pd.read_csv(filename, sep = "\s *", engine="python", skiprows=line, names=columnStr)
-    df = pd.read_csv(filename, sep = "\s *", engine="python", skiprows=line+2, names=columnStr)
+    df = pd.read_csv(filename, sep = "\s *", engine="python", skiprows=line+2, names=columnStr,  quotechar='"')
 
     file2 = open(filename,'r', encoding="ISO-8859-1")
 

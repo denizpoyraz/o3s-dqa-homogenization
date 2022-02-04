@@ -15,8 +15,9 @@ problem = open("DQA_ProblematicFiles.txt", "a")
 
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
 
 
 # ozone = 'O3_nc' # raw, no correction applied
@@ -25,15 +26,18 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # ozone = 'O3c_etabkgtpump' # only phip correction applied
 # ozone = 'O3c_etabkgtpumpphigr' # only tpump applied
 # ozone = 'O3c_bkgphip'
-ozone = 'O3_nc'
+ozone = 'O3'
 # ozone = 'PO3_dqar'
 
-name_out = 'MLS_SodankylaInterpolated_raw_nors80_v04'
+# name_out = 'MLS_SodankylaInterpolated_raw_nors80_v04'
+name_out = 'MLS_LauderInterpolated_previousversion_nors80_v04'
 
 
 # mls data frame to read
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
-dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
+# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
+dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
+
 # dfm = dfm[dfm.Date < 20080612]
 date_list = dfm.drop_duplicates(['Date']).Date.tolist()
 print(date_list)
@@ -50,10 +54,12 @@ for date in date_list:
         print(date)
         continue
 
-    df = filter_data(df)
+    # df = filter_data(df)
     if len(df) < 10:
         print(date, len(df))
         continue
+
+    df['Height'] = df['Alt']
 
     # df['Height'] = df['GPHeight']
  # now downsample the uccle data remove descent list

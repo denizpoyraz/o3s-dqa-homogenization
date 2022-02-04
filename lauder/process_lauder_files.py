@@ -16,6 +16,9 @@ from re import search
 
 # make a readable column named metada data dfs
 
+k = 273.15
+
+
 path = "/home/poyraden/Analysis/Homogenization_public/Files/lauder/csv/"
 
 # dataFiles = sorted(glob.glob("/home/poyraden/Analysis/Homogenization_public/Files/lauder/csv/2012*hdf"))
@@ -80,12 +83,11 @@ for mdname in (metadataFiles):
             if (dfm.at[0, tmp][0] == 'Z') | (dfm.at[0, tmp][0] == 'z') | (dfm.at[0, tmp][1] == 'Z') | (dfm.at[0, tmp][1] == 'z'):
                 dfmeta.at[0, 'Pump_loc'] = 'Z'
 
-
             if (dfm.at[0, tmp][1] == 'A') | (dfm.at[0, tmp][0] == '4') | (dfm.at[0, tmp][0] == '5') | (dfm.at[0, tmp][0] == '6'):
                 dfmeta.at[0,'SondeType'] = 'SPC'
-            if (dfm.at[0, tmp][0:1] == '4A'):dfmeta.at[0, 'Pump_loc'] = '4A'
-            if (dfm.at[0, tmp][0:1] == '5A'):dfmeta.at[0, 'Pump_loc'] = '5A'
-            if (dfm.at[0, tmp][0:1] == '6A'):dfmeta.at[0, 'Pump_loc'] = '6A'
+            if (dfm.at[0, tmp][0:2] == '4A'):dfmeta.at[0, 'Pump_loc'] = '4A'
+            if (dfm.at[0, tmp][0:2] == '5A'):dfmeta.at[0, 'Pump_loc'] = '5A'
+            if (dfm.at[0, tmp][0:2] == '6A'):dfmeta.at[0, 'Pump_loc'] = '6A'
 
 
         if (search('Sensor', listm[i]) and (search('response time', listm[i])) ):
@@ -186,6 +188,8 @@ for mdname in (metadataFiles):
             tmp = listm[i]
             #print(tmp, dfm.at[0, tmp])
             dfmeta.at[0,'TLab'] = dfm.at[0, tmp]
+            if (dfmeta.at[0, 'TLab'] < 320) & (dfmeta.at[0, 'TLab'] > 50):
+                dfmeta.at[0, 'TLab'] = dfmeta.at[0, 'TLab'] - k
 
         if (search('Relative humidity during flow rate measurement', listm[i])):
             tmp = listm[i]

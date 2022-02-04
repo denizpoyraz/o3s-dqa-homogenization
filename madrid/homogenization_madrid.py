@@ -54,6 +54,7 @@ dfmeta = dfmeta.reset_index()
 dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
 dfmeta['Date2'] = dfmeta['Date'].apply(lambda x: datetime.strftime(x, '%Y-%m-%d'))
 
+dfmeta['Pground'] = dfmeta['PLab']
 dfmeta = calculate_cph(dfmeta)
 dfmeta['unc_cPH'] = dfmeta['cPH'].std()
 dfmeta['unc_cPL'] = dfmeta['cPL'].std()
@@ -114,7 +115,7 @@ PFmean = np.nanmean(dfmeta.PF)
 
 # allFiles = sorted(glob.glob(path + "CSV/out/19950111*.hdf"))
 
-allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
+allFiles = sorted(glob.glob(path + "CSV/out/199610*.hdf"))
 
 metadata = []
 
@@ -351,6 +352,20 @@ for (filename) in (allFiles):
 
     dfm['burst'] = df.Pair.min()
 
+    print('min', df.Pair.min())
+
+    ###  check for total homogenization values:
+    # first make a df for different pressure values and calculate the TO until those values
+    df80 = df[df.Pair >= 80]
+    df80_v2 = df[(df.Pair < 80) & (df.Pair >= 10)]
+
+
+    dfm['O3Sonde_80hpa'] = o3_integrate(df80, 'O3')
+    dfm['O3Sonde_hom_80hpa'] = o3_integrate(df80, 'O3c')
+
+    dfm['O3Sonde_80hpa_v2'] = o3_integrate(df80_v2, 'O3')
+    dfm['O3Sonde_hom_80hpa_v2'] = o3_integrate(df80_v2, 'O3c')
+
     if df.Pair.min () <= 10:
         # print('and now how to calculate TON', df.Pair.min())
         dft = df[df.Pair >= 10]
@@ -370,8 +385,8 @@ for (filename) in (allFiles):
 
         dfm['O3Sonde_10hpa'] = o3_integrate(dft, 'O3')
         dfm['O3Sonde_10hpa_raw'] = o3_integrate(dft, 'O3_nc')
-
         dfm['O3Sonde_hom_10hpa'] = o3_integrate(dft, 'O3c')
+
         dfm['O3Sonde_10hpa_eta'] = o3_integrate(dft, 'O3c_eta')
         dfm['O3Sonde_10hpa_etabkg'] = o3_integrate(dft, 'O3c_etabkg')
         dfm['O3Sonde_10hpa_etabkgtpump'] = o3_integrate(dft, 'O3c_etabkgtpump')
