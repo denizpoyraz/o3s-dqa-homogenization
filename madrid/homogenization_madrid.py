@@ -19,9 +19,9 @@ from functions.df_filter import filter_data, filter_metadata
 k = 273.15
 
 # to calculate climatalogical means
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+path = '/mnt/HDS_OZONESONDES/DQA_Homogenization_Files/madrid/'
 #
-# allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
+allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
 #
 # listall = []
 #
@@ -36,7 +36,7 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 #
 # dfall.to_hdf(path + "DQA_nors80/" + name_out + ".hdf", key = 'df')
 
-dfmain = pd.read_hdf("/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf")
+dfmain = pd.read_hdf("/mnt/HDS_OZONESONDES/DQA_Homogenization_Files/madrid/Madrid_AllData_woudc.hdf")
 
 df = dfmain[['Date', 'Pressure', 'SampleTemperature']]
 df['DateTime'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
@@ -48,7 +48,7 @@ for i in range(1,13):
     dfmean[i-1] = dfmean[i-1].groupby(['Pressure']).mean()
 
 
-dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
+dfmeta = pd.read_csv("/home/roeland/group/DQA_Homogenization/Files/madrid/Madrid_Metadata.csv")
 # dfmeta = dfmeta[dfmeta.DateTime > '1994-01-01'] # start from 1994, because before there are no background values
 dfmeta = dfmeta.reset_index()
 dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
@@ -69,7 +69,7 @@ for i in range(len(dfmeta)):
     except ValueError:dfmeta.at[i, 'BrewO3'] = 0
 # to get ROC from the corresponding station roc table
 clms = [i for i in range(1,13)]
-table = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/sonde_madrid_roc.txt',  skiprows=1, sep="\s *", names = clms,  header=None)
+table = pd.read_csv('/home/roeland/group/DQA_Homogenization/Files/sonde_madrid_roc.txt',  skiprows=1, sep="\s *", names = clms,  header=None)
 # take roc at 10hpa values
 table = table[table.index ==10]
 # assign ROC values to dfmeta
@@ -115,7 +115,7 @@ PFmean = np.nanmean(dfmeta.PF)
 
 # allFiles = sorted(glob.glob(path + "CSV/out/19950111*.hdf"))
 
-allFiles = sorted(glob.glob(path + "CSV/out/199610*.hdf"))
+allFiles = sorted(glob.glob("/mnt/HDS_OZONESONDES/DQA_Homogenization_Files/madrid/CSV/out/*.hdf"))
 
 metadata = []
 
@@ -236,8 +236,11 @@ for (filename) in (allFiles):
         dfm.at[dfm.first_valid_index(), 'PF'] = PFmean
 
     #calculate current from PO3
+    dfm['SolutionConcentration'] = 10
+    df['SensorType'] = 'SPC'
+    df['SolutionVolume'] = 3.0
+    dfm['SensorType'] = 'SPC'
     df = o3tocurrent(df, dfm)
-
 
     # input variables for hom.
     df['Tpump'] = df['SampleTemperature'] + k
@@ -255,6 +258,7 @@ for (filename) in (allFiles):
         df['unc_Tpump'] = 1
 
     # serial_ecc = dfm.at[dfm.first_valid_index(), 'SerialECC']
+    # string_pump_location = str(dfmeta.at[dfmeta.first_valid_index(), 'PumpTempLoc'])
     # infor from station pi
     if date2 < '1998-12-02':
         string_pump_location = 'case3'
@@ -285,12 +289,13 @@ for (filename) in (allFiles):
 
     df['stoich'], df['unc_stoich'] = stoichmetry_conversion(df, 'Pair', dfm.at[dfm.first_valid_index(), 'SensorType'],
                                                             dfm.at[dfm.first_valid_index(), 'SolutionConcentration'],
-                                                            'ENSCI05')
+                                                            'SPC10')
     # print('stoich', df.at[df.first_valid_index(),'stoich'])
     df['eta_c'], df['unc_eta_c'] = conversion_efficiency(df, 'alpha_o3', 'unc_alpha_o3', 'stoich', 'unc_stoich')
 
     #       background correction       #
-    df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2')
+    IBGsplit = '2004'
+    df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', IBGsplit)
     df['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
     # print('corrected ibc', df.at[df.first_valid_index(), 'iBc'] )
 
@@ -308,7 +313,7 @@ for (filename) in (allFiles):
     if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
     df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
-    df['Cef'] = ComputeCef(df)
+    df['Cef'] = ComputeCef(df, dfm)
     df['Phip_eff'], df['unc_Phip_eff'] = return_phipcor(df, 'Phip', 'dPhip', 'Cef', 'unc_Cpf')
 
     # all corrections
@@ -331,10 +336,10 @@ for (filename) in (allFiles):
     df['dIall'] = (df['dI'] ** 2 + df['unc_iBc'] ** 2) / (df['I'] - df['iBc']) ** 2
     df['dEta'] = (df['unc_eta_c'] / df['eta_c']) ** 2
     df['dPhi_cor'] = (df['unc_Phip_cor'] / df['Phip_cor']) ** 2
-    df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor']) ** 2
+    #df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor']) ** 2
 
     # final uncertainity on O3
-    df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
+    df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['unc_Tpump_cor'])
 
     #part for TON
     # print('min Pair', df.Pair.min())
@@ -351,20 +356,6 @@ for (filename) in (allFiles):
     dfm['O3Sonde_burst_etabkgtpumpphigref'] = o3_integrate(df, 'O3c_etabkgtpumpphigref')
 
     dfm['burst'] = df.Pair.min()
-
-    print('min', df.Pair.min())
-
-    ###  check for total homogenization values:
-    # first make a df for different pressure values and calculate the TO until those values
-    df80 = df[df.Pair >= 80]
-    df80_v2 = df[(df.Pair < 80) & (df.Pair >= 10)]
-
-
-    dfm['O3Sonde_80hpa'] = o3_integrate(df80, 'O3')
-    dfm['O3Sonde_hom_80hpa'] = o3_integrate(df80, 'O3c')
-
-    dfm['O3Sonde_80hpa_v2'] = o3_integrate(df80_v2, 'O3')
-    dfm['O3Sonde_hom_80hpa_v2'] = o3_integrate(df80_v2, 'O3c')
 
     if df.Pair.min () <= 10:
         # print('and now how to calculate TON', df.Pair.min())
@@ -385,8 +376,8 @@ for (filename) in (allFiles):
 
         dfm['O3Sonde_10hpa'] = o3_integrate(dft, 'O3')
         dfm['O3Sonde_10hpa_raw'] = o3_integrate(dft, 'O3_nc')
-        dfm['O3Sonde_hom_10hpa'] = o3_integrate(dft, 'O3c')
 
+        dfm['O3Sonde_hom_10hpa'] = o3_integrate(dft, 'O3c')
         dfm['O3Sonde_10hpa_eta'] = o3_integrate(dft, 'O3c_eta')
         dfm['O3Sonde_10hpa_etabkg'] = o3_integrate(dft, 'O3c_etabkg')
         dfm['O3Sonde_10hpa_etabkgtpump'] = o3_integrate(dft, 'O3c_etabkgtpump')
@@ -431,7 +422,7 @@ for (filename) in (allFiles):
                       'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi',
                       'unc_deltat_ppi', 'TLab', 'ULab', 'Pground', 'x', 'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground',
                       'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta', 'O3c_etabkg',
-                      'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor'],axis=1)
+                      'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'Un_Tpump_cor'],axis=1)
 
     if not bool_rscorrection:
         df = df.drop(['TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip',
@@ -444,7 +435,7 @@ for (filename) in (allFiles):
                       'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'O3_nc', 'O3c_eta',
                       'O3c_etabkg',
                       'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta',
-                      'dPhi_cor', 'dTpump_cor'], axis=1)
+                      'dPhi_cor', 'unc_Tpump_cor'], axis=1)
 
 
     df.to_hdf(path + '/DQA_nors80/' + date_out + "_o3sdqa_nors80.hdf", key = 'df')
