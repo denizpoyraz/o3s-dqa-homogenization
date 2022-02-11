@@ -59,6 +59,9 @@ def make_summary(df, column_names):
 
     return field_summary
 
+def launch_time(sta,end):
+    return str(sta) + ":" + str(end) + ":" "00"
+
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/'
 
@@ -75,7 +78,7 @@ for (filename) in(data_files):
 
     if dfm.at[0,'Date'] < 19941012: continue  # # no bkg values
     # if dfm.at[0, 'Date'] > 19970306: continue # alreday written
-    # if dfm.at[0, 'Date'] < 20120905: continue # alreday written
+    if dfm.at[0, 'Date'] < 20080401: continue # alreday written
 
 
 
@@ -86,39 +89,16 @@ for (filename) in(data_files):
         continue
 
 
-    try: dfm['LaunchTime_int'] = round(dfm.at[0,'LaunchTime'],2)
-    except:
-        dfm['LaunchTime'] = 11.30
-        dfm['LaunchTime_int'] = round(dfm.at[0,'LaunchTime'],2)
+    if (len(str(dfm.loc[0,'LaunchTime'])) == 2) | (len(str(dfm.loc[0,'LaunchTime'])) == 1)    :
+        dfm['LaunchTime'] = str(dfm.loc[0,'LaunchTime']) + ':00:00'
 
-
-
-    dfm['test'] = round(dfm.at[0,'LaunchTime'],2)
-    if (dfm.at[0,'test'] > 11.59) & (dfm.at[0,'test'] < 12.0): dfm.at[0,'LaunchTime'] = 12.00
-    # clean some values like 13.91, 11.65
-    # tmp = round(dfm.at[0,'LaunchTime'],2)
-    # tmp_str = str(tmp)
-    # print('str tmp', tmp_str)
-    # # , len(tmp_str), tmp_str.split(".")[0], tmp_str.split(".")[1])
-    # # if len(tmp_str) == 5:     tmp = int(tmp_str[3:5])
-    # # if tmp_str.split(".")[0]
-    # hour = float(tmp_str.split(".")[0])
-    # try:
-    #     min = float(tmp_str.split(".")[1])
-    # except IndexError:
-    #     min = 0
-    # time = hour* 60 + min
-    #
-    # if int(tmp_str.split(".")[1]) > 59:
-    #     sec = 59
-    #     lt_str = tmp_str.split(".")[0] + '.' + str(sec)
-    #     # print(lt_str)
-    #     dfm['test'] = float(lt_str)
-    #     dfm['LaunchTime_int'] = float(lt_str)
-    #
-    #
-    # # print(tmp_str, tmp, tmp_str[0:2])
-    # # if (int(str(round(dfm.at[0,'LaunchTime'],2)[3:4]))) > 59:
+    else:
+        dfm['test0'] = dfm['LaunchTime'].apply(lambda x: str(x).split('.')[0])
+        dfm['test1'] = dfm['LaunchTime'].apply(lambda x: str(x).split('.')[1])
+        dfm['test11'] = dfm['test1'].apply(lambda x: float(x) * 60 / 100 if len(x) == 2 else float(x) * 60 / 1000)
+        dfm['test11'] = dfm['test11'].apply(lambda x: str(x).split(".")[0])
+        if len(dfm.loc[0,'test11']) == 1: dfm['test11'] = '0' + dfm['test11']
+        dfm['LaunchTime'] = dfm.apply(lambda x: launch_time(x.test0, x.test11), axis=1)
     # dfm['test'] = dfm['test'].apply(lambda x: pd.to_datetime(str(x), format='%H.%M'))
     # dfm['LaunchTime'] = dfm['test'].apply(lambda x: x.strftime('%H:%M:%S'))
 
@@ -158,7 +138,7 @@ for (filename) in(data_files):
                     'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2021-05-05,FMI,2.1.3,Rigel Kivi',
+                    '2022-02-11,FMI,2.1.3,Rigel Kivi',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
                     'STN,262,SODANKYLA,FI,9999',

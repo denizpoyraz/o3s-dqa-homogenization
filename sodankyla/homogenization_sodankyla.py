@@ -17,6 +17,8 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 
 dfmeta = pd.read_hdf(path + 'Metadata/All_metadata.hdf')
 dfmeta = dfmeta[dfmeta.iB2 < 9]
+dfmeta = dfmeta[dfmeta.iB0 < 9]
+
 # # dfmeta = filter_metadata(dfmeta)
 # print('metadata', list(dfmeta))
 # to get ROC from the corresponding station roc table
@@ -80,6 +82,7 @@ dfmeta['unc_cPH'] = dfmeta['cPH'].std()
 dfmeta['unc_cPL'] = dfmeta['cPL'].std()
 
 allFiles = sorted(glob.glob(path + "Current/*rawcurrent.hdf"))
+# allFiles = sorted(glob.glob(path + "Current/*rawcurrent.hdf"))
 
 size = len(allFiles)
 datelist = [0] * size
@@ -127,6 +130,14 @@ for (filename) in (allFiles):
 
     df['Date'] = datef
     # df['Datedt'] = pd.to_datetime(df['Date'], format='%Y%m%d').dt.date
+
+    # deal with the TBox values that are 999
+
+    # print('df first', len(df))
+    # df = df[df['TboxC'] < 99]
+    # df = df.reset_index()
+    # print('df after', len(df))
+
 
     # input variables for hom.
     df['Tpump'] = df['TboxK']
@@ -185,8 +196,14 @@ for (filename) in (allFiles):
 
     #       background correction       #
     # check the function to change the date where to have 2 different background means, stds (for sod. 2005)
-    if string_bkg_used == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2')
-    if string_bkg_used == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0')
+    IBGsplit = '2005'
+    if dfm.at[0, 'BkgUsed'] == 'Ibg1': string_bkg_used = 'ib0'
+    if dfm.at[0, 'BkgUsed'] == 'Constant': string_bkg_used = 'ib2'
+
+    # df['iB2'] = df['ibg']
+    # df['iB0'] = df['ibg']
+    if string_bkg_used == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', IBGsplit)
+    if string_bkg_used == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', IBGsplit)
     df['iB2'] = dfm.at[0, 'iB2']
 
     #       pump temperature correction       #
@@ -222,10 +239,29 @@ for (filename) in (allFiles):
     df['dIall'] = (df['dI'] ** 2 + df['unc_iBc']**2) / (df['I'] - df['iBc'])**2
     df['dEta'] = (df['unc_eta_c'] / df['eta_c'])**2
     df['dPhi_cor'] = (df['unc_Phip_cor'] / df['Phip_cor'])**2
-    df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor'])**2
+    df['dTpump_cor'] = df['unc_Tpump_cor']
     if bool_rscorrection: df['dPrs'] = (df['unc_Crs']/df['Crs'])**2
     # final uncertainity on O3
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
+
+    # check all the variables if they are in accepted value range
+    if (len(df[df['O3c']< 0]) > 0) | (len(df[df['O3c'] > 50]) > 0):
+        print('     BREAK       1',filename)
+        # continue
+    if (len(df[df['I']< 0]) > 0) | (len(df[df['I'] > 10]) > 0):
+        print('     BREAK       2',filename)
+        # continue
+    if (len(df[df['Tpump_cor']< 0]) > 0) | (len(df[df['Tpump_cor'] > 325]) > 0):
+        print('     BREAK       3',filename)
+        # continue
+    if (len(df[df['iBc'] > 0.5]) > 0):
+        print('     BREAK       4',filename)
+        # continue
+
+
+
+
+
 
 
     #TON calculations
@@ -281,7 +317,7 @@ for (filename) in (allFiles):
         dfm['O3ratio_raw'] = 9999
 
 
-
+    #
     md_clist = ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
                 'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'TLab', 'deltat', 'unc_deltat', 'unc_deltat_ppi', 'dEta']
 
@@ -292,8 +328,12 @@ for (filename) in (allFiles):
     dfm.to_csv(path + '/DQA_nors80/'+ datestr + "_o3smetadata_nors80.csv")
 
     df = df.drop(
-        ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
-         'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'dEta'], axis=1)
+        ['Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich','unc_eta',
+         'unc_eta_c', 'unc_iBc', 'dEta'], axis=1)
+
+    # df = df.drop(
+    #     ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
+    #      'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'dEta'], axis=1)
     
      # data file that has data and uncertainties that depend on Pair or Height or Temperature
     df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key = 'df')

@@ -1,6 +1,8 @@
 import pandas as pd
 import math
 from re import search
+from scipy.interpolate import interp1d
+
 
 VecP_ECC6A = [0, 2, 3, 5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 1100]
 VecC_ECC6A_25 = [1.16, 1.16, 1.124, 1.087, 1.054, 1.033, 1.024, 1.015, 1.010, 1.007, 1.005, 1.002, 1, 1]
@@ -14,6 +16,7 @@ VecP_ECCZ = [0, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 1100]
 VecC_ECCZ = [1.24, 1.24, 1.124, 1.087, 1.066, 1.048, 1.041, 1.029, 1.018, 1.013, 1.007, 1.002, 1, 1]
 
 K = 273.15
+k = 273.15
 
 
 def organize_df(df1, df2):
@@ -74,6 +77,7 @@ def organize_df(df1, df2):
         if (search('ackground', list2[j])) and (search('current', list2[j])) and (search('used', list2[j])) and (
         search('computation', list2[j])):
             bkg = list2[j]
+            print('in function', bkg)
             dfm_out.at[0,'BkgUsed'] = df2.at[df2.first_valid_index(), bkg]
 
         if ((search('Sensor', list2[j])) and (search('air', list2[j])) and (search('flow', list2[j]))) and \
@@ -241,6 +245,53 @@ def organize_df(df1, df2):
 
     return df_out, dfm_out
 
+def missing_tpump(dfl):
+
+    dfl.loc[dfl['TboxC'] > 99, 'value_is_NaN'] = 1
+    dfl.loc[dfl['TboxC']< 99, 'value_is_NaN'] = 0
+
+    pair_missing = dfl[dfl.TboxC > 99].TboxC.tolist()
+
+
+    if len(pair_missing) > 0:
+        print('no sample temperature', len(pair_missing), len(dfl))
+
+        x = dfl[dfl.value_is_NaN == 0]['TboxC'].tolist()
+        y = dfl[dfl.value_is_NaN == 0]['Pair'].tolist()
+        fb = interp1d(y, x)
+
+        df_pair = dfl[dfl.value_is_NaN == 1].Pair.tolist()
+
+        # print('min dfpair', min(df_pair), 'min y', min(y))
+        # print('max dfpair', max(df_pair), 'max y', max(y))
+
+
+        if min(df_pair) < min(y):
+            df_pair = dfl[(dfl.value_is_NaN == 1) & (dfl.Pair >= min(y))].Pair.tolist()
+            df_samptemp = fb(df_pair)
+            dfl.loc[(dfl.value_is_NaN == 1) & (dfl.Pair >= min(y)), 'TboxC'] = df_samptemp
+            dfl.loc[dfl.value_is_NaN == 1, 'TboxK'] = df_samptemp + k
+
+
+        elif max(df_pair) > max(y):
+            df_pair = dfl[(dfl.value_is_NaN == 1) & (dfl.Pair < max(y))].Pair.tolist()
+            df_samptemp = fb(df_pair)
+            dfl.loc[(dfl.value_is_NaN == 1) & (dfl.Pair < max(y)), 'TboxC'] = df_samptemp
+            dfl.loc[dfl.value_is_NaN == 1, 'TboxK'] = df_samptemp + k
+
+
+        else:
+            df_pair = dfl[(dfl.value_is_NaN == 1)].Pair.tolist()
+            fb = interp1d(y, x)
+            df_samptemp = fb(df_pair)
+
+            dfl.loc[dfl.value_is_NaN == 1, 'TboxC'] = df_samptemp
+            # dfl.loc[dfl.value_is_NaN == 1, 'TboxC'] = df_samptemp
+            dfl.loc[dfl.value_is_NaN == 1, 'TboxK'] = df_samptemp + k
+
+
+    return dfl
+
 
 def o3tocurrent(dft, dfm):
     '''
@@ -282,6 +333,10 @@ def o3tocurrent(dft, dfm):
     cref = 1
     dft['ibg'] = 0
     dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    dft['iB0'] = dfm.at[dfm.first_valid_index(), 'iB0']
+
+
+    if dfm.at[dfm.first_valid_index(), 'iB2'] > 1: dfm['BkgUsed'] = 'Ibg1'
 
     # check PF values
     if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = 28
@@ -289,10 +344,15 @@ def o3tocurrent(dft, dfm):
     # # by default uses iB2 as background current
     # dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
     # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
-    if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
+    if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1'):dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'ibg']
+    if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iB2']:
         dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2')
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    if dfm.at[dfm.first_valid_index(), 'iB2'] < 1: dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
+
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'ibg')
+
+    if dft.at[dft.first_valid_index(), 'ibg'] > 0.9: print('ATTENTION', dft.at[dft.first_valid_index(), 'ibg'])
 
     dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
 

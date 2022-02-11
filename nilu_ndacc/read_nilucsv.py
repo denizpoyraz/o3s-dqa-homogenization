@@ -4,14 +4,16 @@ from datetime import datetime
 from re import search
 
 
-from nilu_ndacc.read_nilu_functions import organize_df, o3tocurrent
+from nilu_ndacc.read_nilu_functions import organize_df, o3tocurrent, missing_tpump
 
 K = 273.15
+k = 273.15
+
 
 filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "Raw/ *.hdf"))
+allFiles = sorted(glob.glob(filepath + "Raw/*.hdf"))
 
 # print(allFiles)
 
@@ -42,7 +44,7 @@ for filename in (allFiles):
     for i in list(dfd):
         dfd[i] = dfd[i].astype('float')
 
-    if (len(dfd) < 500): continue
+    if (len(dfd) < 300): continue
     if len(dfd.columns) < 8: continue
 
     # read the metadata file
@@ -67,7 +69,7 @@ for filename in (allFiles):
     # print('dfl', list(dfl))
     # print('dfm', list(dfm))
 
-    if (len(dfl) < 300): continue
+    if (len(dfl) < 100): continue
 
     # print(dfm.at[dfm.first_valid_index(), 'SensorType'])
 
@@ -82,7 +84,23 @@ for filename in (allFiles):
 
     f = f + 1
     #
+    #additional part to filter missing pump temperature values,
+    # that causes wrong I value calculations
+    try: dfl = missing_tpump(dfl)
+    #for the cases where interpolation is not possible, because the values are missing from the beginning
+    except ValueError:
+        dfl = dfl
+        print('not possible to interpolate')
+        dfl = dfl[dfl.TboxC < 99]
+        dfl = dfl.reset_index()
+    dfl['TboxK'] = dfl['TboxC'] + k
 
+    #check for missing/wrong O3 values
+    dfl = dfl[dfl.O3 > 0]
+    dfl = dfl[dfl.O3 <  99]
+
+
+    if len(dfl)< 100: continue
     # convert the partial pressure to current
     dfl = o3tocurrent(dfl, dfm)
     # set the date
@@ -107,4 +125,4 @@ for filename in (allFiles):
 #
 # dff.to_hdf(hdfall, key = 'df')
 # dff.to_csv(csvall)
-
+#

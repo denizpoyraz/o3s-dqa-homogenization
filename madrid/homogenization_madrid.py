@@ -19,7 +19,7 @@ from functions.df_filter import filter_data, filter_metadata
 k = 273.15
 
 # to calculate climatalogical means
-path = '/mnt/HDS_OZONESONDES/DQA_Homogenization_Files/madrid/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 #
 allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
 #
@@ -36,7 +36,7 @@ allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
 #
 # dfall.to_hdf(path + "DQA_nors80/" + name_out + ".hdf", key = 'df')
 
-dfmain = pd.read_hdf("/mnt/HDS_OZONESONDES/DQA_Homogenization_Files/madrid/Madrid_AllData_woudc.hdf")
+dfmain = pd.read_hdf("/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf")
 
 df = dfmain[['Date', 'Pressure', 'SampleTemperature']]
 df['DateTime'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
@@ -48,7 +48,7 @@ for i in range(1,13):
     dfmean[i-1] = dfmean[i-1].groupby(['Pressure']).mean()
 
 
-dfmeta = pd.read_csv("/home/roeland/group/DQA_Homogenization/Files/madrid/Madrid_Metadata.csv")
+dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
 # dfmeta = dfmeta[dfmeta.DateTime > '1994-01-01'] # start from 1994, because before there are no background values
 dfmeta = dfmeta.reset_index()
 dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
@@ -69,7 +69,7 @@ for i in range(len(dfmeta)):
     except ValueError:dfmeta.at[i, 'BrewO3'] = 0
 # to get ROC from the corresponding station roc table
 clms = [i for i in range(1,13)]
-table = pd.read_csv('/home/roeland/group/DQA_Homogenization/Files/sonde_madrid_roc.txt',  skiprows=1, sep="\s *", names = clms,  header=None)
+table = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/sonde_madrid_roc.txt',  skiprows=1, sep="\s *", names = clms,  header=None)
 # take roc at 10hpa values
 table = table[table.index ==10]
 # assign ROC values to dfmeta
@@ -115,7 +115,7 @@ PFmean = np.nanmean(dfmeta.PF)
 
 # allFiles = sorted(glob.glob(path + "CSV/out/19950111*.hdf"))
 
-allFiles = sorted(glob.glob("/mnt/HDS_OZONESONDES/DQA_Homogenization_Files/madrid/CSV/out/*.hdf"))
+allFiles = sorted(glob.glob(path + "CSV/out/20090109*.hdf"))
 
 metadata = []
 

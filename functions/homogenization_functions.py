@@ -167,6 +167,8 @@ def VecInterpolate_log(XValues, YValues, unc_YValues, dft, Pair):
                 unc_y1 = float(unc_YValues[i])
                 unc_y2 = float(unc_YValues[i + 1])
                 dft.loc[k,'Cpf'] = y1 + (dft.at[k,'plog'] - x1) * (y2 - y1) / (x2 - x1)
+                # if k > 500:
+                    # print('Cpf in function',k,  dft.loc[k,'Cpf'])
                 dft.loc[k,'unc_Cpf'] = unc_y1 + (dft.at[k,'plog'] - x1) * (unc_y2 - unc_y1) / (x2 - x1)
 
 
@@ -263,7 +265,9 @@ def background_correction(df, dfmeta, dfm, ib, year):
         mean2 = np.nanmean(dfmeta[dfmeta.Date >= year][ib])
         std2 = np.nanstd(dfmeta[dfmeta.Date >= year][ib])
 
-    # print(mean1, std1, mean2, std2)
+        # print('values', mean1, std1, mean2, std2)
+
+        # print(mean1, std1, mean2, std2)
 
 
         if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
