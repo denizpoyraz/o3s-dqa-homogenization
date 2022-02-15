@@ -346,7 +346,7 @@ def o3tocurrent(dft, dfm):
     #if iB2 values are missing use iB0
     if  (dfm.at[dfm.first_valid_index(), 'iB0'] < 0.9) & (dfm.at[dfm.first_valid_index(), 'iB2'] > 0.9):
         dfm['BkgUsed'] = 'Ibg1'
-        
+
     # # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
     if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
         dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']

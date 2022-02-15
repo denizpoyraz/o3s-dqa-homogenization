@@ -64,7 +64,7 @@ for i in range(1,13):
     ulab[j] = upsampled[upsampled.index.month == i].mean()[2]
     pf[j] = upsampled04[upsampled04.index.month == i].mean()[3]
 
-print(pf)
+# print(pf)
 # print(tlab)
 
 ## important adjusments
@@ -77,14 +77,18 @@ string_pump_location = 'InternalPump'
 k = 273.15
 
 # part to calculate cph and its error
+#extra for one code
+dfmeta['PLab'] = dfmeta['Pground']
 dfmeta = calculate_cph(dfmeta)
 dfmeta['unc_cPH'] = dfmeta['cPH'].std()
 dfmeta['unc_cPL'] = dfmeta['cPL'].std()
 
-allFiles = sorted(glob.glob(path + "Current/980528*rawcurrent.hdf"))
+allFiles = sorted(glob.glob(path + "Current/*150924*rawcurrent.hdf"))
 # allFiles = sorted(glob.glob(path + "Current/*rawcurrent.hdf"))
 
+print('one')
 size = len(allFiles)
+print(size)
 datelist = [0] * size
 j = 0
 

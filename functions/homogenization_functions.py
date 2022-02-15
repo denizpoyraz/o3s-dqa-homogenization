@@ -2,7 +2,7 @@ import numpy as np
 import math
 import pandas as pd
 import matplotlib.pyplot as plt
-import datetime
+from datetime import datetime
 from re import search
 from nilu_ndacc.read_nilu_functions import ComputeIBG
 
@@ -67,23 +67,68 @@ RS_alt = np.array([0, 1,2,3,4,5,6,7,8,9,10,11,12,13, 14, 15, 16, 17, 18, 19, 20,
 
 k = 273.15
 
+def roc_values(dff, tab, plevel):
+    """
+    :param dff: dfmeta to read date and write the roc values
+    :param tab: table to read the roc values
+    :param plevel: pressure level to read the table
+    :return: dff with roc values assigned
+    """
+    tab = tab[tab.index == plevel]
 
-def calculate_cph(dfmeta):
+    dff['Datet'] = pd.to_datetime(dff['Date'], format='%Y-%m-%d')
+    dff['Datet'] = dff['Datet'].dt.date
+    dff['DateTime'] = pd.to_datetime(dff['Datet'], format='%Y-%m-%d')
+    dff['ROC'] = 0
+    for i in range(1, 13):
+        dff.loc[dff.DateTime.dt.month == i, 'ROC'] = tab[i].tolist()[0]
+
+    return dff
+
+def missing_station_values(dff, variable, booldate, datestr):
+    """
+    function to calculate mean of the missing values to used
+    :param dff:
+    :param variable:
+    :param booldate:
+    :param date:
+    :return:
+    """
+
+    series = dff[['Date', variable]]
+    if booldate: series = dff[dff.Date < datestr][['Date', variable]]
+    series[variable] = series[variable].astype('float')
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    series = series.set_index('Date')
+    upsampled = series.resample('1M').mean()
+
+    var_list = [0] * 12
+
+    for i in range(1, 13):
+        j = i - 1
+        var_list[j] = upsampled[upsampled.index.month == i].mean()[0]
+
+    return var_list
+
+
+
+
+def calculate_cph(dff):
     '''
     O3S-DQA Section 8.4
     '''
 
-    dfmeta['x'] = ((7.5 * dfmeta['TLab'].astype('float')) / (dfmeta['TLab'].astype('float') + 237.3)) + 0.7858
-    dfmeta['psaturated'] = 10 ** (dfmeta['x'])
+    dff['x'] = ((7.5 * dff['TLab'].astype('float')) / (dff['TLab'].astype('float') + 237.3)) + 0.7858
+    dff['psaturated'] = 10 ** (dff['x'])
     # Eq.17
-    dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['Pground'].astype('float')
+    dff['cPH'] = (1 - dff['ULab'].astype('float')/100) * dff['psaturated']/dff['PLab'].astype('float')
     #madrid
-    # dfmeta['cPH'] = (1 - dfmeta['ULab'].astype('float')/100) * dfmeta['psaturated']/dfmeta['PLab'].astype('float')
+    # dff['cPH'] = (1 - dff['ULab'].astype('float')/100) * dff['psaturated']/dff['PLab'].astype('float')
 
     # Eq.16
-    dfmeta['cPL'] = 2/(dfmeta['TLab'].astype('float') + k)
+    dff['cPL'] = 2/(dff['TLab'].astype('float') + k)
 
-    return dfmeta
+    return dff
 
 
 def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
