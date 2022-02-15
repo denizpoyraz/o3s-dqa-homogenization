@@ -118,11 +118,11 @@ for filename in (allFiles):
 
     list_metadata.append(dfm)
 
-# # save all the metada in one file, either in hdf format or csv format
-# dff = pd.concat(list_metadata, ignore_index=True)
-# hdfall = filepath + "Metadata/All_metadata.hdf"
-# csvall = filepath + "Metadata/All_metadata.csv"
-#
-# dff.to_hdf(hdfall, key = 'df')
-# dff.to_csv(csvall)
-#
+# save all the metada in one file, either in hdf format or csv format
+dff = pd.concat(list_metadata, ignore_index=True)
+hdfall = filepath + "Metadata/All_metadata.hdf"
+csvall = filepath + "Metadata/All_metadata.csv"
+
+dff.to_hdf(hdfall, key = 'df')
+dff.to_csv(csvall)
+

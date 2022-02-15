@@ -326,33 +326,32 @@ def o3tocurrent(dft, dfm):
         dft['SensorType'] = 'SPC'
         dfm['SensorType'] = 'SPC'
 
-
+        # check PF values
+    if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[
+        dfm.first_valid_index(), 'PF'] = 28
 
     dft['Cef'] = ComputeCef(dft)
 
     cref = 1
     dft['ibg'] = 0
+    dft['ibg_tmp'] = 0
+
     dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
     dft['iB0'] = dfm.at[dfm.first_valid_index(), 'iB0']
 
+    # # # by default uses iB2 as background current
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2')
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
 
-    if dfm.at[dfm.first_valid_index(), 'iB2'] > 1: dfm['BkgUsed'] = 'Ibg1'
-
-    # check PF values
-    if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = 28
-
-    # # by default uses iB2 as background current
-    # dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
-    # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
-    if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1'):dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
-    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'ibg']
-    if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iB2']:
+    #if iB2 values are missing use iB0
+    if  (dfm.at[dfm.first_valid_index(), 'iB0'] < 0.9) & (dfm.at[dfm.first_valid_index(), 'iB2'] > 0.9):
+        dfm['BkgUsed'] = 'Ibg1'
+        
+    # # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
+    if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
         dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
-    if dfm.at[dfm.first_valid_index(), 'iB2'] < 1: dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
-
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'ibg')
-
-    if dft.at[dft.first_valid_index(), 'ibg'] > 0.9: print('ATTENTION', dft.at[dft.first_valid_index(), 'ibg'])
+    if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC'):
+        dft['ibg'] = ComputeIBG(dft, 'iB0')
 
     dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
 
@@ -452,3 +451,26 @@ def ComputeCorP(dft, Pressure):
         'float')
 
     return dft['CorP']
+#####################################################################
+
+    # if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iB2']:
+    #     dft['ibg_tmp'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    # if dfm.at[dfm.first_valid_index(), 'iB2'] > 1:
+    #     print('one')
+    #     dft['ibg_tmp'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC':
+    #     print('why not')
+    #     dft['ibg'] = ComputeIBG(dft, 'ibg_tmp')
+    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z':
+    #     print('why not')
+    #     dft['ibg'] = dfm.at[dfm.first_valid_index(), 'ibg_tmp']
+    # # if dft.at[dft.first_valid_index(), 'ibg'] > 0.9: print('ATTENTION', dft.at[dft.first_valid_index(), 'ibg'])
+
+    # # by default uses iB2 as background current
+    # dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
+    # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (
+    #         dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
+    #     dft['ibg'] = dfm.at[dfm.first_valid_index(), 'ibg_tmp']
+    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'ibg_tmp')
+    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'ibg_tmp']

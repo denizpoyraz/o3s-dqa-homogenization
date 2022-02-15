@@ -63,6 +63,13 @@ def launch_time(sta,end):
     return str(sta) + ":" + str(end) + ":" "00"
 
 
+def lt_condition(x):
+    if len(x) == 1: return float(x) * 60/10
+    if len(x) == 2: return float(x) * 60/100
+    if  len(x) == 3: return float(x) * 60/1000
+    if  len(x) == 4: return float(x) * 60/10000
+
+
 path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/'
 
 data_files = sorted(glob.glob(path + "*_o3sdqa_nors80.hdf"))
@@ -78,7 +85,7 @@ for (filename) in(data_files):
 
     if dfm.at[0,'Date'] < 19941012: continue  # # no bkg values
     # if dfm.at[0, 'Date'] > 19970306: continue # alreday written
-    if dfm.at[0, 'Date'] < 20080401: continue # alreday written
+    # if dfm.at[0, 'Date'] < 20000101: continue # alreday written
 
 
 
@@ -88,19 +95,23 @@ for (filename) in(data_files):
         print('nan date', filename)
         continue
 
+    # print(len(str(dfm.loc[0,'LaunchTime'])), dfm.loc[0,'LaunchTime'])
 
-    if (len(str(dfm.loc[0,'LaunchTime'])) == 2) | (len(str(dfm.loc[0,'LaunchTime'])) == 1)    :
-        dfm['LaunchTime'] = str(dfm.loc[0,'LaunchTime']) + ':00:00'
+    if (len(str(dfm.loc[0,'LaunchTime'])) == 2) | (len(str(dfm.loc[0,'LaunchTime'])) == 1):
+        dfm['LaunchTime_fx'] = str(dfm.loc[0,'LaunchTime']) + ':00:00'
 
-    else:
+
+    if (len(str(dfm.loc[0,'LaunchTime'])) > 2):
         dfm['test0'] = dfm['LaunchTime'].apply(lambda x: str(x).split('.')[0])
         dfm['test1'] = dfm['LaunchTime'].apply(lambda x: str(x).split('.')[1])
-        dfm['test11'] = dfm['test1'].apply(lambda x: float(x) * 60 / 100 if len(x) == 2 else float(x) * 60 / 1000)
+        # dfm['test11'] = dfm['test1'].apply(lambda x: float(x) * 60 / 100 if len(x) == 2  float(x) * 60 / 10 elif len(x) == 1 else float(x) * 60 / 1000)
+        dfm['test11'] = dfm['test1'].apply(lambda x: lt_condition(x))
+
         dfm['test11'] = dfm['test11'].apply(lambda x: str(x).split(".")[0])
         if len(dfm.loc[0,'test11']) == 1: dfm['test11'] = '0' + dfm['test11']
-        dfm['LaunchTime'] = dfm.apply(lambda x: launch_time(x.test0, x.test11), axis=1)
+        dfm['LaunchTime_fx'] = dfm.apply(lambda x: launch_time(x.test0, x.test11), axis=1)
     # dfm['test'] = dfm['test'].apply(lambda x: pd.to_datetime(str(x), format='%H.%M'))
-    # dfm['LaunchTime'] = dfm['test'].apply(lambda x: x.strftime('%H:%M:%S'))
+    dfm['LaunchTime'] =  dfm['LaunchTime_fx']
 
     #Radisonde changes
     if dfm.at[0,'Date'] < 20051024:

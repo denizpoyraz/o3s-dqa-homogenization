@@ -81,7 +81,7 @@ dfmeta = calculate_cph(dfmeta)
 dfmeta['unc_cPH'] = dfmeta['cPH'].std()
 dfmeta['unc_cPL'] = dfmeta['cPL'].std()
 
-allFiles = sorted(glob.glob(path + "Current/*rawcurrent.hdf"))
+allFiles = sorted(glob.glob(path + "Current/980528*rawcurrent.hdf"))
 # allFiles = sorted(glob.glob(path + "Current/*rawcurrent.hdf"))
 
 size = len(allFiles)
@@ -230,6 +230,9 @@ for (filename) in (allFiles):
     df['O3c_etabkgtpumpphigref'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
     df['O3c'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
 
+    test = pd.DataFrame
+    test = df[['Time', 'Pair','O3', 'O3c', 'I','Tpump',  'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor']]
+
     if len(df[df['O3c']< 0]) > 0: print('why',filename)
 
     # uncertainities
@@ -245,24 +248,14 @@ for (filename) in (allFiles):
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
 
     # check all the variables if they are in accepted value range
-    if (len(df[df['O3c']< 0]) > 0) | (len(df[df['O3c'] > 50]) > 0):
+    if (len(df[df['O3c']< 0]) > 0) | (len(df[df['O3c'] > 30]) > 0):
         print('     BREAK       1',filename)
-        # continue
     if (len(df[df['I']< 0]) > 0) | (len(df[df['I'] > 10]) > 0):
         print('     BREAK       2',filename)
-        # continue
     if (len(df[df['Tpump_cor']< 0]) > 0) | (len(df[df['Tpump_cor'] > 325]) > 0):
         print('     BREAK       3',filename)
-        # continue
     if (len(df[df['iBc'] > 0.5]) > 0):
         print('     BREAK       4',filename)
-        # continue
-
-
-
-
-
-
 
     #TON calculations
     dfm['O3Sonde_burst'] = o3_integrate(df, 'O3')
