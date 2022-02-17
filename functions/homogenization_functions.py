@@ -110,7 +110,23 @@ def missing_station_values(dff, variable, booldate, datestr):
 
     return var_list
 
+def assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, date_u, date_pf, pl,tl, ul,pfl ):
 
+    dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
+    dm['Date2'] = dm['Date2'].dt.date
+    dm['DateTime'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
+    dm['PLab'] = dm['Pground']
+
+    if bool_p:  dm.loc[dm.Date < date_p, 'PLab'] = \
+        dm.loc[dm.Date < date_p, 'DateTime'].dt.month.apply(lambda x: pl[x - 1])
+    if bool_t:  dm.loc[dm.Date < date_t, 'TLab'] = \
+        dm.loc[dm.Date < date_t, 'DateTime'].dt.month.apply(lambda x: tl[x - 1])
+    if bool_u:  dm.loc[dm.Date < date_u, 'ULab'] = \
+        dm.loc[dm.Date < date_u, 'DateTime'].dt.month.apply(lambda x: ul[x - 1])
+    if bool_pf:  dm.loc[dm.Date < date_pf, 'PF'] = \
+        dm.loc[dm.Date < date_pf, 'DateTime'].dt.month.apply(lambda x: pfl[x - 1])
+
+    return dm
 
 
 def calculate_cph(dff):
@@ -118,6 +134,7 @@ def calculate_cph(dff):
     O3S-DQA Section 8.4
     '''
 
+    dff['PLab'] = dff['Pground']
     dff['x'] = ((7.5 * dff['TLab'].astype('float')) / (dff['TLab'].astype('float') + 237.3)) + 0.7858
     dff['psaturated'] = 10 ** (dff['x'])
     # Eq.17
@@ -143,14 +160,19 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
     :param rhlab:
     :return:
     """
-    df['TLab'] = dfm.at[dfm.first_valid_index(),tlab].astype('float')
+    df['TLab'] = dfm.at[dfm.first_valid_index(),tlab]
+    df['TLab'] = df['TLab'].astype('float')
+    df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab]
+    df['ULab'] = df['ULab'].astype('float')
+    df['PLab'] = dfm.at[dfm.first_valid_index(), plab]
+    df['PLab'] = df['PLab'].astype('float')
 
     if boolrh == True:
-        df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab].astype('float')
-        df['Pground'] = dfm.at[dfm.first_valid_index(), plab].astype('float')
+        # df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab].astype('float')
+        # df['PLab'] = dfm.at[dfm.first_valid_index(), plab].astype('float')
         df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
         df['psaturated'] = 10 ** (df['x'])
-        df['cPH'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['Pground'] #Eq. 17
+        df['cPH'] = (1 - df['ULab']/ 100) * df['psaturated'] / df['PLab'] #Eq. 17
         unc_cPH = df.at[df.first_valid_index(), 'unc_cPH']
         df['TLabK'] = df[tlab] + k
         df['cPL'] = 2 / df['TLabK']  # Eq. 16

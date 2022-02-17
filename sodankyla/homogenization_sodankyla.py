@@ -18,6 +18,7 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 dfmeta = pd.read_hdf(path + 'Metadata/All_metadata.hdf')
 dfmeta = dfmeta[dfmeta.iB2 < 9]
 dfmeta = dfmeta[dfmeta.iB0 < 9]
+dfmeta['PLab'] = dfmeta['Pground']
 
 # # dfmeta = filter_metadata(dfmeta)
 # print('metadata', list(dfmeta))
@@ -40,14 +41,14 @@ for i in range(1,13):
 
 # dfmeta['Date'] = dfmeta['DateTime'].dt.strftime('%Y-%m-%d')
 
-series = dfmeta[['Date', 'Pground', 'TLab','ULab','PF']]
-series[['Pground', 'TLab','ULab','PF']] = series[['Pground', 'TLab','ULab','PF']].astype('float')
+series = dfmeta[['Date', 'PLab', 'TLab','ULab','PF']]
+series[['PLab', 'TLab','ULab','PF']] = series[['PLab', 'TLab','ULab','PF']].astype('float')
 series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
 series = series.set_index('Date')
 upsampled = series.resample('1M').mean()
 
-series04 = dfmeta[dfmeta.Date < '20040101'][['Date', 'Pground', 'TLab','ULab','PF']]
-series04[['Pground', 'TLab','ULab','PF']] = series04[['Pground', 'TLab','ULab','PF']].astype('float')
+series04 = dfmeta[dfmeta.Date < '20040101'][['Date', 'PLab', 'TLab','ULab','PF']]
+series04[['PLab', 'TLab','ULab','PF']] = series04[['PLab', 'TLab','ULab','PF']].astype('float')
 series04['Date']  = series04['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
 series04 = series04.set_index('Date')
 upsampled04 = series04.resample('1M').mean()
@@ -64,7 +65,8 @@ for i in range(1,13):
     ulab[j] = upsampled[upsampled.index.month == i].mean()[2]
     pf[j] = upsampled04[upsampled04.index.month == i].mean()[3]
 
-# print(pf)
+
+print(pf)
 # print(tlab)
 
 ## important adjusments
@@ -78,12 +80,11 @@ k = 273.15
 
 # part to calculate cph and its error
 #extra for one code
-dfmeta['PLab'] = dfmeta['Pground']
 dfmeta = calculate_cph(dfmeta)
 dfmeta['unc_cPH'] = dfmeta['cPH'].std()
 dfmeta['unc_cPL'] = dfmeta['cPL'].std()
 
-allFiles = sorted(glob.glob(path + "Current/*150924*rawcurrent.hdf"))
+allFiles = sorted(glob.glob(path + "Current/*961211*rawcurrent.hdf"))
 # allFiles = sorted(glob.glob(path + "Current/*rawcurrent.hdf"))
 
 print('one')
@@ -117,10 +118,13 @@ for (filename) in (allFiles):
 
     dfm['ROC'] = roc_values[date.month-1]
 
+    # dfm['PLab'] = dfm['Pground']
+
+
     ## missing PTU lab and PF values for values before 1999 and 1997
     if datef < '19970107':
         dfm['PF'] = pf[date.month-1]
-        dfm['Pground'] = plab[date.month-1]
+        dfm['PLab'] = plab[date.month-1]
     if datef < '19981111':
         dfm['TLab'] = tlab[date.month-1]
         dfm['ULab'] = ulab[date.month-1]
@@ -215,8 +219,8 @@ for (filename) in (allFiles):
 
     #      pump flow corrections        #
     # ground correction
-    df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'Pground',
-                                                                   'ULab', True)
+    df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', True)
+
     # efficiency correction
     pumpflowtable = ''
     if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
@@ -326,14 +330,14 @@ for (filename) in (allFiles):
 
     df = df.drop(
         ['Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich','unc_eta',
-         'unc_eta_c', 'unc_iBc', 'dEta'], axis=1)
+         'unc_eta_c',  'dEta'], axis=1)
 
     # df = df.drop(
     #     ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
     #      'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'dEta'], axis=1)
     
      # data file that has data and uncertainties that depend on Pair or Height or Temperature
-    df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key = 'df')
+    df.to_hdf(path + '/DQA_nors80/old_' + datestr + "_all_hom_nors80.hdf", key = 'df')
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
