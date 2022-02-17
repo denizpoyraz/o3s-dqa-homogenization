@@ -10,9 +10,8 @@ from scipy.interpolate import interp1d
 
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
-    return_phipcor, o3_integrate, roc_values, missing_station_values, assign_missing_ptupf
+    return_phipcor, o3_integrate, roc_values, RS_pressurecorrection
 
-from functions.df_filter import filter_data, filter_metadata
 from functions.functions_perstation import organize_sodankyla
 
 
@@ -40,17 +39,21 @@ from functions.functions_perstation import organize_sodankyla
 
 k = 273.15
 
-## parts to be changed by hand!!!!
+#           parts to be changed by hand!!!!         #
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 dfmeta = pd.read_hdf(path + 'Metadata/All_metadata.hdf')
 allFiles = sorted(glob.glob(path + "Current/*961211*rawcurrent.hdf"))
 roc_table_file = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
 roc_plevel = 10 # pressure value to obtain roc
-# the date when the homogenization starts, there is a continue statement
-# in the main loop for the dates before this date, may not be needed always
 
+# the date when the homogenization starts, there is a continue statement
+# in the main loop for the dates before this date, "may not be needed always"
 date_start_hom = '19941012'
+# the date where there was a change from rs80
+date_rs80 = '20051124'
+
+# the date if there is a lower/higher bkg value region
 IBGsplit = '2005'
 
 humidity_correction = True
@@ -61,9 +64,9 @@ if humidity_correction:
     dfmeta['unc_cPH'] = dfmeta['cPH'].std()
     dfmeta['unc_cPL'] = dfmeta['cPL'].std()
 
-
 dfmeta = organize_sodankyla(dfmeta)
-## end of the parts to be changed by hand!!!!
+
+#           end of the parts to be changed by hand!!!!          #
 
 #check if dfmeta has "Date" variable, otherwise create it
 clms = [i for i in range(1,13)]
@@ -110,6 +113,20 @@ for (filename) in (allFiles):
 
     df['unc_Tpump'] = 0.5  # case II-V
 
+    # #      radiosonde RS80 correction   #
+    # # Electronic o3 sonde interface  was replaced with the transfer from RS80 to RS92  in 24 Nov 2005.
+    # rsmodel = ''
+    # bool_rscorrection = ''
+    # if datestr <= date_rs80:
+    #     bool_rscorrection = True
+    # if datestr > date_rs80:
+    #     bool_rscorrection = False
+    # #
+    #
+    # if bool_rscorrection:
+    #     df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'Height', rsmodel)
+    #     df['Pair'] = df['Pair'] - df['Crs']
+
     # DQA corrections
     #      conversion efficiency        #
     df['alpha_o3'], df['unc_alpha_o3'] = absorption_efficiency(df, 'Pair', dfm.at[0,'SolutionVolume'])
@@ -118,17 +135,18 @@ for (filename) in (allFiles):
     df['eta_c'], df['unc_eta_c'] = conversion_efficiency(df, 'alpha_o3', 'unc_alpha_o3', 'stoich', 'unc_stoich')
 
     #       background correction       #
-
     if dfm.at[0, 'string_bkg_used'] == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', IBGsplit)
     if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', IBGsplit)
-    # df['iB2'] = dfm.at[0, 'iB2']
 
     #       pump temperature correction       #
     df['Tpump_cor'], df['unc_Tpump_cor'] = pumptemp_corr(df, dfm.loc[0,'string_pump_location'], 'Tpump', 'unc_Tpump', 'Pair')
 
     #      pump flow corrections        #
-    # ground correction
-    df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', True)
+    # ground correction, humidity correction PTU
+    if humidity_correction:
+        df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', True)
+    if not humidity_correction:
+        df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', False)
     # efficiency correction
     pumpflowtable = '999 '
     if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'

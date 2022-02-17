@@ -10,6 +10,11 @@ from functions.homogenization_functions import absorption_efficiency, stoichmetr
 
 def organize_sodankyla(dsm):
 
+    # few variables needed in the homogenization code
+    # date_start_hom = '19941012'
+    # # the date if there is a lower/higher bkg value region
+    # IBGsplit = '2005'
+
     dsm = dsm[dsm.iB2 < 9]
     dsm = dsm[dsm.iB0 < 9]
 
