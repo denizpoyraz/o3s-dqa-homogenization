@@ -150,7 +150,7 @@ for i in dates:
     ax.set_ylabel('Pressure [hPa]')
     ax.set_xlabel('PO3 [mPa]')
 
-    plt.savefig(path + 'Plots/Day_Profile/' + name + '.png')
+    # plt.savefig(path + 'Plots/Day_Profile/' + name + '.png')
     # plt.savefig(path + 'Plots/Day_Profile/' + name + '.eps')
     # plt.savefig(path + 'Plots/Day_Profile/  ' + name + '.pdf')
 

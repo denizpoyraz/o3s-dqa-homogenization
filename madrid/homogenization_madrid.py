@@ -21,7 +21,7 @@ k = 273.15
 # to calculate climatalogical means
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 #
-allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
+# allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
 #
 # listall = []
 #
@@ -112,10 +112,11 @@ print('plab', plab)
 print('ulab', ulab)
 print('pf', np.nanmean(dfmeta.PF))
 PFmean = np.nanmean(dfmeta.PF)
+print(PFmean)
 
 # allFiles = sorted(glob.glob(path + "CSV/out/19950111*.hdf"))
 
-allFiles = sorted(glob.glob(path + "CSV/out/20090109*.hdf"))
+allFiles = sorted(glob.glob(path + "CSV/out/*201230*.hdf"))
 
 metadata = []
 
@@ -150,7 +151,7 @@ for (filename) in (allFiles):
 
     df['Pair'] = df['Pressure']
     df['O3'] = df['O3PartialPressure']
-    df['SampleTemperature_gen'] = 0
+    # df['SampleTemperature_gen'] = 0
 
     # if the pump temp is missing use the interpolated climatological mean:
     df['DateTime'] = pd.to_datetime(df['Date'], format='%Y-%m-%d')
@@ -184,7 +185,7 @@ for (filename) in (allFiles):
             fb = interp1d(y, x)
             df_samptemp = fb(df_pair)
             df.loc[df.value_is_NaN == 1, 'SampleTemperature'] = df_samptemp
-            df.loc[df.value_is_NaN == 1, 'SampleTemperature_gen'] = df_samptemp
+            # df.loc[df.value_is_NaN == 1, 'SampleTemperature_gen'] = df_samptemp
         #
     if (len(pair_missing) < 1000) & (len(pair_missing) > 50):
         print('no sample temperature', len(pair_missing), len(df))
@@ -210,7 +211,7 @@ for (filename) in (allFiles):
             df_samptemp = fb(df_pair)
 
             df.loc[df.value_is_NaN == 1, 'SampleTemperature'] = df_samptemp
-            df.loc[df.value_is_NaN == 1, 'SampleTemperature_gen'] = df_samptemp
+            # df.loc[df.value_is_NaN == 1, 'SampleTemperature_gen'] = df_samptemp
 
 
     df['TboxK'] = df['SampleTemperature'] + k
@@ -238,7 +239,7 @@ for (filename) in (allFiles):
     #calculate current from PO3
     dfm['SolutionConcentration'] = 10
     df['SensorType'] = 'SPC'
-    df['SolutionVolume'] = 3.0
+    # df['SolutionVolume'] = 3.0
     dfm['SensorType'] = 'SPC'
     df = o3tocurrent(df, dfm)
 
@@ -283,8 +284,8 @@ for (filename) in (allFiles):
     # correction to the metadata from the station PI:
     # All z-sondes before so06020112 were flown with 1 %KI
     dfm['SolutionConcentration'] = 10
-    df['SensorType'] = 'SPC'
-    df['SolutionVolume'] = 3.0
+    # df['SensorType'] = 'SPC'
+    # df['SolutionVolume'] = 3.0
     dfm['SensorType'] = 'SPC'
 
     df['stoich'], df['unc_stoich'] = stoichmetry_conversion(df, 'Pair', dfm.at[dfm.first_valid_index(), 'SensorType'],
@@ -324,8 +325,9 @@ for (filename) in (allFiles):
     df['O3c_etabkgtpumpphigr'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_ground', False)
     df['O3c_etabkgtpumpphigref'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
     df['O3c'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
-    df['O3c_woudc'] = currenttopo3(df, 'I', 'Tpump', 'ibg', 'Eta', 'Phip_eff', False)
-    df['O3c_woudc_v2'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip_eff', False)
+
+    # df['O3c_woudc'] = currenttopo3(df, 'I', 'Tpump', 'ibg', 'Eta', 'Phip_eff', False)
+    # df['O3c_woudc_v2'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip_eff', False)
 
     if len(df[df['O3c'] < 0]) > 0: print('why', filename)
 
@@ -405,12 +407,12 @@ for (filename) in (allFiles):
 
     dfm['iBc'] = df.at[df.first_valid_index(), 'iBc']
 
-    dfm.to_csv(path + '/DQA_nors80/'+ date_out + "_o3smetadata_nors80.csv")
+    dfm.to_csv(path + '/DQA_nors80/old_'+ date_out + "_o3smetadata_nors80.csv")
 
     metadata.append(dfm)
 
 
-    df.to_hdf(path + '/DQA_nors80/' + date_out + "_all_hom_nors80.hdf", key = 'df')
+    df.to_hdf(path + '/DQA_nors80/old_' + date_out + "_all_hom_nors80.hdf", key = 'df')
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
@@ -438,7 +440,7 @@ for (filename) in (allFiles):
                       'dPhi_cor', 'unc_Tpump_cor'], axis=1)
 
 
-    df.to_hdf(path + '/DQA_nors80/' + date_out + "_o3sdqa_nors80.hdf", key = 'df')
+    # df.to_hdf(path + '/DQA_nors80/' + date_out + "_o3sdqa_nors80.hdf", key = 'df')
 
 # dfall = pd.concat(metadata, ignore_index=True)
 #

@@ -330,7 +330,7 @@ def o3tocurrent(dft, dfm):
     if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[
         dfm.first_valid_index(), 'PF'] = 28
 
-    dft['Cef'] = ComputeCef(dft)
+    dft['Cef'] = ComputeCef(dft,dfm)
 
     cref = 1
     dft['ibg'] = 0
@@ -359,13 +359,13 @@ def o3tocurrent(dft, dfm):
     return dft
 
 
-def ComputeCef(dft):
+def ComputeCef(dft, dfm):
     """ Computes pump efficiency correction factor based on pressure
 
         Arguments:
         Pressure -- air pressure [hPa]
     """
-    sensortype = dft.at[dft.first_valid_index(), 'SensorType']
+    sensortype = dfm.at[dfm.first_valid_index(), 'SensorType']
     #
     spctag = (search('SPC', sensortype)) or (search('6A', sensortype)) or (search('5A', sensortype)) or (
         search('4A', sensortype))

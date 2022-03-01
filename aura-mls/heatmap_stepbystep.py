@@ -12,7 +12,7 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Bi
 
 # df1 = pd.read_csv(path + 'LauderInterpolated_dqa_nors80.csv')
 # df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80.csv')
-df1 = pd.read_csv(path + 'MadridInterpolated_dqa_nors80_v2.csv')
+df1 = pd.read_csv(path + 'new_MadridInterpolated_dqa_nors80.csv')
 
 
 
@@ -54,7 +54,7 @@ df1['PreLevel'] = df1['PreLevel'].astype(int)
 # ptitle = 'Effect of Background Current Correction'
 # min = -5
 # max = 5
-#
+# #
 # Plotname = 'EtaBkgTpump_vs_EtaBkg_alltimerange'
 # heatmap_label = 'EtaBkgTpump - EtaBkg / EtaBkg  (%)'
 # ptitle = 'Effect of Pump Temperature Correction'
@@ -72,21 +72,23 @@ df1['PreLevel'] = df1['PreLevel'].astype(int)
 # ptitle = 'Effect of Pump Flow Efficiency Correction'
 # min = -5
 # max = 5
-# #
+# # #
 # Plotname = 'DQA_vs_Raw_alltimerange'
 # heatmap_label = 'DQA - NoCorrection / NoCorrection  (%)'
 # ptitle = 'Effect all DQA Corrections'
 # min = -10
 # max = 10
-Plotname = 'DQA_vs_NDACC_alltimerange'
-heatmap_label = 'DQA - Previous Version / Previos Version  (%)'
-ptitle = 'DAQ-O3S vs Previous Version-O3S'
-min = -5
-max = 5
+# Plotname = 'DQA_vs_NDACC_alltimerange'
+# heatmap_label = 'DQA - Previous Version / Previos Version  (%)'
+# ptitle = 'DAQ-O3S vs Previous Version-O3S'
+# min = -5
+# max = 5
 
-# Plotname = 'DQA_vs_WOUDC_alltimerange'
-# heatmap_label = 'DQA - WOUDC / WOUDC  (%)'
-# ptitle = 'DAQ-O3S vs WOUDC'
+Plotname = 'DQA_vs_WOUDC_alltimerange'
+heatmap_label = 'DQA - WOUDC / WOUDC  (%)'
+ptitle = 'DAQ-O3S vs WOUDC'
+min = -10
+max = 10
 
 # Plotname = 'WOUDC_vs_DQAprev_alltimerange'
 # heatmap_label = 'DQA - DQA(previous version) / DQA(previous version)  (%)'
@@ -143,9 +145,9 @@ plt.xlabel(" ")
 
 plt.title(ptitle)
 #
-# plt.savefig(path + 'Plots/' + Plotname + '.png')
-# plt.savefig(path + 'Plots/' + Plotname + '.eps')
-# # plt.savefig(path + 'Plots/' + Plotname + '.pdf')
+plt.savefig(path + 'Plots_new/' + Plotname + '.png')
+plt.savefig(path + 'Plots_new/' + Plotname + '.eps')
+# plt.savefig(path + 'Plots/' + Plotname + '.pdf')
 
 plt.show()
 

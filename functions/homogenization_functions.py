@@ -85,6 +85,20 @@ def roc_values(dff, tab, plevel):
 
     return dff
 
+def make_1m_upsamle(dff, variable, booldate, datestr):
+
+    # series = pd.DataFrame
+    series = dff[['Date', variable]].copy()
+    if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
+    series[variable] = series[variable].astype('float')
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    series = series.set_index('Date')
+    upsampled = series.resample('1M').mean()
+
+    return upsampled
+
+
+
 def missing_station_values(dff, variable, booldate, datestr):
     """
     function to calculate mean of the missing values to used
@@ -95,8 +109,8 @@ def missing_station_values(dff, variable, booldate, datestr):
     :return:
     """
 
-    series = dff[['Date', variable]]
-    if booldate: series = dff[dff.Date < datestr][['Date', variable]]
+    series = dff[['Date', variable]].copy()
+    if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
     series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
     series = series.set_index('Date')
@@ -106,7 +120,7 @@ def missing_station_values(dff, variable, booldate, datestr):
 
     for i in range(1, 13):
         j = i - 1
-        var_list[j] = upsampled[upsampled.index.month == i].mean()[0]
+        var_list[j] = upsampled[upsampled.index.month == i].median()[0]
 
     return var_list
 
@@ -114,17 +128,20 @@ def assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, da
 
     dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
     dm['Date2'] = dm['Date2'].dt.date
-    dm['DateTime'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
-    dm['PLab'] = dm['Pground']
+    dm['DateTime2'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
+    # dm['PLab'] = dm['Pground']
 
     if bool_p:  dm.loc[dm.Date < date_p, 'PLab'] = \
-        dm.loc[dm.Date < date_p, 'DateTime'].dt.month.apply(lambda x: pl[x - 1])
+        dm.loc[dm.Date < date_p, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
     if bool_t:  dm.loc[dm.Date < date_t, 'TLab'] = \
-        dm.loc[dm.Date < date_t, 'DateTime'].dt.month.apply(lambda x: tl[x - 1])
-    if bool_u:  dm.loc[dm.Date < date_u, 'ULab'] = \
-        dm.loc[dm.Date < date_u, 'DateTime'].dt.month.apply(lambda x: ul[x - 1])
+        dm.loc[dm.Date < date_t, 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+    if bool_u:  dm.loc[dm.Date < date_u, 'ULab'] =\
+        dm.loc[dm.Date < date_u, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
+
+    print(date_u)
+    print(ul)
     if bool_pf:  dm.loc[dm.Date < date_pf, 'PF'] = \
-        dm.loc[dm.Date < date_pf, 'DateTime'].dt.month.apply(lambda x: pfl[x - 1])
+        dm.loc[dm.Date < date_pf, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
 
     return dm
 
@@ -134,7 +151,7 @@ def calculate_cph(dff):
     O3S-DQA Section 8.4
     '''
 
-    dff['PLab'] = dff['Pground']
+    # dff['PLab'] = dff['Pground']
     dff['x'] = ((7.5 * dff['TLab'].astype('float')) / (dff['TLab'].astype('float') + 237.3)) + 0.7858
     dff['psaturated'] = 10 ** (dff['x'])
     # Eq.17
@@ -617,10 +634,10 @@ def o3tocurrent(dft, dfm):
     # tp: pump temp. in K, t: pumping time for 100 ml of air in seconds, cef: correction due to reduced ambient pressure for pump
     # cref: additional correction factor
     # i = o3 / (4.3087 * 10e-4 * tp * t * cef * cref ) + ibg
-
+   #
    # dft['SensorType'] = 'SPC'
    # dfm['SensorType'] = 'SPC'
-
+   #
    # dft['SolutionVolume'] = 3
    # dfm['SolutionVolume'] = 3
 
@@ -641,10 +658,24 @@ def o3tocurrent(dft, dfm):
     #     dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
     if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2')
     if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
-    # print('IBG', dft['ibg'])
-    # print('Cef',dft['Pair'],dft['Cef'])
-    # print('PF',dfm.at[dfm.first_valid_index(), 'PF'])
-    dft['I'] = dft['O3'] / (4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+
+    try:
+        dft['I'] = dft['O3'] / (4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+    except TypeError:
+        dft.loc[dft.O3 == '4:.090','O3'] = '4.090'
+
+        dft['O3'] = dft['O3'].astype('float')
+        dft['I'] = dft['O3'] / (4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+    # try:
+    #     dft['I'] = dft['O3'] / (4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+    # except ValueError:
+    #     print('here one')
+    #     dft.loc[dft.O3 == '4:.090','O3'] = '4.090'
+    #     dft['O3'] = dft['O3'].astype('float')
+    #     dft['I'] = dft['O3'] / (
+    #                 4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + \
+    #                dft['ibg']
+    #     print('bad file')
 
     return dft
 
@@ -655,7 +686,7 @@ def ComputeCef(dft,dfm):
         Arguments:
         Pressure -- air pressure [hPa]
     """
-    sensortype = dft.at[dft.first_valid_index(), 'SensorType']
+    sensortype = dfm.at[dfm.first_valid_index(), 'SensorType']
     #
     spctag = (search('SPC', sensortype)) or (search('6A', sensortype)) or (search('5A', sensortype)) or (
         search('4A', sensortype))

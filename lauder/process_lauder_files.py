@@ -19,10 +19,10 @@ from re import search
 k = 273.15
 
 
-path = "/home/poyraden/Analysis/Homogenization_public/Files/lauder/csv/"
+path = "/home/poyraden/Analysis/Homogenization_public/Files/lauder/CSV/"
 
 # dataFiles = sorted(glob.glob("/home/poyraden/Analysis/Homogenization_public/Files/lauder/csv/2012*hdf"))
-metadataFiles = sorted(glob.glob("/home/poyraden/Analysis/Homogenization_public/Files/lauder/csv/*metadata*csv"))
+metadataFiles = sorted(glob.glob("/home/poyraden/Analysis/Homogenization_public/Files/lauder/CSV/*metadata*csv"))
 
 # for (fname,mdname) in zip(dataFiles, metadataFiles):
 for mdname in (metadataFiles):

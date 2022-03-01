@@ -6,16 +6,18 @@ import datetime
 import glob
 import matplotlib.dates as mdates
 
+
 def Calc_average_profile_pressure(dft, xcolumn):
     # nd = len(dataframelist)
 
     # yref = [1000, 850, 700, 550, 400, 350, 300, 200, 150, 100, 75, 50, 35, 25, 20, 15,
     #         12, 10, 8, 6]
 
-    yref = [1000, 950, 900, 850, 800, 750, 700, 650, 600,  550, 500, 450,  400, 350, 325, 300, 275, 250, 240, 230, 220, 210, 200,
-            190, 180, 170, 160, 150, 140, 130, 125, 120, 115, 110, 105,  100,95, 90, 85, 80, 75, 70, 65, 60, 55,
-            50, 45, 40,  35, 30, 28, 26, 24, 22,  20, 19, 18, 17, 16, 15,  14, 13.5, 13, 12.5,  12, 11.5, 11, 10.5,
-            10, 9.75, 9.50, 9.25, 9, 8.75, 8.5, 8.25,  8, 7.75, 7.5, 7.25,  7, 6.75, 6.50, 6.25, 6]
+    yref = [1000, 950, 900, 850, 800, 750, 700, 650, 600, 550, 500, 450, 400, 350, 325, 300, 275, 250, 240, 230, 220,
+            210, 200,
+            190, 180, 170, 160, 150, 140, 130, 125, 120, 115, 110, 105, 100, 95, 90, 85, 80, 75, 70, 65, 60, 55,
+            50, 45, 40, 35, 30, 28, 26, 24, 22, 20, 19, 18, 17, 16, 15, 14, 13.5, 13, 12.5, 12, 11.5, 11, 10.5,
+            10, 9.75, 9.50, 9.25, 9, 8.75, 8.5, 8.25, 8, 7.75, 7.5, 7.25, 7, 6.75, 6.50, 6.25, 6]
 
     # yref = [i * 250 for i in range(0, 160)]
 
@@ -28,16 +30,14 @@ def Calc_average_profile_pressure(dft, xcolumn):
     # Xgrid = [[-9999.0] * n for i in range(nd)]
     # Xsigma = [[-9999.0] * n for i in range(nd)]
 
-
-# for j in range(nd):
-#     dft.PFcor = dft[xcolumn]
+    # for j in range(nd):
+    #     dft.PFcor = dft[xcolumn]
 
     for i in range(n):
         dftmp1 = pd.DataFrame()
         dfgrid = pd.DataFrame()
 
-
-        grid_min = yref[i+1]
+        grid_min = yref[i + 1]
         grid_max = yref[i]
         Ygrid[i] = (grid_min + grid_max) / 2.0
 
@@ -51,7 +51,6 @@ def Calc_average_profile_pressure(dft, xcolumn):
 
         Xgrid[i] = np.nanmean(dfgrid.X)
         Xsigma[i] = np.nanstd(dfgrid.X)
-
 
     return Xgrid, Xsigma, Ygrid
 
@@ -127,12 +126,9 @@ dfm1 = dfm1[dfm1.O3Sonde_raw < 999]
 #
 
 
-
-
-
 print(dfm1.DateTime.min(), dfm1.DateTime.max())
 
-Plotname = 'TON_factor_nolines'
+Plotname = 'TON_factor_DQAvsRaw_nolines'
 
 fig, axs = plt.subplots(1, sharex=True, sharey=False, figsize=(17, 9))
 # fig.suptitle('Sharing both axes')
@@ -144,19 +140,17 @@ fig, axs = plt.subplots(1, sharex=True, sharey=False, figsize=(17, 9))
 # axs.plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label = 'O3Sonde DQA 10 hPa',  marker = ".")
 # axs.plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10 hPa',  marker = ".")
 
-dfm1['R'] = (dfm1.O3Sonde_hom_10hpa - dfm1.O3Sonde_10hpa)/ dfm1.O3Sonde_hom_10hpa * 100
+dfm1['R'] = (dfm1.O3Sonde_hom_10hpa - dfm1.O3Sonde_10hpa_raw) / dfm1.O3Sonde_10hpa_raw * 100
 
-axs.plot(dfm1.DateTime, dfm1.R, label = 'RMI - WOUDC / RMI',  marker = ".")
+axs.plot(dfm1.DateTime, dfm1.R, label='DQA - WOUDC / DQA', marker=".", linestyle='None')
 
-
-
-# axs.plot(dfm1.DateTime, dfm1.O3ratio, label = 'TON WOUDC',  marker = ".",  linestyle = 'None')
-# axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".", linestyle = 'None')
+# axs.plot(dfm1.DateTime, dfm1.O3ratio, label = 'TON WOUDC',  marker = ".",  linestyle = ''None'')
+# axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".", linestyle = ''None'')
 
 # axs.plot(dfm1.DateTime, dfm1.O3ratio, label = 'TON WOUDC',  marker = ".")
 # axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".")
-# axs.plot(dfm1.DateTime, dfm1.O3ratio_raw, label = 'TON Raw',  marker = ".", linestyle = 'None')
-axs.axhline(y=1, color='grey', linestyle=':')
+# axs.plot(dfm1.DateTime, dfm1.O3ratio_raw, label = 'TON Raw',  marker = ".", linestyle = ''None'')
+# axs.axhline(y=1, color='grey', linestyle=':')
 
 # axs.set_xticks(np.arange(0, len(dfm1)+1, xfreq))
 axs.set_ylabel('%')
@@ -174,14 +168,14 @@ axs.legend(loc="upper right")
 # plt.xticks(rotation = 45)
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.png')
-# plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
+plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.png')
+plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
 # plt.savefig(path + 'Plots/TON_updated/  ' + Plotname + '.pdf')
 
 plt.show()
 plt.close()
 
-Plotname = 'TON_allplots_v3'
+Plotname = 'TON_allplots_woudc'
 
 fig, axs = plt.subplots(4, sharex=False, sharey=False, figsize=(17, 9))
 # fig.suptitle('Sharing both axes')
@@ -189,28 +183,28 @@ fig, axs = plt.subplots(4, sharex=False, sharey=False, figsize=(17, 9))
 # axs[1].plot(x, 0.3 * y, 'o')
 # axs[2].plot(x, y, '+')
 
-#original
-axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label = 'O3Sonde DQA 10hPa',  marker = ".")
-axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa, label = 'O3Sonde WOUDC 10hPa',  marker = ".")
-# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10hPa',  marker = ".")
+# original
+axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label='O3Sonde DQA 10hPa', marker=".")
+axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa, label='O3Sonde WOUDC 10hPa', marker=".")
+# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10hPa',  marker = "." )
 axs[0].xaxis.set_major_locator(mdates.YearLocator(1))
 axs[0].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 axs[0].set_ylabel('O3 [DU]')
 axs[0].legend(loc="upper right")
 
-
-
-axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'Total O3 DQA',  marker = ".")
-# axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal, label = 'Total O3 WOUDC',  marker = ".")
-axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_raw, label = 'Total O3 Raw',  marker = ".")
+axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label='Total O3 DQA', marker=".")
+axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal, label='Total O3 WOUDC', marker=".")
+# axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_raw, label = 'Total O3 Raw',  marker = "." )
 axs[1].xaxis.set_major_locator(mdates.YearLocator(1))
 axs[1].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 axs[1].set_ylabel('O3 [DU]')
 axs[1].legend(loc="upper right")
 #
-# axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal, label = 'O3Sonde + ROC')
-# axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'O3Sonde_DQA + ROC')
-axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label = 'Brewer', marker = ".")
+axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal, label='O3Sonde WOUDC + ROC', marker=".")
+# axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'O3Sonde_DQA + ROC',  marker = ".", linestyle = ''None'')
+# axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label = 'Brewer', marker = ".",  linestyle = ''None'')
+# axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'O3Sonde_DQA + ROC',  marker = "." )
+axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label='Brewer', marker=".")
 axs[2].xaxis.set_major_locator(mdates.YearLocator(1))
 axs[2].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 axs[2].set_ylabel('O3 [DU]')
@@ -230,22 +224,21 @@ axs[2].legend(loc="upper right")
 # axs[3].set_ylabel('O3 [DU]')
 # axs[3].legend(loc="upper right")
 #
-axs[3].plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'O3 Ratio DQA', marker = ".")
+axs[3].plot(dfm1.DateTime, dfm1.O3ratio_hom, label='O3 Ratio DQA', marker=".")
 # axs[3].plot(dfm1.DateTime, dfm1.O3ratio, label = 'O3 Ratio WOUDC', marker = ".")
-axs[3].plot(dfm1.DateTime, dfm1.O3ratio_raw, label = 'O3 Ratio Raw', marker = ".")
+axs[3].plot(dfm1.DateTime, dfm1.O3ratio_raw, label='O3 Ratio Raw', marker=".")
 axs[3].xaxis.set_major_locator(mdates.YearLocator(1))
 axs[3].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
 axs[3].set_ylabel('O3 ratio')
 axs[3].axhline(y=1, color='grey', linestyle=':')
 axs[3].legend(loc="upper right")
 #
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.png')
-# plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.png')
+plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
 # plt.savefig(path + 'Plots/TON_updated/  ' + Plotname + '.pdf')
 #
 plt.show()
-
 
 # axs[0].plot(dfw.Date, dfw.O3sonde_int_woudc, label = 'O3 Sonde from metadata (O3S - Residual)', marker = ".", color = '#ff7f0e')
 # axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_burst , label = 'O3 Sonde WOUDC int until burst', marker = ".", color = '#1f77b4')

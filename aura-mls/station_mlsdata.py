@@ -16,8 +16,8 @@ problem = open("DQA_ProblematicFiles.txt", "a")
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
 
 
 # ozone = 'O3_nc' # raw, no correction applied
@@ -26,21 +26,23 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
 # ozone = 'O3c_etabkgtpump' # only phip correction applied
 # ozone = 'O3c_etabkgtpumpphigr' # only tpump applied
 # ozone = 'O3c_bkgphip'
-ozone = 'O3'
+ozone = 'O3c'
 # ozone = 'PO3_dqar'
 
 # name_out = 'MLS_SodankylaInterpolated_raw_nors80_v04'
-name_out = 'MLS_LauderInterpolated_previousversion_nors80_v04'
+# name_out = 'MLS_LauderInterpolated_previousversion_nors80_v04'
+name_out = 'MLS_MadridInterpolated_nors80_v04_dqa'
+
 
 
 # mls data frame to read
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
+dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
-dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
+# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
 
 # dfm = dfm[dfm.Date < 20080612]
 date_list = dfm.drop_duplicates(['Date']).Date.tolist()
-print(date_list)
+print(len(date_list), date_list)
 
 # list_data = []
 listall_data = []
@@ -49,9 +51,12 @@ listall_data = []
 
 for date in date_list:
     # print(date, type(date))
+    if (date == 20190605) | (date == 20191010) | (date == 20200902) | (date == 20210414): continue
+    # if date == 20190605:
+    #     continue
     try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
     except FileNotFoundError:
-        print(date)
+        print('FileNotFoundError', date)
         continue
 
     # df = filter_data(df)
@@ -59,9 +64,11 @@ for date in date_list:
         print(date, len(df))
         continue
 
-    df['Height'] = df['Alt']
+    # df['Height'] = df['Alt']
 
-    # df['Height'] = df['GPHeight']
+    print(date)
+
+    df['Height'] = df['GPHeight']
  # now downsample the uccle data remove descent list
     dfn = df[df.Height > 0]
     maxh = dfn.Height.max()
@@ -151,6 +158,7 @@ for date in date_list:
     ib = 6
 
     dl = dfm.index[dfm.Date == int(header_date)].tolist()
+    # print('dl', dl)
     mlspo3 = list(dfm.loc[dl[0], st[ib:im]])
     tim = dfm.loc[dl[0], 'Time']
     mlstime = [tim] * len(ymain)

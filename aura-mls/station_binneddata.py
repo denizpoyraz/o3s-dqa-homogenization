@@ -20,12 +20,14 @@ ozone = 'O3' #woudc
 
 # name_out = 'SodankylaInterpolated_dqa_nors80'
 # name_out = 'UccleInterpolated_dqa_nors80'
-name_out = 'LauderInterpolated_dqa_nors80'
+# name_out = 'LauderInterpolated_dqa_nors80'
+name_out = 'MadridInterpolated_dqa_nors80'
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
-allFiles = sorted(glob.glob(path + "DQA_nors80/*_all_hom_nors80.hdf"))
+allFiles = sorted(glob.glob(path + "*_all_hom_nors80.hdf"))
 print('len of files', len(allFiles))
 
 # list_data = []
@@ -36,21 +38,33 @@ listall_data = []
 for (filename) in (allFiles):
     file = open(filename, 'r')
 
-    date_tmp = filename.split('/')[-1].split('.')[0][2:8]
-    fname = filename.split('/')[-1].split('.')[0][0:8]
-    fullname = filename.split('/')[-1].split('.')[0]
-    metaname = path  + fname + "_o3smetadata_nors80.csv"
-    if search("2nd", fullname): metaname = path +  fname + "_2nd_metadata.csv"
+    print(filename)
 
-    date = datetime.strptime(date_tmp, '%y%m%d')
-    # print(date)
-    datef = date.strftime('%Y%m%d')
-    datestr = str(datef)
+    df = pd.read_hdf(filename)
+    df['date'] = df['DateTime'].dt.strftime("%Y%m%d")
+    datestr = df.at[df.first_valid_index(), 'date']
+    # print(datestr)
 
-    # if datef < '20140920':continue
+
+    # date_tmp = filename.split('/')[-1].split('.')[0][2:8]
+    # fname = filename.split('/')[-1].split('.')[0][0:8]
+    # fullname = filename.split('/')[-1].split('.')[0]
+    # metaname = path  + fname + "_o3smetadata_nors80.csv"
+    # metaname = path  + datestr + "_o3smetadata_nors80.csv"
+    # print(metaname)
+
+
+    # if search("2nd", fullname): metaname = path +  fname + "_2nd_metadata.csv"
+
+    # date = datetime.strptime(date_tmp, '%y%m%d')
+    # # print(date)
+    # datef = date.strftime('%Y%m%d')
+    # datestr = str(datef)
+
+    # if datestr >= '20210421':continue
     # if datef < '19941012': continue # no bkg values
 
-    print(datef)
+    # print(filename)
 
 
     # print(filename)
@@ -67,18 +81,18 @@ for (filename) in (allFiles):
     # df = [df.O3 > 0]
     # df = df[df.Pair >= 5.62341]
     if len(df) < 10:
-        print(date, len(df))
+        print(filename, 'PROBLEM why', len(df))
         continue
 
     #for lauder
-    df['Height'] = df['Alt']
+    df['Height'] = df['GPHeight']
 
  # now downsample the madrid data remove descent list
     dfn = df[df.Height > 0]
     maxh = dfn.Height.max()
 
     if len(dfn) < 10:
-        print('height problem', date)
+        print('height problem', datestr)
         continue
 
     index = dfn[dfn["Height"] == maxh].index[0]
@@ -246,8 +260,8 @@ for (filename) in (allFiles):
 # df = pd.concat(list_data, ignore_index=True)
 dfall = pd.concat(listall_data, ignore_index=True)
 #
-dfall.to_csv(path + "DQA_nors80/Binned/" + name_out + ".csv")
-dfall.to_hdf(path + "DQA_nors80/Binned/" + name_out + ".h5", key = 'df')
+dfall.to_csv(path + "/Binned/new_" + name_out + ".csv")
+dfall.to_hdf(path + "/Binned/new_" + name_out + ".h5", key = 'df')
 
 
 ###########################################################################################################################33

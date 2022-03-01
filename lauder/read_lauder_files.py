@@ -5,7 +5,7 @@ from datetime import datetime
 from re import search
 
 #code to read in Lauder files provided by the station PI
-path = "/home/poyraden/Analysis/Homogenization_public/Files/lauder/csv/"
+path = "/home/poyraden/Analysis/Homogenization_public/Files/lauder/CSV/"
 allFiles = sorted(glob.glob("/home/poyraden/Analysis/Homogenization_public/Files/lauder/zipfiles/*"))
 
 # columnString = "Time Press Alt Temp RH O3 P TPump O3CellI EvapCath WindSp WindDir Lat Lon RH1 RH2 GPS Pres GPS Alt GPS Traw GPS Tcor GPS RH"
