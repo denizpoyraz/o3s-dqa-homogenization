@@ -18,16 +18,16 @@ ozone = 'O3' #woudc
 # ozone = 'PO3_dqar'
 
 
-# name_out = 'SodankylaInterpolated_dqa_nors80'
-# name_out = 'UccleInterpolated_dqa_nors80'
-# name_out = 'LauderInterpolated_dqa_nors80'
-name_out = 'MadridInterpolated_dqa_nors80'
+# name_out = 'SodankylaInterpolated_dqa_rs80'
+# name_out = 'UccleInterpolated_dqa_rs80'
+# name_out = 'LauderInterpolated_dqa_rs80'
+name_out = 'LauderInterpolated_dqa_rs80'
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_rs80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
-allFiles = sorted(glob.glob(path + "*_all_hom_nors80.hdf"))
+allFiles = sorted(glob.glob(path + "*_all_hom_rs80.hdf"))
 print('len of files', len(allFiles))
 
 # list_data = []
@@ -49,8 +49,8 @@ for (filename) in (allFiles):
     # date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     # fname = filename.split('/')[-1].split('.')[0][0:8]
     # fullname = filename.split('/')[-1].split('.')[0]
-    # metaname = path  + fname + "_o3smetadata_nors80.csv"
-    # metaname = path  + datestr + "_o3smetadata_nors80.csv"
+    # metaname = path  + fname + "_o3smetadata_rs80.csv"
+    # metaname = path  + datestr + "_o3smetadata_rs80.csv"
     # print(metaname)
 
 
@@ -71,7 +71,7 @@ for (filename) in (allFiles):
     df = pd.read_hdf(filename)
 
     # print(list(df))
-    # #madrid
+    # #lauder
     # df['Height'] = df['GPHeight']
     # df['TboxC'] = df['SampleTemperature']
 
@@ -85,9 +85,10 @@ for (filename) in (allFiles):
         continue
 
     #for lauder
-    df['Height'] = df['GPHeight']
+    # df['Height'] = df['GPHeight']
+    df['Height'] = df['Alt']
 
- # now downsample the madrid data remove descent list
+ # now downsample the lauder data remove descent list
     dfn = df[df.Height > 0]
     maxh = dfn.Height.max()
 
@@ -104,8 +105,6 @@ for (filename) in (allFiles):
      ##for the frozen solutions
     dfa = dfa.drop(dfa[(dfa[ozone] <= 2) & (dfa.Pair <= 10)].index)
 
-    dftest = dfa[['O3', 'O3c', 'O3_nc', 'O3c_eta','O3c_etabkgtpump','O3c_etabkgtpumpphigr','TLab']]
-
 
     yref = [1000.000, 825.404, 681.292, 562.341, 464.159, 383.119, 316.228, 261.016, 215.443, 177.828, 146.780,
              121.153, 100.000,
@@ -114,57 +113,47 @@ for (filename) in (allFiles):
              6.81292, 5.62341]
 
 
-    xmadrid = np.array(dfa[ozone].tolist())
-    ymadrid = np.array(dfa['Pair'].tolist())
+    xlauder = np.array(dfa[ozone].tolist())
+    ylauder = np.array(dfa['Pair'].tolist())
 
     ymain_tmp = []
     for j in range(len(yref)):
-        if yref[j] <= np.max(ymadrid):
+        if yref[j] <= np.max(ylauder):
             ymain_tmp.append(yref[j])
 
     ymain = []
     for j in range(len(ymain_tmp)):
-        if ymain_tmp[j] >= np.min(ymadrid):
+        if ymain_tmp[j] >= np.min(ylauder):
             ymain.append(ymain_tmp[j])
 
 
-    xmadrid_nc = np.array(dfa['O3_nc'].tolist())
-    xmadrid_eta = np.array(dfa['O3c_eta'].tolist())
-    xmadrid_etabkg = np.array(dfa['O3c_etabkg'].tolist())
-    xmadrid_etabkgtpump = np.array(dfa['O3c_etabkgtpump'].tolist())
-    xmadrid_etabkgtpumpphigr = np.array(dfa['O3c_etabkgtpumpphigr'].tolist())
-    xmadrid_dqa = np.array(dfa['O3c'].tolist())
-    # xmadrid_woudc = np.array(dfa['O3c_woudc'].tolist())
-    # xmadrid_woudc_v2 = np.array(dfa['O3c_woudc_v2'].tolist())
+    xlauder_nc = np.array(dfa['O3_nc'].tolist())
+    xlauder_eta = np.array(dfa['O3c_eta'].tolist())
+    xlauder_etabkg = np.array(dfa['O3c_etabkg'].tolist())
+    xlauder_etabkgtpump = np.array(dfa['O3c_etabkgtpump'].tolist())
+    xlauder_etabkgtpumpphigr = np.array(dfa['O3c_etabkgtpumpphigr'].tolist())
+    xlauder_dqa = np.array(dfa['O3c'].tolist())
 
 
-    if ((len(xmadrid) < 15) | (len(xmadrid) == 0)):
+
+    if ((len(xlauder) < 15) | (len(xlauder) == 0)):
         print('Problem here ? ', header_date)
         continue
 
-    # indu = np.where(xmadrid < 0)[0]
-    # print(indu)
-    # xmadrid = np.delete(xmadrid, indu)
-    # ymadrid = np.delete(ymadrid, indu)
 
-    # indu = np.where(xmadrid_nc < 0)[0]
-    # xmadrid_nc = np.delete(xmadrid_nc, indu)
-    # ymadrid_nc = np.delete(ymadrid_nc, indu)
-
-
-    if ((len(xmadrid) < 10) | (len(xmadrid) == 0)):
+    if ((len(xlauder) < 10) | (len(xlauder) == 0)):
         print('here one')
         continue
 
-    # print(len(ymadrid), len(xmadrid_nc))
+    # print(len(ylauder), len(xlauder_nc))
 
-    fl = interp1d(ymadrid, xmadrid)
-    fl_nc = interp1d(ymadrid, xmadrid_nc)
-    fl_eta = interp1d(ymadrid, xmadrid_eta)
-    fl_etabkg = interp1d(ymadrid, xmadrid_etabkg)
-    fl_etabkgtpump = interp1d(ymadrid, xmadrid_etabkgtpump)
-    fl_etabkgtpumpphigr = interp1d(ymadrid, xmadrid_etabkgtpumpphigr)
-    fl_dqa = interp1d(ymadrid, xmadrid_dqa)
+    fl = interp1d(ylauder, xlauder)
+    fl_nc = interp1d(ylauder, xlauder_nc)
+    fl_eta = interp1d(ylauder, xlauder_eta)
+    fl_etabkg = interp1d(ylauder, xlauder_etabkg)
+    fl_etabkgtpump = interp1d(ylauder, xlauder_etabkgtpump)
+    fl_etabkgtpumpphigr = interp1d(ylauder, xlauder_etabkgtpumpphigr)
+    fl_dqa = interp1d(ylauder, xlauder_dqa)
 
     ## try except part
     xinter_linear = [0] * len(ymain);
@@ -188,35 +177,6 @@ for (filename) in (allFiles):
         xinter_linear_dqa[ix] = fl_dqa(ymain[ix])
 
 
-    # for ix in range(len(ymain)):
-    #     # xinter_linear[ix] = fl(ymain[ix])
-    #     # print('one',date,  ymain[ix], xinter_linear[ix])
-    #     try:
-    #         xinter_linear[ix] = fl(ymain[ix])
-    #         xinter_linear_nc[ix] = fl_nc(ymain[ix])
-    #         xinter_linear_eta[ix] = fl_eta(ymain[ix])
-    #         xinter_linear_etabkg[ix] = fl_etabkg(ymain[ix])
-    #         xinter_linear_etabkgtpump[ix] = fl_etabkgtpump(ymain[ix])
-    #         xinter_linear_etabkgtpumpphigr[ix] = fl_etabkgtpumpphigr(ymain[ix])
-    #         xinter_linear_dqa[ix] = fl_dqa(ymain[ix])
-    #         # xinter_linear_woudc[ix] = fl_woudc(ymain[ix])
-    #         # xinter_linear_woudc_v2[ix] = fl_woudc_v2(ymain[ix])
-    #
-    #
-    #         # if ymain[ix] > 215:
-    #         #     print(date, 'one',  ymain[ix], xinter_linear[ix])
-    #     except ValueError:
-    #         print('Vlaue Error two', datef)
-    #         xinter_linear[ix] = np.nan
-    #         xinter_linear_nc[ix] = np.nan
-    #         xinter_linear_eta[ix] = np.nan
-    #         xinter_linear_etabkg[ix] = np.nan
-    #         xinter_linear_etabkgtpump[ix] = np.nan
-    #         xinter_linear_etabkgtpumpphigr[ix] = np.nan
-    #         xinter_linear_dqa[ix] = np.nan
-    #         # xinter_linear_woudc[ix] = np.nan
-    #         # xinter_linear_woudc_v2[ix] = np.nan
-
 
     for ir in range(len(xinter_linear)):
         if (xinter_linear[ir] <= 0):
@@ -228,8 +188,7 @@ for (filename) in (allFiles):
             xinter_linear_etabkgtpump[ir] = np.nan
             xinter_linear_etabkgtpumpphigr[ir] = np.nan
             xinter_linear_dqa[ir] = np.nan
-            # xinter_linear_woudc[ix] = np.nan
-            # xinter_linear_woudc_v2[ix] = np.nan
+
 
 
     header_date = df.at[df.first_valid_index(), 'Date']
@@ -272,27 +231,27 @@ dfall.to_hdf(path + "/Binned/new_" + name_out + ".h5", key = 'df')
 
 # linear interpolations
 # try:
-#     fl = interp1d(ymadrid, xmadrid)
-#     fl_nc = interp1d(ymadrid, xmadrid_nc)
-#     fl_eta = interp1d(ymadrid, xmadrid_eta)
-#     fl_etabkg = interp1d(ymadrid, xmadrid_etabkg)
-#     fl_etabkgtpump = interp1d(ymadrid, xmadrid_etabkgtpump)
-#     fl_etabkgtpumpphigr = interp1d(ymadrid, xmadrid_etabkgtpumpphigr)
-#     fl_dqa = interp1d(ymadrid, xmadrid_dqa)
-#     # fl_woudc = interp1d(ymadrid, xmadrid_woudc)
-#     # fl_woudc_v2 = interp1d(ymadrid, xmadrid_woudc_v2)
+#     fl = interp1d(ylauder, xlauder)
+#     fl_nc = interp1d(ylauder, xlauder_nc)
+#     fl_eta = interp1d(ylauder, xlauder_eta)
+#     fl_etabkg = interp1d(ylauder, xlauder_etabkg)
+#     fl_etabkgtpump = interp1d(ylauder, xlauder_etabkgtpump)
+#     fl_etabkgtpumpphigr = interp1d(ylauder, xlauder_etabkgtpumpphigr)
+#     fl_dqa = interp1d(ylauder, xlauder_dqa)
+#     # fl_woudc = interp1d(ylauder, xlauder_woudc)
+#     # fl_woudc_v2 = interp1d(ylauder, xlauder_woudc_v2)
 #
 # except ValueError:
 #     print('Value Error: ', datef)
 #     continue
 
-# print('ymadrid', np.array(ymadrid))
-# print('xmadrid', xmadrid)
+# print('ylauder', np.array(ylauder))
+# print('xlauder', xlauder)
 
-# print(len(ymadrid), len(xmadrid))
-# print(len(ymadrid), len(xmadrid_nc))
+# print(len(ylauder), len(xlauder))
+# print(len(ylauder), len(xlauder_nc))
 
 # if(datef == '20140926'):continue
 # if (datef == '20150423'): continue
-# print(len(xmadrid), xmadrid)
-# print(len(xmadrid_nc), xmadrid_nc)
+# print(len(xlauder), xlauder)
+# print(len(xlauder_nc), xlauder_nc)

@@ -56,32 +56,116 @@ def madrid_missing_tpump(dfmainf):
 
     return dfmean
 
-def organize_madrid(dmm):
-    # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-    # #
-    # allFiles = sorted(glob.glob(path + "CSV/out/*MD2*.hdf"))
-    # print('All Files:', len(allFiles))
-    # dfl = pd.read_csv(path + 'Madrid_Metadata.csv')
-    # roc_table_file = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_madrid_roc.txt')
-    # IBGsplit = '2004'
-    # sonde_tbc = 'SPC10'
-    #
-    # humidity_correction = True
-    # # if there are missing variables in df like tpump in madrid
-    # df_missing_tpump = True
-    # if df_missing_tpump:
-    #     dfmain = pd.read_hdf(
-    #         "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf")
-    #     dfmean = madrid_missing_tpump(dfmain)
-    # # rename variables if needed
-    # df_rename = True
-    # # if current is not known and not in df
-    # calculate_current = True
-    #
-    # if datestr == '20140604': continue
-    # if datestr == '20140402': continue
-    # if datestr == '20210428': continue
+def station_inone(st_name):
 
+    if st_name == 'madrid':
+        pathf = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+        dfmetaf = pd.read_csv(pathf + 'Madrid_Metadata.csv')  #
+        allFilesf = sorted(glob.glob(pathf + "CSV/out/*hdf"))
+        roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_madrid_roc.txt')
+        dfmetaf = organize_madrid(dfmetaf)
+
+    if st_name == 'lauder':
+        pathf = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+        dfmetaf = pd.read_csv(pathf + 'metadata/Lauder_MetadaAll.csv')  #
+        allFilesf = sorted(glob.glob(pathf + "CSV/*hdf"))
+        roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
+        dfmetaf = organize_lauder(dfmetaf)
+
+    if st_name == 'uccle':
+        pathf = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
+        dfmetaf = pd.read_csv(pathf + 'Raw_upd/All_metadata.csv')
+        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/*hdf"))
+        roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt')
+        dfmetaf = organize_uccle(dfmetaf)
+
+    return pathf, allFilesf, roc_table_filef, dfmetaf
+
+
+def station_inbool(st_name):
+
+    if st_name == 'madrid':
+        humidity_correctionf = True
+        df_missing_tpumpf = True  # if there are missing variables in df like tpump in madrid
+        calculate_currentf = True
+        organize_dff = True
+        descent_dataf = False
+
+    if st_name == 'lauder':
+        humidity_correctionf = True
+        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        calculate_currentf = False
+        organize_dff = True
+        descent_dataf = True
+
+    if st_name == 'uccle':
+        humidity_correctionf = False
+        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        calculate_currentf = False
+        organize_dff = True
+        descent_dataf = True
+
+
+
+    return humidity_correctionf, df_missing_tpumpf, calculate_currentf, organize_dff, descent_dataf
+
+def station_invar(st_name):
+
+    if st_name == 'madrid':
+        date_start_homf = '' # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = '' # the date where there was a change from nors80
+        rs80_endf = ''
+        IBGsplitf = '2004'  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'SPC10'
+
+    if st_name == 'lauder':
+        date_start_homf = '19941012'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = '19890101'  # the date where there was a change from nors80
+        rs80_endf = '20070501'
+        IBGsplitf = '1996'  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'ENSCI05'
+
+    if st_name == 'uccle':
+        date_start_homf = '19961001'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = '20070901'  # the date where there was a change from nors80
+        rs80_endf = '20070901'
+        IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'ENSCI05'
+
+    return date_start_homf, IBGsplitf, sonde_tbcf, rs80_beginf, rs80_endf
+
+
+def organize_uccle(dum):
+
+
+    dum['string_bkg_used'] = 'ib0'
+
+    dum.loc[dum.Datenf.isnull() == 1,'DateTime'] = dum.loc[dum.Datenf.isnull() == 1,'Date']
+
+
+
+    dum['Date'] = pd.to_datetime(dum['DateTime'], format='%Y-%m-%d %H:%M:%S')
+    dum['Date'] = dum['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+
+    dum['unc_cPH'] = 0
+    dum['unc_cPL'] = 0
+
+    dum.loc[dum.iB0 == -1, 'iB0'] = 0
+
+    dum.loc[dum.Date <= '19981201', 'string_pump_location'] = 'case3'
+    dum.loc[dum.Date > '19981201', 'string_pump_location'] = 'case5'
+
+    dum['TLab'] = 20
+
+    dum['SensorType'] = 'DMT-Z'
+    dum['SolutionConcentration'] = 5.0
+
+    dum['iB2'] = dum['iB0']
+
+    return dum
+
+
+def organize_madrid(dmm):
 
     for i in range(len(dmm)):
         try:
@@ -122,9 +206,6 @@ def organize_madrid(dmm):
     dmm.loc[dmm.DateTime <= '2020-11-18', 'ULab'] = \
         dmm.loc[dmm.DateTime <= '2020-11-18', 'DateTime2'].dt.month.apply(lambda x: ulab[0])
 
-
-
-
     dmm['SolutionConcentration'] = 10
     dmm['SensorType'] = 'SPC'
     dmm['SolutionVolume'] = 3.0
@@ -153,8 +234,6 @@ def organize_madrid(dmm):
 
     dmm.loc[(dmm['iB2'].isnull()) & (dmm.DateTime < '2004'), 'iB2'] = mean_before
     dmm.loc[(dmm['iB2'].isnull()) & (dmm.DateTime > '2004'), 'iB2'] = mean_after
-
-
 
 
     return dmm
@@ -312,8 +391,14 @@ def organize_sodankyla(dsm):
 
     return dsm
 
-
 def organize_lauder(dfl):
+
+    # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+    # dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')  #
+    # allFiles = sorted(glob.glob(path + "CSV/*hdf"))
+    # print('All Files:', len(allFiles))
+    # roc_table_file = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
+    # roc_plevel = 10  # pressure value to obtain roc
     
     dfl.loc[dfl.TLab > k, 'TLab'] = dfl.loc[dfl.TLab > k, 'TLab'] - k
     dfl['PF'] = dfl['Phip']
@@ -365,11 +450,22 @@ def organize_lauder(dfl):
 
 def df_station(dl, datevalue, dml, station):
 
+    #to skip some bad files
     skip_function = 'False'
     return_string = 'fine'
     if ((datevalue == '20020725') | (datevalue == '20050124') | (datevalue == '20191216') | (datevalue == '20190524') | (datevalue == '20190528')) & (station == 'lauder'):
         skip_function = 'True'
         return_string = 'stop'
+
+    if ((datevalue == '20140604') | (datevalue == '20140402') | (datevalue == '20210428')) & (station == 'madrid'):
+        skip_function = 'True'
+        return_string = 'stop'
+
+
+    # if ((datevalue == '20021202') ) & (station == 'uccle'):
+    #     skip_function = 'True'
+    #     return_string = 'stop'
+
 
     if skip_function == 'False':
 
@@ -394,11 +490,20 @@ def df_station(dl, datevalue, dml, station):
             dl['Pair'] = dl['Press']
             dl['TboxK'] = dl['Tpump']
             dl['I'] = dl['O3CellI']
-            dl['iB2'] = dml['iB2']
+            dl['iB2'] = dml.at[dml.first_valid_index(),'iB2']
             dl['Height'] = dl['Alt']
 
     if station == 'madrid':
-        dl = rename_variables(dl,['Pressure','O3PartialPressure'], ['Pair','O3'])
+        dl = rename_variables(dl,['Pressure','O3PartialPressure','SampleTemperature'], ['Pair','O3','Tpump'])
 
+    if station == 'uccle':
+        dl['O3'] = dl['PO3_dqar']
+        dl['TboxK'] = dl['Tbox'] + k
+        # input variables for hom.
+        dl['Tpump'] = dl['Tbox'] + k
+        dl['iB0'] = dml.at[dml.first_valid_index(), 'iB0']
+        dl['Pair'] = dl['P']
+        dl['TLab'] = 20
+        dl['iB2'] = dml.at[dml.first_valid_index(), 'iB0']
 
     return return_string, dl

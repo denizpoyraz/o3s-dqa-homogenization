@@ -12,8 +12,47 @@ from functions.homogenization_functions import absorption_efficiency, stoichmetr
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
     return_phipcor, o3_integrate, roc_values, RS_pressurecorrection, o3tocurrent
 
-from functions.functions_perstation import organize_sodankyla, organize_madrid, df_missing_variable, \
-    rename_variables,madrid_missing_tpump, organize_lauder, df_station
+from functions.functions_perstation import df_missing_variable, madrid_missing_tpump, df_station, \
+    station_inone, station_inbool, station_invar
+
+
+# /home/poyraden/Analysis/Homogenization_public/Files/uccle//Raw_upd/20070523.hdf
+# /home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/arraylike.py:358: RuntimeWarning: invalid value encountered in log10
+#   result = getattr(ufunc, method)(*inputs, **kwargs)
+# /home/poyraden/Analysis/Homogenization_public/Files/uccle//Raw_upd/20070525.hdf
+# /home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/arraylike.py:358: RuntimeWarning: invalid value encountered in log10
+#   result = getattr(ufunc, method)(*inputs, **kwargs)
+# Traceback (most recent call last):
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 142, in _na_arithmetic_op
+#     result = expressions.evaluate(op, left, right)
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/computation/expressions.py", line 235, in evaluate
+#     return _evaluate(op, op_str, a, b)  # type: ignore[misc]
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/computation/expressions.py", line 120, in _evaluate_numexpr
+#     result = _evaluate_standard(op, op_str, a, b)
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/computation/expressions.py", line 69, in _evaluate_standard
+#     return op(a, b)
+# TypeError: unsupported operand type(s) for -: 'str' and 'float'
+#
+# During handling of the above exception, another exception occurred:
+#
+# Traceback (most recent call last):
+#   File "/home/poyraden/Analysis/Homogenization_public/o3s-dqa-homogenization/standard/homogenization_station.py", line 177, in <module>
+#     df['O3_nc'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip', False)
+#   File "/home/poyraden/Analysis/Homogenization_public/o3s-dqa-homogenization/functions/homogenization_functions.py", line 436, in currenttopo3
+#     df['O3cor'] = 0.043085 * df[tpump] * (df[im] - df[ib]) / (df[etac] * df[phip])
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/common.py", line 65, in new_method
+#     return method(self, other)
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/arraylike.py", line 97, in __sub__
+#     return self._arith_method(other, operator.sub)
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/series.py", line 4998, in _arith_method
+#     result = ops.arithmetic_op(lvalues, rvalues, op)
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 189, in arithmetic_op
+#     res_values = _na_arithmetic_op(lvalues, rvalues, op)
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 149, in _na_arithmetic_op
+#     result = _masked_arith_op(left, right, op)
+#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 91, in _masked_arith_op
+#     result[mask] = op(xrav[mask], yrav[mask])
+# TypeError: unsupported operand type(s) for -: 'str' and 'float'
 
 
 # homogenization code to be used by all stations
@@ -39,58 +78,36 @@ from functions.functions_perstation import organize_sodankyla, organize_madrid, 
 # Radiosonde correction (not to be applied)
 
 k = 273.15
-
-#           parts to be changed by hand!!!!         #
-
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
-dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')#
-allFiles = sorted(glob.glob(path + "CSV/*hdf"))
-print('All Files:' , len(allFiles))
-roc_table_file = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
 roc_plevel = 10 # pressure value to obtain roc
 
-# the date when the homogenization starts, there is a continue statement
-# in the main loop for the dates before this date, "may not be needed always"
 
-# date_start_hom = '19941012'
-# the date where there was a change from rs80
-# date_rs80 = '20051124'
+#           TO BE CHANGED By HAND         #
+station_name = 'uccle'
+main_rscorrection = False #if you want to apply rs80 correction
 
-# the date if there is a lower/higher bkg value region
-IBGsplit = '1996'
-sonde_tbc = 'ENSCI05'
+file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
+#only needed for madrid (for the moment) to calculate means of the tmpump
 
-humidity_correction = True
+#           end of the parts to be changed by hand!!!!          #
 
-#if there are missing variables in df like tpump in madrid
-df_missing_tpump = False
+path, allFiles, roc_table_file, dfmeta = station_inone(station_name)
+humidity_correction, df_missing_tpump, calculate_current, organize_df, descent_data = station_inbool(station_name)
+date_start_hom, IBGsplit, sonde_tbc, rs80_begin, rs80_end = station_invar(station_name)
+
+
 if df_missing_tpump:
-    dfmain = pd.read_hdf(
-        "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf")
+    dfmain = pd.read_hdf(file_dfmain)
     dfmean = madrid_missing_tpump(dfmain)
-#rename variables if needed
-# if current is not known and not in df
-calculate_current = False
-organize_df = True
-descent_data = True
-station_name = 'lauder'
-
-dfmeta = organize_lauder(dfmeta)
 
 if humidity_correction:
     dfmeta = calculate_cph(dfmeta)
     dfmeta['unc_cPH'] = dfmeta['cPH'].std()
     dfmeta['unc_cPL'] = dfmeta['cPL'].std()
 
-
-#           end of the parts to be changed by hand!!!!          #
-
-#check if dfmeta has "Date" variable, otherwise create it
 clms = [i for i in range(1,13)]
 table = pd.read_csv(roc_table_file,  skiprows=1, sep="\s *", names = clms,  header=None)
 dfmeta = roc_values(dfmeta,table, roc_plevel)
 # PFmean = np.nanmean(dfmeta[(dfmeta.PF > 0) & (dfmeta.PF < 99)].PF)
-
 
 
 #read over all files to do the homogenization
@@ -104,8 +121,8 @@ for (filename) in (allFiles):
     date = datetime.strptime(date_tmp, '%y%m%d')
     datestr = date.strftime('%Y%m%d')
 
-    if datestr < '20120214': continue # no bkg values
-
+    if datestr <= '20021202': continue
+    # if datestr > date_start_hom: continue
 
     print(filename)
 
@@ -116,7 +133,10 @@ for (filename) in (allFiles):
         dfm = dfmeta[dfmeta.Date == datestr][0:1]
     if (len(dfm) == 2) and search("2nd", fullname):
         dfm = dfmeta[dfmeta.Date == datestr][1:2]
+    if(len(dfm) > 0) and not search("2nd", fullname):
+        dfm = dfmeta[dfmeta.Date == datestr][0:1]
     dfm = dfm.reset_index()
+
 
     if organize_df:
         date_bool, df = df_station(df,datestr, dfm, station_name)
@@ -128,20 +148,11 @@ for (filename) in (allFiles):
         df = df_missing_variable(df, dfmean)
 
     if calculate_current:
-        # df = o3tocurrent(df, dfm)
         try:
             df = o3tocurrent(df, dfm)
         except (ValueError, KeyError):
-            print('BAD File, skip')
+            print('BAD File, check FILE')
             # continue
-
-
-    # if len(df) < 200:
-    #
-    #     print('BREAK', len(df))
-
-        # stopped at /home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/20110406_out.hdf
-
 
     # input variables for hom.
     df['Tpump'] = df['TboxK']
@@ -158,19 +169,19 @@ for (filename) in (allFiles):
 
     # #      radiosonde RS80 correction   #
     # # Electronic o3 sonde interface  was replaced with the transfer from RS80 to RS92  in 24 Nov 2005.
-    # rsmodel = ''
-    # bool_rscorrection = ''
-    # # if datestr <= date_rs80:
-    # if datestr < '20070501' and datestr >= '19890101':
-    #     bool_rscorrection = True
-    # # if datestr > date_rs80:
-    # if datestr >= '20070501' or datestr < '1989-01-01':
-    #     bool_rscorrection = False
-    # #
+    rsmodel = ''
+    bool_rscorrection = ''
+    # if datestr <= rs80_end:
+    if datestr < rs80_end and datestr >= rs80_begin:
+        bool_rscorrection = True
+    # if datestr > rs80_end:
+    if datestr >= rs80_end or datestr < rs80_begin:
+        bool_rscorrection = False
     #
-    # if bool_rscorrection:
-    #     df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'Height', rsmodel)
-    #     df['Pair'] = df['Pair'] - df['Crs']
+
+    if bool_rscorrection and main_rscorrection:
+        df['Crs'], df['unc_Crs'] = RS_pressurecorrection(df, 'Height', rsmodel)
+        df['Pair'] = df['Pair'] - df['Crs']
 
     # DQA corrections
     #      conversion efficiency        #
@@ -212,8 +223,6 @@ for (filename) in (allFiles):
 
     #to correct the data for negative O3c values, in case iBc is larger than I
     df.loc[(df.O3c < 0) & (df.O3c > -999) , 'O3c'] = 0
-    # df.loc[(df.O3 < 0) & (df.O3 > -999) , 'O3c'] = 0
-
 
     # uncertainities
     df['dI'] = 0
@@ -230,13 +239,7 @@ for (filename) in (allFiles):
 
     if len(df[(df.O3c > -99) & (df.O3c < 0)]) > 0 | (len(df[df['O3c'] > 30]) > 0) :
         print('     BREAK       O3c')
-    # if len(df[(df.I > -99) & (df.I < 0)]) > 0 | (len(df[df['I'] > 30]) > 0) | (len(df[df.I.isnull()])>0):
-    #     print('     BREAK       I')
-    # if len(df[(df.Tpump_cor > -99) & (df.Tpump_cor < 0)]) > 0 | (len(df[df['Tpump_cor'] > 330]) > 0) :
-    #     print('     BREAK       Tpump_cor', filename)
-    # if (len(df[df.Tpump_cor.isnull()]) >0) & (df.Pair.min() >=5):
-    #     print('BREAK Tpump 2 ')
-    if (len(df[df['iBc'] > 0.5]) > 0)  | (len(df[df.iBc.isnull()])>0):
+    if (len(df[df['iBc'] > 0.5]) > 0) | (len(df[df.iBc.isnull()])>0):
         print('     BREAK       iBc')
 
     # TON calculations
@@ -304,7 +307,6 @@ for (filename) in (allFiles):
         dfm['O3SondeTotal_raw'] = 9999
         dfm['O3ratio_raw'] = 9999
 
-
     #
     md_clist = ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
                 'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'TLab', 'deltat', 'unc_deltat', 'unc_deltat_ppi', 'dEta']
@@ -326,12 +328,20 @@ for (filename) in (allFiles):
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
     df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key='df')
 
-    # df['Tbox'] = df['Tpump_cor'] - k
-    # df['O3'] = df['O3c']
-    # df = df.drop(['TboxC', 'Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor'],
-    #              axis=1)
-    # # df to be converted to WOUDC format together with the metadata
-    # df.to_hdf(path + '/DQA_nors80/' + datestr + "_o3sdqa_nors80.hdf", key='df')
+    df['Tbox'] = df['Tpump_cor'] - k
+    df['O3'] = df['O3c']
+    df = df.drop(['Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor'],
+                 axis=1)
+    # df to be converted to WOUDC format together with the metadata
+    df.to_hdf(path + '/DQA_nors80/' + datestr + "_o3sdqa_nors80.hdf", key='df')
 
 
 
+########################################################################################################################
+
+    # if len(df[(df.I > -99) & (df.I < 0)]) > 0 | (len(df[df['I'] > 30]) > 0) | (len(df[df.I.isnull()])>0):
+    #     print('     BREAK       I')
+    # if len(df[(df.Tpump_cor > -99) & (df.Tpump_cor < 0)]) > 0 | (len(df[df['Tpump_cor'] > 330]) > 0) :
+    #     print('     BREAK       Tpump_cor', filename)
+    # if (len(df[df.Tpump_cor.isnull()]) >0) & (df.Pair.min() >=5):
+    #     print('BREAK Tpump 2 ')

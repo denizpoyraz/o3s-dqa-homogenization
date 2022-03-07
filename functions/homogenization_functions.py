@@ -177,14 +177,16 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
     :param rhlab:
     :return:
     """
-    df['TLab'] = dfm.at[dfm.first_valid_index(),tlab]
-    df['TLab'] = df['TLab'].astype('float')
-    df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab]
-    df['ULab'] = df['ULab'].astype('float')
-    df['PLab'] = dfm.at[dfm.first_valid_index(), plab]
-    df['PLab'] = df['PLab'].astype('float')
+
 
     if boolrh == True:
+
+        df['TLab'] = dfm.at[dfm.first_valid_index(), tlab]
+        df['TLab'] = df['TLab'].astype('float')
+        df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab]
+        df['ULab'] = df['ULab'].astype('float')
+        df['PLab'] = dfm.at[dfm.first_valid_index(), plab]
+        df['PLab'] = df['PLab'].astype('float')
         # df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab].astype('float')
         # df['PLab'] = dfm.at[dfm.first_valid_index(), plab].astype('float')
         df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
@@ -318,6 +320,8 @@ def background_correction(df, dfmeta, dfm, ib, year):
     :param ib2:
     :return: df[ib]
     """
+
+    # print(np.mean(dfmeta[dfmeta[ib] < 0.1][ib]),np.std(dfmeta[dfmeta[ib] < 0.1][ib]))
 
     df['iBc'] = 0
     df['unc_iBc'] = 0
@@ -458,8 +462,11 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
         df.loc[(df[pair] > 70), 'unc_deltat'] = 3.9 - 1.13 * np.log10(df.loc[(df[pair] > 70), pair])
         df.loc[(df[pair] <= 70) & (df[pair] >= 15), 'deltat'] = 8.25
         # updated formula, 17/06/2021 not 3.25 - 4.25 ... but 3.25 + 4.25
-        df.loc[(df[pair] < 15) & (df[pair] >= 5), 'deltat'] = 3.25 + 4.25 * np.log10(
-            df.loc[(df[pair] < 15) & (df[pair] >= 5), pair])
+        # df.loc[(df[pair] < 15) & (df[pair] >= 5), 'deltat'] = 3.25 + 4.25 * np.log10(
+        #     df.loc[(df[pair] < 15) & (df[pair] >= 5), pair])
+        #updated in 03/03/2022 to have pimn 5 to 3
+        df.loc[(df[pair] < 15) & (df[pair] >= 3), 'deltat'] = 3.25 + 4.25 * np.log10(
+            df.loc[(df[pair] < 15) & (df[pair] >= 3), pair])
         df.loc[(df[pair] <= 70), 'unc_deltat'] = 0.3 + 1.13 * np.log10(df.loc[(df[pair] <= 70), pair])
 
     if (boxlocation == 'ExternalPumpGlued') | (boxlocation == 'case4'):  # case IV in O3S-DQA guide
