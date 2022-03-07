@@ -16,45 +16,6 @@ from functions.functions_perstation import df_missing_variable, madrid_missing_t
     station_inone, station_inbool, station_invar
 
 
-# /home/poyraden/Analysis/Homogenization_public/Files/uccle//Raw_upd/20070523.hdf
-# /home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/arraylike.py:358: RuntimeWarning: invalid value encountered in log10
-#   result = getattr(ufunc, method)(*inputs, **kwargs)
-# /home/poyraden/Analysis/Homogenization_public/Files/uccle//Raw_upd/20070525.hdf
-# /home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/arraylike.py:358: RuntimeWarning: invalid value encountered in log10
-#   result = getattr(ufunc, method)(*inputs, **kwargs)
-# Traceback (most recent call last):
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 142, in _na_arithmetic_op
-#     result = expressions.evaluate(op, left, right)
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/computation/expressions.py", line 235, in evaluate
-#     return _evaluate(op, op_str, a, b)  # type: ignore[misc]
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/computation/expressions.py", line 120, in _evaluate_numexpr
-#     result = _evaluate_standard(op, op_str, a, b)
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/computation/expressions.py", line 69, in _evaluate_standard
-#     return op(a, b)
-# TypeError: unsupported operand type(s) for -: 'str' and 'float'
-#
-# During handling of the above exception, another exception occurred:
-#
-# Traceback (most recent call last):
-#   File "/home/poyraden/Analysis/Homogenization_public/o3s-dqa-homogenization/standard/homogenization_station.py", line 177, in <module>
-#     df['O3_nc'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip', False)
-#   File "/home/poyraden/Analysis/Homogenization_public/o3s-dqa-homogenization/functions/homogenization_functions.py", line 436, in currenttopo3
-#     df['O3cor'] = 0.043085 * df[tpump] * (df[im] - df[ib]) / (df[etac] * df[phip])
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/common.py", line 65, in new_method
-#     return method(self, other)
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/arraylike.py", line 97, in __sub__
-#     return self._arith_method(other, operator.sub)
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/series.py", line 4998, in _arith_method
-#     result = ops.arithmetic_op(lvalues, rvalues, op)
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 189, in arithmetic_op
-#     res_values = _na_arithmetic_op(lvalues, rvalues, op)
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 149, in _na_arithmetic_op
-#     result = _masked_arith_op(left, right, op)
-#   File "/home/poyraden/anaconda3/lib/python3.7/site-packages/pandas/core/ops/array_ops.py", line 91, in _masked_arith_op
-#     result[mask] = op(xrav[mask], yrav[mask])
-# TypeError: unsupported operand type(s) for -: 'str' and 'float'
-
-
 # homogenization code to be used by all stations
 ### all corrections recommended by the DQA:
 ## Conversion Efficiency:
