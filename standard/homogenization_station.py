@@ -53,7 +53,7 @@ file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_no
 
 path, allFiles, roc_table_file, dfmeta = station_inone(station_name)
 humidity_correction, df_missing_tpump, calculate_current, organize_df, descent_data = station_inbool(station_name)
-date_start_hom, IBGsplit, sonde_tbc, rs80_begin, rs80_end = station_invar(station_name)
+date_start_hom, ibg_split, sonde_tbc, rs80_begin, rs80_end = station_invar(station_name)
 
 
 if df_missing_tpump:
@@ -152,8 +152,8 @@ for (filename) in (allFiles):
     df['eta_c'], df['unc_eta_c'] = conversion_efficiency(df, 'alpha_o3', 'unc_alpha_o3', 'stoich', 'unc_stoich')
 
     #       background correction       #
-    if dfm.at[0, 'string_bkg_used'] == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', IBGsplit)
-    if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', IBGsplit)
+    if dfm.at[0, 'string_bkg_used'] == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', ibg_split)
+    if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', ibg_split)
 
     if (df.Pair.min() <5) & (dfm.loc[0,'string_pump_location'] == 'case3'): print('HERE')
 
