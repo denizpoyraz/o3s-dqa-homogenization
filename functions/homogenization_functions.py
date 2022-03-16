@@ -418,7 +418,7 @@ def po3tocurrent(df, po3, tpump, ib, etac, phip, boolcorrection, out):
     return df[out]
 
 
-def currenttopo3(df, im, tpump, ib, etac, phip, boolcorrection):
+def currenttopo3(df, im, tpump, ib, etac, phip):
     '''
     :param df: dataframe
     :param po3: partial ozone pressure of the sonde
@@ -431,9 +431,10 @@ def currenttopo3(df, im, tpump, ib, etac, phip, boolcorrection):
     :return: Current obtained from PO3
     '''
 
-    if (boolcorrection == False):
-        df.loc[(df[im] == 0), 'O3cor'] = 0
-        df['O3cor'] = 0.043085 * df[tpump] * (df[im] - df[ib]) / (df[etac] * df[phip])
+
+    df.loc[(df[im] == 0), 'O3cor'] = 0
+
+    df['O3cor'] = 0.043085 * df[tpump] * (df[im] - df[ib]) / (df[etac] * df[phip])
 
     return df['O3cor']
 

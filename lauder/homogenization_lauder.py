@@ -19,6 +19,9 @@ k = 273.15
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
 dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')
+
+
+
 dfmeta.loc[dfmeta.TLab > k, 'TLab'] = dfmeta.loc[dfmeta.TLab > k, 'TLab'] - k
 dfmeta['PF'] = dfmeta['Phip']
 
@@ -88,7 +91,7 @@ for i in range(1,13):
 dfmeta['Date'] = dfmeta['DateTime'].dt.strftime('%Y-%m-%d')
 
 
-allFiles = sorted(glob.glob(path + "csv/*hdf"))
+allFiles = sorted(glob.glob(path + "CSV/*hdf"))
 
 
 size = len(allFiles)
@@ -115,7 +118,7 @@ for (filename) in (allFiles):
 
     if datef == '20020725': continue
     if datef == '20050124': continue
-    if datef == '20190524': continue
+    # if datef == '20190524': continue
     if datef == '20191216': continue
 
     print('one', filename)
@@ -138,6 +141,8 @@ for (filename) in (allFiles):
 
     # df = filter_data(df)
     # df = df.reset_index()
+    # print(list(dfm))
+    # print(list(dfmeta))
 
     df['Date'] = datef
 
@@ -195,7 +200,7 @@ for (filename) in (allFiles):
     df['eta_c'], df['unc_eta_c'] = conversion_efficiency(df, 'alpha_o3', 'unc_alpha_o3', 'stoich', 'unc_stoich')
 
     #       background correction       #
-    if string_bkg_used == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2')
+    if string_bkg_used == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2','1996')
 
     #       pump temperature correction       #
     if dfm.at[dfm.first_valid_index(), 'Pump_loc'] == '4A': string_pump_location = 'case1'
@@ -241,7 +246,9 @@ for (filename) in (allFiles):
     df['dIall'] = (df['dI'] ** 2 + df['unc_iBc']**2) / (df['I'] - df['iBc'])**2
     df['dEta'] = (df['unc_eta_c'] / df['eta_c'])**2
     df['dPhi_cor'] = (df['unc_Phip_cor'] / df['Phip_cor'])**2
-    df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor'])**2
+    # df['dTpump_cor'] = (df['unc_Tpump_cor'] / df['Tpump_cor'])**2
+    df['dTpump_cor'] = df['unc_Tpump_cor']
+
     # final uncertainity on O3
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
 
@@ -318,9 +325,9 @@ for (filename) in (allFiles):
     dfm.to_csv(path + '/DQA_nors80/'+ datestr + "_o3smetadata_nors80.csv")
 
 
-    df = df.drop(
-        ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
-         'unc_eta_c', 'iB2', 'iBc', 'unc_iBc','dEta'], axis=1)
+    # df = df.drop(
+    #     ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
+    #      'unc_eta_c', 'iB2', 'iBc', 'unc_iBc','dEta'], axis=1)
 
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature

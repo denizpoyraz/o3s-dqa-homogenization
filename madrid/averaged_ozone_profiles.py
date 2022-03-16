@@ -104,7 +104,7 @@ df1 = df1[df1.Date < '2005-06-01' ]
 
 o3, o3err, y = Calc_average_profile_pressure(df1, 'O3')
 o3c, o3cerr, y = Calc_average_profile_pressure(df1, 'O3c')
-o3nc, o3cerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
+o3nc, o3ncerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
 
 # o3c2, o3cerr2, y = Calc_average_profile_pressure(df2, 'O3c')
 

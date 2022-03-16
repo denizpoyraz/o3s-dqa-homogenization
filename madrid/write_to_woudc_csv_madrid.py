@@ -89,25 +89,31 @@ for (filename) in(data_files):
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
-    # if dfm.at[0,'Datenf'] >= 19970401: continue  # already homogenized
 
     print(filename)
     # some exceptions
     if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20190606_o3sdqa_nors80.hdf':
-        dfm['Date'] = '2019-06-06'
+        dfm['DateTime'] = '2019-06-06'
     if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20191006_o3sdqa_nors80.hdf':
-        dfm['Date'] = '2019-10-06'
+        dfm['DateTime'] = '2019-10-06'
     if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20191009_o3sdqa_nors80.hdf':
-        dfm['Date'] = '2019-10-09'
+        dfm['DateTime'] = '2019-10-09'
     if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20200903_o3sdqa_nors80.hdf':
-        dfm['Date'] = '2020-09-03'
+        # dfm['Date'] = '2020-09-03'
+        dfm['DateTime'] = '2020-09-03'
+        print('why noyt')
+        print(dfm['Date'])
 
 
-    dfm['Date'] = pd.to_datetime(dfm['Date'], format='%Y-%m-%d')
+
+    dfm['Date'] = pd.to_datetime(dfm['DateTime'], format='%Y-%m-%d')
     dfm['Date2'] = pd.to_datetime(dfm['Date'], format='%Y%m%d')
     dfm['Datenf'] = dfm['Date'].apply(lambda x: x.strftime('%Y%m%d'))
     dfm['Datenw'] = dfm['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
     dfm['Datenf'] = dfm['Datenf'].astype('int')
+
+    if dfm.at[0,'Datenf'] < 20200903: continue  # already homogenized
+
 
     dfmw = dfm_woudc[dfm_woudc['TIMESTAMP_Date'] == dfm.loc[0,'Datenw']]
     dfmw = dfmw.reset_index()
@@ -159,7 +165,7 @@ for (filename) in(data_files):
                     'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2021-07-20,AEMET,2.1.3,Jose Luis Hernandez',
+                    '2022-03-03,AEMET,2.1.3,Jose Luis Hernandez',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
                     'STN,308,Madrid,ESP,MAD',
@@ -246,11 +252,11 @@ for (filename) in(data_files):
 
     # FLIGHT_SUMMARY 	IntegratedO3, CorrectionCode, SondeTotalO3, NormalizationFactor, BackgroundCorrection,
     dfm['CorrectionCode'] = 6
-    dfm['BackgroundCorrection'] = "constant_ib0"
+    dfm['BackgroundCorrection'] = "constant_ib2"
     try: dfm['O3ratio_hom'] = -dfm['O3ratio_hom']
     except KeyError: dfm['O3ratio_hom'] = 9999
-    if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib0"
-    if dfm.at[dfm.first_valid_index(), 'iB0'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_climatologicalmean_ib0"
+    if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib2"
+    if dfm.at[dfm.first_valid_index(), 'iB2'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_climatologicalmean_ib2"
     flight_field = 'IntegratedO3,CorrectionCode,SondeTotalO3,NormalizationFactor,BackgroundCorrection'
     df_names = 'O3Sonde_hom', 'CorrectionCode', 'O3SondeTotal_hom', 'O3ratio_hom', 'BackgroundCorrection'
     flight_summary = make_summary(dfm, df_names)

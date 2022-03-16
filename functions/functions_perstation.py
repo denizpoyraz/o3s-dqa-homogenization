@@ -462,9 +462,10 @@ def df_station(dl, datevalue, dml, station):
         return_string = 'stop'
 
 
-    # if ((datevalue == '20021202') ) & (station == 'uccle'):
-    #     skip_function = 'True'
-    #     return_string = 'stop'
+    if ((datevalue == '20070525') | (datevalue == '20070629') | (datevalue == '20070702') | (datevalue == '20070706')  | (datevalue == '20070709')
+        | (datevalue == '20070711') | (datevalue == '20070716') | (datevalue == '20070718')    ) & (station == 'uccle'):
+        skip_function = 'True'
+        return_string = 'stop'
 
 
     if skip_function == 'False':
@@ -497,6 +498,16 @@ def df_station(dl, datevalue, dml, station):
         dl = rename_variables(dl,['Pressure','O3PartialPressure','SampleTemperature'], ['Pair','O3','Tpump'])
 
     if station == 'uccle':
+        #to remove some bad values in the df
+        dl['fix'] = 'fix'
+        if dl.I.dtypes == dl.fix.dtypes:
+            dl['bad_I'] = dl['I'].apply(lambda x: True if type(x) == type(None) else False)
+            dl = dl.drop(dl.index[dl['bad_I'] == 1], inplace=False)
+            dl['drop_two'] = dl['I'].apply(lambda x: True if len(x) > 6 else False)
+            dl = dl.drop(dl.index[dl['drop_two'] == 1], inplace=False)
+            dl = dl.reset_index()
+            dl['I'] = dl.I.astype(float)
+
         dl['O3'] = dl['PO3_dqar']
         dl['TboxK'] = dl['Tbox'] + k
         # input variables for hom.

@@ -45,7 +45,7 @@ for i in range(1,13):
 dfmeta['Date'] = dfmeta['DateTime'].dt.strftime('%Y-%m-%d')
 
 
-allFiles = sorted(glob.glob(path + "/Raw_upd/*hdf"))
+allFiles = sorted(glob.glob(path + "/Raw_upd/200707*hdf"))
 
 
 size = len(allFiles)
@@ -69,7 +69,7 @@ for (filename) in (allFiles):
 
     datestr = str(datef)
     if datef < '19961001':continue #before this date it is BrewerMast
-    if datef < '20150914_':continue #already homogenized
+    # if datef < '20150914_':continue #already homogenized
 
     print(filename)
 
@@ -85,7 +85,7 @@ for (filename) in (allFiles):
 
     if dfm.at[0,'iB0'] == -1: dfm.at[0,'iB0'] = 0
 
-    df = filter_data(df)
+    # df = filter_data(df)
     df = df.reset_index()
 
     # to deal with data that is not complete
@@ -137,7 +137,7 @@ for (filename) in (allFiles):
 
     #       background correction       #
     # if string_bkg_used == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2')
-    if string_bkg_used == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0')
+    if string_bkg_used == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', '2008')
 
     #       pump temperature correction       #
     if datef < '19981201':
@@ -150,6 +150,8 @@ for (filename) in (allFiles):
     #      pump flow corrections        #
     # ground correction
     dfm['TLab'] = 20
+    df['TLab'] = 20
+
     df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'Pground', 'ULab', False)
     # efficiency correction
     # pumpflowtable = ''
@@ -262,7 +264,7 @@ for (filename) in (allFiles):
     for j in range(len(md_clist)):
         dfm[md_clist[j]] = df.at[df.first_valid_index(), md_clist[j]]
 
-    dfm.to_csv(path + '/DQA_nors80/'+ datestr + "_o3smetadata_nors80.csv")
+    # dfm.to_csv(path + '/DQA_nors80/'+ datestr + "_o3smetadata_nors80.csv")
 
 
     df = df.drop(
@@ -271,7 +273,7 @@ for (filename) in (allFiles):
 
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
-    df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key = 'df')
+    # df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key = 'df')
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
@@ -287,5 +289,5 @@ for (filename) in (allFiles):
     # , 'Crs', 'unc_Crs', 'dPrs'
     # df to be converted to WOUDC format together with the metadata
 
-    df.to_hdf(path + '/DQA_nors80/' + datestr + "_o3sdqa_nors80.hdf", key = 'df')
+    # df.to_hdf(path + '/DQA_nors80/' + datestr + "_o3sdqa_nors80.hdf", key = 'df')
 

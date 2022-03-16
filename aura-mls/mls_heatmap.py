@@ -15,16 +15,26 @@ df1 = pd.read_csv(path + 'new_MLS_LauderInterpolated_rs80_v04_dqa.csv')
 df1 = df1[df1.PreLevel < 216]
 df1 = df1[df1.PreLevel >= 8]
 
+df1 = df1[df1.PO3_UcIntLin < 99]
+df1 = df1[df1.PO3_MLS < 99]
+
+
 # Plotname = 'Raw_vs_MLS_v04_rs80'
 # Plotname = 'NDACC_vs_MLS_v04_rs80'
 
-# Plotname = 'PreviousVersion_vs_MLS_v04_rs80_v04'
-Plotname = 'DQArs80_vs_MLS_v04_rs80_new'
+# Plotname = 'NIWA_vs_MLS_v04_nors80_new'
+Plotname = 'DQA_vs_MLS_v04_rs80_new'
+# Plotname = 'Raw_vs_MLS_v04_nors80_new'
+# Plotname = 'DQA_vs_MLS_v04_nors80_new'
+
 # plot_title = 'Lauder (tpump) - MLS comparison'
 # plot_title = 'Lauder O3S-Previous Version - MLS (v04) comparison'
 # plot_title = 'Sodankyla O3S-NDACC - MLS (v04) comparison'
 # plot_title = 'Lauder O3S-Raw - MLS (v04) comparison'
 plot_title = 'Lauder DQA RS80 - MLS (v04) comparison'
+# plot_title = 'Lauder DQA - MLS (v04) comparison'
+
+# plot_title = 'Lauder NIWA - MLS (v04) comparison'
 
 # plot_title = 'Sodankyla O3S-DQA - MLS (v04) comparison'
 # plot_title = 'Sodankyla Raw (no correction) - MLS (v04) comparison'
@@ -33,6 +43,8 @@ plot_title = 'Lauder DQA RS80 - MLS (v04) comparison'
 
 # df1 = df1[df1.PreLevel < 57]
 # df1 = df1[df1.PreLevel >= 8]
+
+
 
 df1 = df1[df1.PreLevel >= 8]
 
@@ -77,7 +89,7 @@ plt.title(plot_title)
 
 plt.xlabel(" ")
 # ax.set_ylim([68,8])
-
+#
 plt.savefig(path + 'Plots/' + Plotname + '.png')
 plt.savefig(path + 'Plots/' + Plotname + '.eps')
 # plt.savefig(path + 'Plots/' + Plotname + '.pdf')

@@ -11,13 +11,13 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/Bi
 
 
 # df1 = pd.read_csv(path + 'new_LauderInterpolated_dqa_nors80.csv')
-df1 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_rs80/Binned/new_LauderInterpolated_dqa_rs80.csv')
+df1 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Binned/new_MadridInterpolated_dqa_nors80.csv')
 
 # df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80.csv')
 # df1 = pd.read_csv(path + 'new_LauderInterpolated_dqa_nors80.csv')
 
 df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
-df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y-%m-%d')
+# df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y-%m-%d')
 
 # df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d') #sodankyla
 
@@ -26,7 +26,7 @@ df1['date'] = df1['DateTime'].apply(lambda x: x.date())
 df1 = df1[df1.PreLevel > 7]
 
 df1 = df1[df1.Date > '2008-01-01']
-df2 = df2[df2.Date > '2008-01-01']
+# df2 = df2[df2.Date > '2008-01-01']
 
 df1['PreLevel'] = df1['PreLevel'].astype(int)
 
@@ -34,7 +34,7 @@ Plotname = 'RS80_vs_noRS80'
 heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
 ptitle = 'Effect of RS80 Radiosonde Correction'
 # # #
-df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
+# df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
 
 # (2 - 1) / 1
 # Plotname = 'Eta_vs_Raw_alltimerange'
@@ -100,13 +100,13 @@ df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.
 # df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr) - np.asarray(df1.PO3_UcIntLin_etabkgtpump)) / np.asarray(df1.PO3_UcIntLin_etabkgtpump)
 # df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr)) / np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr)
 # df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_nc)) / np.asarray(df1.PO3_UcIntLin_nc)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
 # df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_woudc) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
 # df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_woudc_v2) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
 
 
 
-t = df1.pivot_table(index='PreLevel', columns='DateTime', values='RDif_UcIntLin', fill_value = 0, dropna = False)
+t = df1.pivot_table(index='PreLevel', columns='DateTime', values='RDif_UcIntLin', fill_value = 0, dropna = True)
 # t = df1.pivot_table(index='PreLevel', columns='date2', values='RDif_UcIntLin', fill_value = 0, dropna = False)
 
 min_dist_days = t.columns.to_series().diff()
@@ -142,9 +142,9 @@ plt.xlabel(" ")
 
 plt.title(ptitle)
 #
-plt.savefig(path + 'Plots_new/' + Plotname + '.png')
-plt.savefig(path + 'Plots_new/' + Plotname + '.eps')
-# plt.savefig(path + 'Plots/' + Plotname + '.pdf')
+# plt.savefig(path + 'Plots_new/' + Plotname + '.png')
+# plt.savefig(path + 'Plots_new/' + Plotname + '.eps')
+# # plt.savefig(path + 'Plots/' + Plotname + '.pdf')
 
 plt.show()
 

@@ -142,6 +142,7 @@ for (filename) in(data_files):
     #     burst_pressure = burst_pressure[0]
     dfm['BurstOzonePressure'] = float(burst_pressure[0])
 
+    dfm['Datenf'] = dfm['Datenf'].astype('int')
     dfm['Datenf'] = dfm['Datenf'].astype('str')
     dfm['Date'] = dfm['Datenf'].apply(lambda _: datetime.strptime(_, "%Y%m%d"))
     dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strftime(_, '%Y-%m-%d'))
@@ -156,7 +157,7 @@ for (filename) in(data_files):
                     'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2021-07-16,RMIB,2.1.3,Roeland Van Malderen',
+                    '2022-07-03,RMIB,2.1.3,Roeland Van Malderen',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
                     'STN,053,UCCLE,BEL,6447',

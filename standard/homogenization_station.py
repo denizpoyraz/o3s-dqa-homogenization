@@ -41,15 +41,18 @@ from functions.functions_perstation import df_missing_variable, madrid_missing_t
 k = 273.15
 roc_plevel = 10 # pressure value to obtain roc
 
+##                                         ##
+##           TO BE CHANGED By HAND         ##
 
-#           TO BE CHANGED By HAND         #
 station_name = 'uccle'
 main_rscorrection = False #if you want to apply rs80 correction
 
 file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
 #only needed for madrid (for the moment) to calculate means of the tmpump
 
-#           end of the parts to be changed by hand!!!!          #
+##           end of the parts  TO BE CHANGED By HAND           ##
+##                                                             ##
+
 
 path, allFiles, roc_table_file, dfmeta = station_inone(station_name)
 humidity_correction, df_missing_tpump, calculate_current, organize_df, descent_data = station_inbool(station_name)
@@ -68,7 +71,6 @@ if humidity_correction:
 clms = [i for i in range(1,13)]
 table = pd.read_csv(roc_table_file,  skiprows=1, sep="\s *", names = clms,  header=None)
 dfmeta = roc_values(dfmeta,table, roc_plevel)
-# PFmean = np.nanmean(dfmeta[(dfmeta.PF > 0) & (dfmeta.PF < 99)].PF)
 
 
 #read over all files to do the homogenization
@@ -82,8 +84,7 @@ for (filename) in (allFiles):
     date = datetime.strptime(date_tmp, '%y%m%d')
     datestr = date.strftime('%Y%m%d')
 
-    if datestr <= '20021202': continue
-    # if datestr > date_start_hom: continue
+    if datestr < date_start_hom: continue
 
     print(filename)
 
@@ -113,7 +114,6 @@ for (filename) in (allFiles):
             df = o3tocurrent(df, dfm)
         except (ValueError, KeyError):
             print('BAD File, check FILE')
-            # continue
 
     # input variables for hom.
     df['Tpump'] = df['TboxK']
@@ -174,13 +174,13 @@ for (filename) in (allFiles):
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
 
     # all corrections
-    df['O3_nc'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip', False)
-    df['O3c_eta'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'eta_c', 'Phip', False)
-    df['O3c_etabkg'] = currenttopo3(df, 'I', 'Tpump', 'iBc', 'eta_c', 'Phip', False)
-    df['O3c_etabkgtpump'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip', False)
-    df['O3c_etabkgtpumpphigr'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_ground', False)
-    df['O3c_etabkgtpumpphigref'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
-    df['O3c'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor', False)
+    df['O3_nc'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'Eta', 'Phip')
+    df['O3c_eta'] = currenttopo3(df, 'I', 'Tpump', 'iB2', 'eta_c', 'Phip')
+    df['O3c_etabkg'] = currenttopo3(df, 'I', 'Tpump', 'iBc', 'eta_c', 'Phip')
+    df['O3c_etabkgtpump'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip')
+    df['O3c_etabkgtpumpphigr'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_ground')
+    df['O3c_etabkgtpumpphigref'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor')
+    df['O3c'] = currenttopo3(df, 'I', 'Tpump_cor', 'iBc', 'eta_c', 'Phip_cor')
 
     #to correct the data for negative O3c values, in case iBc is larger than I
     df.loc[(df.O3c < 0) & (df.O3c > -999) , 'O3c'] = 0
