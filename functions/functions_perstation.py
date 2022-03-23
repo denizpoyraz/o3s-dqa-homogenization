@@ -79,6 +79,13 @@ def station_inone(st_name):
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt')
         dfmetaf = organize_uccle(dfmetaf)
 
+    if st_name == 'scoresbysund':
+        pathf = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
+        dfmetaf = pd.read_csv(pathf + 'metadata/Scoresby_MetadaAll.csv')
+        allFilesf = sorted(glob.glob(pathf + "/Current/*sc03*hdf"))
+        roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_scoresbysund_roc.txt')
+        dfmetaf = organize_scoresby(dfmetaf)
+
     return pathf, allFilesf, roc_table_filef, dfmetaf
 
 
@@ -105,6 +112,12 @@ def station_inbool(st_name):
         organize_dff = True
         descent_dataf = True
 
+    if st_name == 'scoresbysund':
+        humidity_correctionf = True
+        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        calculate_currentf = False
+        organize_dff = True
+        descent_dataf = False
 
 
     return humidity_correctionf, df_missing_tpumpf, calculate_currentf, organize_dff, descent_dataf
@@ -130,6 +143,15 @@ def station_invar(st_name):
         rs80_beginf = '20070901'  # the date where there was a change from nors80
         rs80_endf = '20070901'
         IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'ENSCI05'
+
+    if st_name == 'scoresbysund':
+        date_start_homf = '19961001'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = '19890208'  # the date where there was a change from nors80
+        rs80_endf = '20070104'
+        # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
+        IBGsplitf = ''  # the date if there is a lower/higher bkg value region
+
         sonde_tbcf = 'ENSCI05'
 
     return date_start_homf, IBGsplitf, sonde_tbcf, rs80_beginf, rs80_endf
@@ -391,6 +413,57 @@ def organize_sodankyla(dsm):
 
     return dsm
 
+def organize_scoresby(dms):
+
+    dms['Date2'] = pd.to_datetime(dms['Date'], format='%Y-%m-%d')
+    dms['Date2'] = dms['Date2'].dt.date
+    dms['DateTime2'] = pd.to_datetime(dms['Date2'], format='%Y-%m-%d')
+
+    dms['DateTime'] = pd.to_datetime(dms['Date'], format='%Y%m%d')
+    dms['Date'] = dms['DateTime'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+
+
+    dms['PLab'] = dms['Pground']
+    dms['string_bkg_used'] = 'ib2'
+
+    dms['string_pump_location'] = 'case0'
+    dms.loc[dms['SerialECC'].str.contains("4a", case=False), 'string_pump_location'] = 'case1'
+    dms.loc[dms['SerialECC'].str.contains("5a", case=False), 'string_pump_location'] = 'case3'
+    dms.loc[dms['SerialECC'].str.contains("6a", case=False), 'string_pump_location'] = 'case5'
+    dms.loc[dms['SerialECC'].str.contains("Z", case=False), 'string_pump_location'] = 'case5'
+
+
+
+    # part related with missing ptupf
+    date_missing_p = '2009-12-31'
+    date_missing_t = '2000-10-06'
+    date_missing_u = '2010-10-06'
+    # date_missing_pf = '2020-11-18'
+
+    plab = missing_station_values(dms, 'PLab', False, 'nan')
+    tlab = missing_station_values(dms, 'TLab', False, 'nan')
+    ulab = missing_station_values(dms, 'ULab', False, 'nan')
+    pflab = [0]
+
+    dms.loc[dms.Date > date_missing_p, 'PLab'] = \
+        dms.loc[dms.Date > date_missing_p, 'DateTime2'].dt.month.apply(lambda x: plab[x - 1])
+
+    dms = assign_missing_ptupf(dms, False, True, True, False, date_missing_p, date_missing_t, date_missing_u,
+                               date_missing_u, plab, tlab, ulab, pflab)
+    #there are also some values where OTU are missing:
+    dms.loc[dms.PLab == 1000, 'PLab'] = \
+        dms.loc[dms.PLab == 1000, 'DateTime2'].dt.month.apply(lambda x: plab[x - 1])
+    dms.loc[dms.TLab == 99.9, 'TLab'] = \
+        dms.loc[dms.TLab == 99.9, 'DateTime2'].dt.month.apply(lambda x: tlab[x - 1])
+    dms.loc[dms.ULab == 999, 'ULab'] = \
+        dms.loc[dms.ULab == 999, 'DateTime2'].dt.month.apply(lambda x: ulab[x - 1])
+
+
+    #fix the values whwre soleution concentraiton is 3, should be 10 (I assume, no answer from PI yet)
+    dms.loc[dms.SolutionConcentration == 3, 'SolutionConcentration'] = 10
+
+    return dms
+
 def organize_lauder(dfl):
 
     # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
@@ -497,6 +570,7 @@ def df_station(dl, datevalue, dml, station):
     if station == 'madrid':
         dl = rename_variables(dl,['Pressure','O3PartialPressure','SampleTemperature'], ['Pair','O3','Tpump'])
 
+
     if station == 'uccle':
         #to remove some bad values in the df
         dl['fix'] = 'fix'
@@ -516,5 +590,9 @@ def df_station(dl, datevalue, dml, station):
         dl['Pair'] = dl['P']
         dl['TLab'] = 20
         dl['iB2'] = dml.at[dml.first_valid_index(), 'iB0']
+
+    if station == 'scoresbysund':
+        dl = rename_variables(dl,['Tbox'], ['TboxK'])
+
 
     return return_string, dl

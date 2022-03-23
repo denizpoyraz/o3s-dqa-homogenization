@@ -10,10 +10,10 @@ K = 273.15
 k = 273.15
 
 
-filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
+filepath = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "Raw/*.hdf"))
+allFiles = sorted(glob.glob(filepath + "Raw/*0603*.hdf"))
 
 # print(allFiles)
 
@@ -28,7 +28,7 @@ for filename in (allFiles):
     fname = filename.split(".")[-2].split("/")[-1]
     # not to read metada files with _md extension
     if (search("md", fname)) or (search("metadata", fname)): continue
-    if (fname == 'so980827') | (fname == 'so990708'): continue #one problematic file in sodankyal
+    # if (fname == 'so980827') | (fname == 'so990708'): continue #one problematic file in sodankyal
     print(fname)
 
     metafile = filepath + 'Raw/' + fname + "_md.csv"
@@ -44,7 +44,7 @@ for filename in (allFiles):
     for i in list(dfd):
         dfd[i] = dfd[i].astype('float')
 
-    if (len(dfd) < 300): continue
+    if (len(dfd) < 100): continue
     if len(dfd.columns) < 8: continue
 
     # read the metadata file
@@ -113,8 +113,8 @@ for filename in (allFiles):
     # dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
 
 
-    dfl.to_hdf(filepath + '/Current/' + rawname, key = 'df')
-    dfm.to_csv(filepath + '/Metadata/' + metaname)
+    dfl.to_hdf(filepath + '/Current/test_' + rawname, key = 'df')
+    dfm.to_csv(filepath + '/Metadata/test_' + metaname)
 
     list_metadata.append(dfm)
 

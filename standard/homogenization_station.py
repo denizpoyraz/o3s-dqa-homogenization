@@ -44,7 +44,7 @@ roc_plevel = 10 # pressure value to obtain roc
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-station_name = 'uccle'
+station_name = 'scoresbysund'
 main_rscorrection = False #if you want to apply rs80 correction
 
 file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
@@ -52,6 +52,14 @@ file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_no
 
 ##           end of the parts  TO BE CHANGED By HAND           ##
 ##                                                             ##
+
+filefolder = '/DQA_nors80/'
+file_ext = 'nors80'
+
+if main_rscorrection:
+    filefolder = '/DQA_rs80/'
+    file_ext = 'rs80'
+
 
 
 path, allFiles, roc_table_file, dfmeta = station_inone(station_name)
@@ -83,6 +91,8 @@ for (filename) in (allFiles):
 
     date = datetime.strptime(date_tmp, '%y%m%d')
     datestr = date.strftime('%Y%m%d')
+
+    print(datestr)
 
     if datestr < date_start_hom: continue
 
@@ -132,7 +142,7 @@ for (filename) in (allFiles):
     # # Electronic o3 sonde interface  was replaced with the transfer from RS80 to RS92  in 24 Nov 2005.
     rsmodel = ''
     bool_rscorrection = ''
-    # if datestr <= rs80_end:
+
     if datestr < rs80_end and datestr >= rs80_begin:
         bool_rscorrection = True
     # if datestr > rs80_end:
@@ -170,6 +180,7 @@ for (filename) in (allFiles):
     pumpflowtable = '999 '
     if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
     if dfm.at[0, 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
+
     df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
 
@@ -276,25 +287,37 @@ for (filename) in (allFiles):
     for j in range(len(md_clist)):
         dfm[md_clist[j]] = df.at[df.first_valid_index(), md_clist[j]]
 
-    dfm.to_csv(path + '/DQA_nors80/' + datestr + "_o3smetadata_nors80.csv")
-
-    df = df.drop(
-        ['Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'unc_eta',
-         'unc_eta_c', 'dEta'], axis=1)
+    dfm.to_csv(path + filefolder + datestr + "_o3smetadata_" + file_ext + ".csv")
+    #
+    # df = df.drop(
+    #     ['Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'unc_eta',
+    #      'unc_eta_c', 'dEta'], axis=1)
 
     # df = df.drop(
     #     ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
     #      'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'dEta'], axis=1)
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
-    df.to_hdf(path + '/DQA_nors80/' + datestr + "_all_hom_nors80.hdf", key='df')
+    df.to_hdf(path + filefolder + datestr + "_all_hom_" + file_ext + ".hdf", key='df')
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
-    df = df.drop(['Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor'],
-                 axis=1)
+
+    df = df.drop(['Tpump', 'Tpump_cor', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3c', 'dPhi_cor', 'TboxC', 'BkgUsed', 'LaunchTime', 'Longitude',
+    'Latitude', 'SolutionVolume', 'SolutionConcentration', 'SurfaceOzone', 'Pground', 'TLab', 'ULab', 'PF', 'iB0',
+    'iB1', 'iB2', 'DurationSurfaceOzoneExposure', 'SondeTotalO3', 'CorrectionFactor', 'GroundEquipment', 'PumpTable',
+    'PumpTempLoc', 'SerialECC', 'SensorType', 'InterfaceSerial', 'RadiosondeModel', 'RadiosondeSerial','Cef', 'ibg', 'Pcor',
+    'TboxK', 'Tpump', 'Phip', 'Eta', 'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump',
+    'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc',
+    'Tpump_cor','unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'PLab', 'x', 'psaturated',
+    'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor', 'unc_Phip_cor', 'O3cor',
+    'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI',
+    'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor'], axis=1)
+
+    # print(list(df))
+
     # df to be converted to WOUDC format together with the metadata
-    df.to_hdf(path + '/DQA_nors80/' + datestr + "_o3sdqa_nors80.hdf", key='df')
+    df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')
 
 
 
