@@ -1,0 +1,382 @@
+%! Author = poyraden
+%! Date = 23/02/2022
+%
+%% Preamble
+%\documentclass[11pt]{article}
+%
+%% Packages
+%\usepackage{amsmath}
+%
+%% Document
+%\begin{document}
+%
+%
+%
+%\end{document}
+
+\documentclass{article}
+%\usepackage{graphicx}
+\usepackage{amsmath}
+\usepackage{mwe}
+\usepackage{subfig}
+\usepackage{float}
+\usepackage{xcolor}
+
+\usepackage{graphicx,floatpag,fancyhdr}
+\usepackage{lipsum}
+
+% This defines the fancy page style to be similar to plain
+\pagestyle{fancy}
+\fancyhf{}% Clear header/footer
+\fancyfoot[C]{\thepage}
+\renewcommand{\headrulewidth}{0pt}% Remove header rule
+
+% Page style plainlower is similar to plain, but lowers page number by 6 lines of text
+\fancypagestyle{plainlower}{
+  \fancyhf{}% Clear header/footer
+  \fancyfoot[C]{\raisebox{-6\baselineskip}{\thepage}}
+  \renewcommand{\headrulewidth}{0pt}% Remove header rule
+}
+
+%All LaTeX documents have a ``preamble'' that includes the packages and macros needed to make the document compile. The file `PomonaLgcsFormatting.tex' includes the preamble for this template. You can see it in the file list on the left frame of your screen, and this document is instructed to use it with the \input{} command below.
+
+
+\title{Scoresbysund O3S-DQA Homogenization Report}
+\author{Deniz Poyraz}
+\date{\today}
+
+\begin{document}
+
+\maketitle
+
+\section{Scoresbysund Metadata Timeseries}
+\label{sec:metadata}
+
+Scoresbysund data is dowloaded from NDACC server and processed by KMI. The timeseries starts at 1989/02.
+There are missing metadata which are temperature (TLab), humidity (ULab) and pressure (PLab) of the laboratory.
+For the missing values, climatological means are calculated for each month and these values are used for the corresponding missing metadata.
+TLab, PLab and ULab are used for pump flow rate humidity correction. For the background correction, iB2 is used.
+The related plots are shown in Figs \ref{fig:iB0} - \ref{fig:PLab}.
+
+
+
+    \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/scoresby/Plots/Metadata/iB0}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Scoresbysund iB0 timeseries}
+            \label{fig:iB0}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/scoresby/Plots/Metadata/iB1}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Scoresbysund iB1 timeseries}
+            \label{fig:iB1}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/scoresby/Plots/Metadata/iB2}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Scoresbysund iB2 timeseries}
+            \label{fig:iB2}
+    \end{figure}
+
+    \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/scoresby/Plots/Metadata/PF}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Scoresbysund pump flow rate timeseries}
+            \label{fig:PF}
+    \end{figure}
+
+
+
+           \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/scoresby/Plots/Metadata/TLab}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Scoresbysund laboratory temperature timeseries}
+            \label{fig:TLab}
+    \end{figure}
+
+               \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/scoresby/Plots/Metadata/ULab}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Scoresbysund laboratory humidity timeseries}
+            \label{fig:ULab}
+    \end{figure}
+
+               \begin{figure}
+        \centering
+\includegraphics[width=0.9\textwidth]{../../Files/scoresby/Plots/Metadata/PLab}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Scoresbysund laboratory humidity timeseries}
+            \label{fig:PLab}
+    \end{figure}
+
+\section{O3S Corrections}
+\label{sec:v04}
+
+\textcolor{blue}{Assumptions made for homogenization are indicated in blue, to be confirmed by the station PI}\\
+\textcolor{red}{Unusual behaviours are indicated in red}
+
+
+The recommended and applied O3S-DQA corrections are summarized below.
+    \begin{enumerate}
+        \item Conversion efficiency \\
+         (\textcolor{blue}{Transfer functions from ENSCI 1.0\% to SPC 1.0\%
+        is applied after 2015-12-17. This correction is un-corrected to calculate current from ozone partial
+        pressure values. 3ml of cathode solution is used all entire period that the absorption efficiency is taken as 1 always.
+ })
+        \item Background current\\
+        (\textcolor{blue}{iB2 is used trhough entire time-series})\\
+        (\textcolor{red}{iB2 values are very variable, especially for the period before 1995 and after 2017})\\
+        \item Pump temperature measurement\\
+        (\textcolor{blue}{For 5A SPC sondes, pump temperature thermistor was taped externally and for 6A and ENSCI sondes
+        was taped internally. 5A sondes were launched until 1995-11-11. })\\
+        \item Pump flow rate, moistening effect\\
+                (\textcolor{blue}{Humidty correction is not applied in the Vaisala software that the NDACC O3 values are
+                not corrected for humidity.})\\
+        (\textcolor{red}{There is a large variety in PF rate values for the period before 2003})\\
+
+        \item Pump flow efficiency at low pressures\\
+        (\textcolor{blue}{PF efficiency tables are applied as in the Vaisala software.
+        These are:\\
+SPC Table = [ 1.171, 1.171, 1.131, 1.092, 1.055, 1.032, 1.022, 1.015, 1.011, 1.008, 1.006, 1.004,    1,    1]\\
+         for Pressure  =    [    0,     2,     3,      5,    10,    20,    30,    50,   100,   200,   300,   500, 1000, 1100] values and
+        ENSCI Table = [1.24, 1.24, 1.124, 1.087, 1.066, 1.048, 1.041, 1.029, 1.018, 1.013,  1.007, 1.002,     1,    1]\\
+        for Pressure = [   0,    3,     5,     7,    10,    15,    20,    30,    50,    70,    100,   150,   200, 1100] values.
+ })\\
+        \item Total ozone normalization: in O3S-DQA guide this correction factor is recommended to be added in the data-set,
+        but the normalization factor is not applied.\\
+            (\textcolor{blue}{TO values from Dobson/Brewer spectrophotometers are missing in the metadata.})\\
+        \item Radiosonde changes: RS80 radiosonde correction is tested but not applied in the DQA homogenization.\\
+          (\textcolor{blue}{RS80 radiosondes were used from 1989-02 till 2007-01, RS92 used from 2007-01 till 2015-12 and RSA411
+          are used afterwards.})\\
+\end{enumerate}
+
+The O3S-DQA corrections are applied to the raw current measured by the ECC's. The raw current values are
+determined from converting partial ozone values that are
+in the NDACC files to current.Knowing pump temperature values, pump flow rate and background values (iB2) is essential
+to obtain the raw current values.
+The corrections that were applied to have the NDACC ozone partial pressure values, are un-corrected to
+get the raw current values. These un-corrections correspond to the corrections applied in the Vaisala software, which are:
+pressure dependent background correction for SPC sondes and pump flow
+efficiency correction. The pump flow efficiency correction table used at this stage is slightly different than the table used
+for O3S-DQA pump efficiency corrections.
+The correction applied for uncorrecting the NDACC pump flow efficiency can be seen in Ozone Sounding with Vaisala
+Radiosonde RS41 User's Guide M211486EN, page 74 and the correction table
+used for O3S-DQA can be seen in O3S-DQA Activity: Guide Lines for Homogenization of Ozone Sonde Data (Version 2.0)
+at page 34. Additionally, transfer functions from ENSCI 1.0\% to SPC 1.0\% was applied, if an ENSCI 1.0\% sonde is used,
+from 2015-12-17.
+
+The ozone partial pressure values converted from raw current
+wihout applying any correction are denoted as 'Raw' or 'No correction', the O3 values from NDACC files are denoted
+by 'NDACC' and the ozone partial values that have all the DQA corrections
+are denoted by 'DQA' in the rest of the manuscript.
+
+
+    \subsubsection{Conversion efficiency}
+3ml of cathode solution is used all entire period that the absorption efficiency is taken as 1 always.
+ The stoichiometry correction is needed when ENSCI 1.0\% sondes have been used.
+ENSCI 1.0\% sondes have been used in 1989, between 1994-11 and 1998-02,
+between 1998-09 and 1999-01, and 2004-04 till 2022. SPC 1.0\% sondes have been used in the rest of the time-series.
+The transfer function from ENSCI 1.0\% to SPC 1.0\% has been used in order to have a consistent stoichiometry
+factor. The effect of the converison efficiency is shown in Fig~\ref{fig:eta}
+
+
+%
+                \begin{figure}
+        \centering
+\includegraphics[width=1.3\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/Eta_vs_Raw_alltimerange.png}
+    \caption{Conversion efficiency correction}
+            \label{fig:eta}
+    \end{figure}
+
+%%
+%%
+        \subsubsection{Background current}
+        Background correction, using iB2, applied Scoresbysund data is shown in Fig~\ref{fig:iB2}. If $I_B$ exceeds $I_{B,\text{Mean}}+2\sigma_{IB}$ then $I_B$, it
+should be replaced by the more representative climatological value of $I_{B,\text{Mean}}$, however with
+larger uncertainty of $2\sigma_{IB}$.
+Therefore if $I_B$ values are falling above $I_{B,\text{Mean}}+2\sigma_{IB}$ in Fig~\ref{fig:iB2}, the background correction is applied.
+For the mean and standard deviations
+of the iB2 values, 3 different periods are considered.
+As it can be seen in Fig~\ref{fig:iB2}, iB2 values are larger for the period between 1993 and 1996 and after 2017.
+Therefore the mean and corresponding standard deviations are calculated and applied separately in these periods.
+%
+%%
+                \begin{figure}
+        \centering
+\includegraphics[width=1.3\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/EtaBkg_vs_Eta_alltimerange.png}
+    \caption{Background current correction}
+            \label{fig:bkg}
+    \end{figure}
+%%
+            \subsubsection{Pump temperature measurement}
+ Truest pump temperature correction is applied according to Eq.13 of the O3S-DQA Guidelines. Until 1995-11 SPC-5A sondes,
+ and after on the SPC 6A and ENSCI sondes have been launched. These periods need different corrections and
+ their effects are shown in Fig~\ref{fig:tpump}.
+
+% At 1998-12-02 the pump location
+% changed from being in the box to the inside the pump.
+%    Therefore Case-III correction is applied to SPC-5A sondes and case-V correction to SPC-6A sondes. The effect of the temperature correction
+%is shown in  Fig~\ref{fig:tpump}.
+%%
+%
+                    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/EtaBkgTpump_vs_EtaBkg_alltimerange.png}
+    \caption{Pump temperature correction }
+            \label{fig:tpump}
+    \end{figure}
+%%
+                \subsubsection{Pump flow rate (moistening effect)}
+    This correction, Eq.15 of the O3S-DQA Guidelines, is applied and shown in Fig~\ref{fig:pf_ptu}. The details of the
+values used for correction is explained in Sec~\ref{sec:metadata}.
+%
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange.png}
+    \caption{Pump flow rate correction applied}
+            \label{fig:pf_ptu}
+    \end{figure}
+%%
+                   \subsubsection{Pump flow efficiency}
+    This correction, Eq.22 of the O3S-DQA Guidelines, is applied using Table 6 of the O3S-DQA Guidelines and
+    shown in Fig~\ref{fig:pf_eff}.
+%The interpolation of the correction factors are made using the pressure. This method gives the same result as doing the interpolation using the logarithm of pressure
+%and polynomial fit with an error of less than $0.03\%$.
+The effect of this correction is shown in Fig~\ref{fig:pf_eff}.
+%
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange.png}
+    \caption{Pump flow rate correction applied}
+            \label{fig:pf_eff}
+    \end{figure}
+%%
+
+%
+The effect of all DQA correction with respect to no correction is shown in Fig~\ref{fig:dqa_all} and the comparison of DQA corrected and
+WOUDC O3S values is shown in Fig~\ref{fig:fig_dqa_ndacc}.
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/DQA_vs_Raw_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Effect of all DQA corrections}
+            \label{fig:dqa_all}
+    \end{figure}
+%
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/DQA_vs_NDACC_alltimerange.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Comparison of DQA and NDACC O3S values}
+            \label{fig:fig_dqa_ndacc}
+    \end{figure}
+%%%
+%%
+ \subsubsection{Radiosonde correction}
+    The RS80 radiosonde correction is applied to correct the pressure offset difference.
+    This correction is not included in the DQA corrections, but only applied to see its effect.
+%It's uncertainity is not implemented in the
+%total uncertainity of the ozone partial pressure and also in the final DQA ver.
+    The effect of RS80 correction is shown in Fig~\ref{fig:rs80}. \\
+
+                        \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/DQA_nors80/Binned/Plots/RS80_vs_noRS80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{RS80 correction applied}
+            \label{fig:rs80}
+    \end{figure}
+%
+    \section{Effect DQA corrections on ozone profiles }
+%
+    In order to see the effect of DQA corrections, explained in Sec.\ref{sec:v04}, on the ozone profiles
+the ozone profiles have been
+explored with and without DQA corrections. In Fig\ref{fig:pl_ndacc}, the ozone profiles with DQA and
+NDACC corrections are shown.
+The effect of the RS80 correction for the period before 2007 is shown in Fig\ref{fig:op_rs80}
+%%
+                                \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/Plots/AllPeriod_DQA_NDACC_profile.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA corrections and NDACC corrections}
+            \label{fig:pl_ndacc}
+    \end{figure}
+%%
+                                    \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/Plots/RS80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{Effect of RS80 correction before 2007}
+            \label{fig:op_rs80}
+    \end{figure}
+
+\section{Comparison plots to AURA MLS v04}
+
+    The homogenized and non-homogenized Scoresbysund data is compared with AURA-MLS data using v04. The
+    NDACC, DQA homogenized and DQA with RS80 correction O3S data sets are compared and shown in figures between
+\ref{fig:niwav04} and \ref{fig:dqav04_rs80}.
+
+                                \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/MLS/Plots/NDACC_vs_MLS_v04_nors80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{ NDACC Scoresbysund O3S vs AURA MLS v04  }
+            \label{fig:niwav04}
+    \end{figure}
+
+                            \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/MLS/Plots/DQA_vs_MLS_v04_nors80_new.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA Scoresbysund O3S vs AURA MLS v04 }
+            \label{fig:dqav04}
+    \end{figure}
+
+                            \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/MLS/Plots/DQA_vs_MLS_v04_rs80.png}
+%        \includegraphics[width=0.9\textwidth]{../../Files/scoresby/MLS/Plots/Raw_vs_MLS_zoom.pdf}
+    \caption{DQA Scoresbysund O3S vs AURA MLS v04 }
+            \label{fig:dqav04_rs80}
+    \end{figure}
+
+        \section{Total Ozone and Total Ozone Normalization Factors}
+
+The Total Ozone Normalization (TON) factors have been calculated with and without DQA corrections. For the TON
+the ratio of TO from the sonde to TO from the satellites are taken. For the TO from the sonde, the TO is integrated until
+burst (max. 10hPa) and the residuals, calculated from climatological means, are added.
+The corresponding plots are shown in Fig.\ref{fig:ton1} and  Fig.\ref{fig:ton3}.
+
+                                \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/Plots/TON/TON_sonde_woudc_nors80.png}
+    \caption{TO values calculated with NDACC and DQA corrected ozonesonde data}
+            \label{fig:ton1}
+    \end{figure}
+
+                                 \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/Plots/TON/TON_satellite_one.png}
+    \caption{Relative differences of TON values with respect to satellite data calculated with NDACC and DQA corrected ozonesonde data}
+            \label{fig:ton2}
+    \end{figure}
+
+                                     \begin{figure}
+        \centering
+\includegraphics[width=1.2\textwidth]{../../Files/scoresby/Plots/TON/TON_satellite_one.png}
+    \caption{Relative differences of TON values with respect to satellite data calculated with NDACC and DQA corrected ozonesonde data}
+            \label{fig:ton3}
+    \end{figure}
+
+\end{document}
