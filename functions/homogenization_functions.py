@@ -4,7 +4,43 @@ import pandas as pd
 import matplotlib.pyplot as plt
 from datetime import datetime
 from re import search
-from nilu_ndacc.read_nilu_functions import ComputeIBG
+
+
+# from nilu_ndacc.read_nilu_functions import ComputeIBG
+# from nilu_ndacc.read_nilu_functions import ComputeIBG
+
+
+def ComputeIBG(dft, bkg):
+    """ Corrects background current value based on pressure
+
+  Arguments:
+  dft  -- dataframe
+  ibg  -- background current used
+  :returns corrected background current
+    """
+
+    try:
+        dft['Pcor'] = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
+    except KeyError:
+        dft['Pground'] = 1000
+        dft['Pcor'] = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
+
+    if bkg == 'iB0': dft.ibg = dft.Pcor * dft.iB0
+    if bkg == 'iB2': dft.ibg = dft.Pcor * dft.iB2
+
+    return dft.ibg
+
+
+def ComputeCorP(dft, Pressure):
+    dft['CorP'] = 0
+    A0 = 0.0012250380415
+    A1 = 0.000124111475632
+    A2 = -0.00000002687066130
+    dft['CorP'] = A0 + A1 * dft[Pressure].astype('float') + A2 * dft[Pressure].astype('float') * dft[Pressure].astype(
+        'float')
+
+    return dft['CorP']
+
 
 ## General guidelines for Homogenisation of O3S-Data
 # P03 = 0.043085 T_pump ( I_M - I_B) / (eta_c * Phi_p)
@@ -70,21 +106,33 @@ RS_alt = np.array(
 k = 273.15
 
 
-def roc_values(dff, tab, plevel):
+def roc_values(dff, dfm, tab):
     """
     :param dff: dfmeta to read date and write the roc values
     :param tab: table to read the roc values
     :param plevel: pressure level to read the table
     :return: dff with roc values assigned
     """
-    tab = tab[tab.index == plevel]
 
-    dff['Datet'] = pd.to_datetime(dff['Date'], format='%Y-%m-%d')
-    dff['Datet'] = dff['Datet'].dt.date
-    dff['DateTime'] = pd.to_datetime(dff['Datet'], format='%Y-%m-%d')
     dff['ROC'] = 0
-    for i in range(1, 13):
-        dff.loc[dff.DateTime.dt.month == i, 'ROC'] = tab[i].tolist()[0]
+
+    burst_pre = int(dfm.Pair.min())
+
+    if burst_pre < 10:
+        burst_pre = 10
+
+    if burst_pre < 33:
+
+        tab = tab[tab.index == burst_pre]
+
+        dff['Datet'] = pd.to_datetime(dff['Date'], format='%Y-%m-%d')
+        dff['Datet'] = dff['Datet'].dt.date
+        dff['DateTime'] = pd.to_datetime(dff['Datet'], format='%Y-%m-%d')
+        dff['ROC'] = 0
+        for i in range(1, 13):
+            dff.loc[dff.DateTime.dt.month == i, 'ROC'] = tab[i].tolist()[0]
+
+    if burst_pre > 32: dff['ROC'] = 9999
 
     return dff
 
@@ -144,6 +192,10 @@ def assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, da
     print(ul)
     if bool_pf:  dm.loc[dm.Date < date_pf, 'PF'] = \
         dm.loc[dm.Date < date_pf, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
+
+    # for some wrong values like in the recent files of sodankyla
+    dm.loc[dm.TLab > (np.mean(tl) + 2 * np.std(tl)), 'TLab'] = \
+        dm.loc[dm.TLab > (np.mean(tl) + 2 * np.std(tl)), 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
 
     return dm
 
@@ -389,7 +441,94 @@ def background_correction(df, dfmeta, dfm, ib, year):
             df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
             # print('after 2004 no bkg', mean2)
 
+    # print('end of function',dfm.at[dfm.first_valid_index(), ib],  df.at[df.first_valid_index(), 'iBc'])
+    # df.at[df.first_valid_index(), 'ibg'])
+
     # print('end of function', df.at[df.first_valid_index(), 'iBc'])
+    return df['iBc'], df['unc_iBc']
+
+
+def background_correction_3split(df, dfmeta, dfm, ib, year0, year1, year2):
+    """
+    O3S-DQA 8.2
+    :param df: data df
+    :param dfmeta: all metadata df
+    :param dfm: corresponding metadata of df
+    :param ib2:
+    :return: df[ib]
+    """
+
+    # print(np.mean(dfmeta[dfmeta[ib] < 0.1][ib]),np.std(dfmeta[dfmeta[ib] < 0.1][ib]))
+
+    df['iBc'] = 0
+    df['unc_iBc'] = 0
+
+    dfmeta = dfmeta[dfmeta.iB2 < 2]
+    # special section for stations that have different bkg means in different periods
+    # due to th efact that older ECC's had a larger bkg, also confirmed by JOSIE campaigns
+    if year1 > '0':
+        dfm['Date'] = dfm['Date'].astype(str)
+        dfmeta['Date'] = dfmeta['Date'].astype(str)
+        df['Date'] = df['Date'].astype(str)
+
+        # year = '2004' #uccle
+        # year = '2005' #sodankyla
+        # year = '1998' #lauder
+        mean0 = np.nanmean(dfmeta[dfmeta.Date < year0][ib])
+        std0 = np.nanstd(dfmeta[dfmeta.Date < year0][ib])
+        mean1 = np.nanmean(dfmeta[(dfmeta.Date < year1) & (dfmeta.Date > year0)][ib])
+        std1 = np.nanstd(dfmeta[(dfmeta.Date < year1) & (dfmeta.Date > year0)][ib])
+        mean2 = np.nanmean(dfmeta[(dfmeta.Date >= year1) & (dfmeta.Date < year2)][ib])
+        std2 = np.nanstd(dfmeta[(dfmeta.Date >= year1) & (dfmeta.Date < year2)][ib])
+        mean3 = np.nanmean(dfmeta[dfmeta.Date > year2][ib])
+        std3 = np.nanstd(dfmeta[dfmeta.Date > year2][ib])
+        # print('values', mean1, std1, mean2, std2)
+
+        # print(mean0, mean1, mean2, mean3)
+
+        if (dfm.at[dfm.first_valid_index(), ib] > mean0 + 2 * std0) & (dfm.at[dfm.first_valid_index(), 'Date'] < year0):
+            df.loc[df.Date < year1, 'iBc'] = mean0
+            df.loc[df.Date < year1, 'unc_iBc'] = 2 * std0
+
+        if (dfm.at[dfm.first_valid_index(), ib] <= mean0 + 2 * std0) & (
+                dfm.at[dfm.first_valid_index(), 'Date'] < year0):
+            df.loc[df.Date < year1, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+            df.loc[df.Date < year1, 'unc_iBc'] = std0
+
+        if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year1) \
+                & (dfm.at[dfm.first_valid_index(), 'Date'] > year0):
+            df.loc[df.Date < year1, 'iBc'] = mean1
+            df.loc[df.Date < year1, 'unc_iBc'] = 2 * std1
+
+        if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year1) \
+                & (dfm.at[dfm.first_valid_index(), 'Date'] > year0):
+            df.loc[df.Date < year1, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+            df.loc[df.Date < year1, 'unc_iBc'] = std1
+
+        if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year1) \
+                & (dfm.at[dfm.first_valid_index(), 'Date'] < year2):
+            df.loc[(df.Date >= year1) & (df.Date < year2), 'iBc'] = mean2
+            df.loc[(df.Date >= year1) & (df.Date < year2), 'unc_iBc'] = 2 * std2
+            # print('after 2004 bkg correction', mean1)
+
+        if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (
+                dfm.at[dfm.first_valid_index(), 'Date'] >= year1) \
+                & (dfm.at[dfm.first_valid_index(), 'Date'] < year2):
+            df.loc[(df.Date >= year1) & (df.Date < year2), 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+            df.loc[(df.Date >= year1) & (df.Date < year2), 'unc_iBc'] = std2
+            # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
+
+        if (dfm.at[dfm.first_valid_index(), ib] > mean3 + 2 * std3) & (dfm.at[dfm.first_valid_index(), 'Date'] > year2):
+            print('bkg needed why', mean3, dfm.at[dfm.first_valid_index(), ib])
+            df.loc[df.Date > year2, 'iBc'] = mean3
+            df.loc[df.Date > year2, 'unc_iBc'] = 2 * std3
+
+        if (dfm.at[dfm.first_valid_index(), ib] <= mean3 + 2 * std3) & (
+                dfm.at[dfm.first_valid_index(), 'Date'] > year2):
+            df.loc[df.Date > year2, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+            df.loc[df.Date > year2, 'unc_iBc'] = std3
+
+    # print('end of function',dfm.at[dfm.first_valid_index(), ib],  df.at[df.first_valid_index(), 'iBc'])
     return df['iBc'], df['unc_iBc']
 
 
@@ -474,7 +613,6 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
     if (boxlocation == 'InternalPump') | (boxlocation == 'case5'):  # case V in O3S-DQA guide
         df.loc[filt, 'deltat'] = 0  # units in K
         df.loc[filt, 'unc_deltat'] = 0  # units in K
-
     df.loc[(df[pair] > 3), 'deltat_ppi'] = 3.9 - 0.8 * np.log10(df.loc[(df[pair] > 3), pair])  # Eq. 12
     df.loc[(df[pair] > 3), 'unc_deltat_ppi'] = 0.5
 
@@ -521,8 +659,10 @@ def stoichmetry_conversion(df, pair, sensortype, solutionconcentration, referenc
 
     # print('in the function', sensortype)
 
-    df['stoich'] = 1
-    df['unc_stoich'] = 0.05
+    df = df[df[pair] > 0]
+
+    df.loc[:, 'stoich'] = 1
+    df.loc[:, 'unc_stoich'] = 0.05
     solutionconcentration = float(solutionconcentration)
 
     if (reference == 'ENSCI05') & (sensortype == 'DMT-Z') & (solutionconcentration == 10):
@@ -531,19 +671,19 @@ def stoichmetry_conversion(df, pair, sensortype, solutionconcentration, referenc
 
     if (reference == 'ENSCI05') & (sensortype == 'DMT-Z') & (solutionconcentration == 5.0):
         df['stoich'] = 1
-        df['unc_stoich'] = 0.03
+        df.loc[:, 'unc_stoich'] = 0.03
 
     if (reference == 'ENSCI05') & (sensortype == 'SPC') & (solutionconcentration == 10):
-        df['stoich'] = 1
-        df['unc_stoich'] = 0.03
+        df.loc[:, 'stoich'] = 1
+        df.loc[:, 'unc_stoich'] = 0.03
 
     if (reference == 'SPC10') & (sensortype == 'SPC') & (solutionconcentration == 10):
-        df['stoich'] = 1
-        df['unc_stoich'] = 0.03
+        df.loc[:, 'stoich'] = 1
+        df.loc[:, 'unc_stoich'] = 0.03
 
     if (reference == 'SPC10') & (sensortype == 'DMT-Z') & (solutionconcentration == 10):
         df.loc[df[pair] >= 30, 'stoich'] = 0.96  # Eq 7C
-        df.loc[df[pair] < 30, 'stoich'] = 0.764 + 0.133 * np.log10(df[df[pair] < 30])  # Eq 7D
+        df.loc[df[pair] < 30, 'stoich'] = 0.764 + 0.133 * np.log10(df[df[pair] < 30][pair])  # Eq 7D
 
     if (reference == 'SPC10') & (sensortype == 'SPC') & (solutionconcentration == 5):
         df.loc[df[pair] >= 30, 'stoich'] = 1 / 0.96  # inverse of Eq. 7A
@@ -589,8 +729,8 @@ def RS_pressurecorrection(dft, height, radiosondetype):
 
     dft['height_km'] = dft[height] / 1000
 
-    dft['Crs'] = 0.0
-    dft['unc_Crs'] = 0.0
+    dft.loc[:, 'Crs'] = 0.0
+    dft.loc[:, 'unc_Crs'] = 0.0
 
     RS_cor = RS80_cor
     RS_cor_err = RS80_cor_err
