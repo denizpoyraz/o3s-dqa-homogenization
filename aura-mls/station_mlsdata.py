@@ -17,8 +17,8 @@ problem = open("DQA_ProblematicFiles.txt", "a")
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
-
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 
 # ozone = 'O3_nc' # raw, no correction applied
 # ozone = 'O3c_eta' # etac correction applied
@@ -32,14 +32,16 @@ ozone = 'O3c'
 # name_out = 'MLS_SodankylaInterpolated_raw_rs80_v04'
 # name_out = 'MLS_LauderInterpolated_previousversion_rs80_v04'
 # name_out = 'MLS_MadridInterpolated_rs80_v04_dqa'
-name_out = 'MLS_LauderInterpolated_rs80_v04_dqa'
-
+# name_out = 'MLS_LauderInterpolated_rs80_v04_dqa'
+name_out = 'MLS_ScoresbyInterpolated_nors80_v04_dqa'
 
 
 # mls data frame to read
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
-dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
+# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
+dfm = pd.read_csv(path + 'AURA_MLSData_MatchedScoresby_DQA_v04.csv')
+
 
 # dfm = dfm[dfm.Date < 20080612]
 date_list = dfm.drop_duplicates(['Date']).Date.tolist()
@@ -52,10 +54,10 @@ listall_data = []
 
 for date in date_list:
     # print(date, type(date))
-    if (date == 20190605) | (date == 20191010) | (date == 20200902) | (date == 20210414): continue
+    # if (date == 20190605) | (date == 20191010) | (date == 20200902) | (date == 20210414): continue
     # if date == 20190605:
     #     continue
-    try: df = pd.read_hdf(path + "DQA_rs80/" + str(date) + "_all_hom_rs80.hdf")
+    try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
     except FileNotFoundError:
         print('FileNotFoundError', date)
         continue
@@ -65,7 +67,7 @@ for date in date_list:
         print(date, len(df))
         continue
 
-    df['Height'] = df['Alt']
+    # df['Height'] = df['Alt']
 
     print(date)
 
@@ -211,8 +213,8 @@ for date in date_list:
 # df = pd.concat(list_data, ignore_index=True)
 dfall = pd.concat(listall_data, ignore_index=True)
 
-dfall.to_csv(path + "MLS/new_" + name_out + ".csv")
-dfall.to_hdf(path + "MLS/new_" + name_out + ".h5", key = 'df')
+dfall.to_csv(path + "MLS/" + name_out + ".csv")
+dfall.to_hdf(path + "MLS/" + name_out + ".h5", key = 'df')
 
 
 

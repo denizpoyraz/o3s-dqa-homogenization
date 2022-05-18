@@ -12,7 +12,7 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
 efile = open("errorfile.txt", "w")
 
 
-allFiles = sorted(glob.glob(path + "/2013*.csv"))
+allFiles = sorted(glob.glob(path + "/MD22*.csv"))
 
 # /home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/20050406_testwoudc.csv
 
@@ -48,7 +48,7 @@ for filename in allFiles:
 
 
     msize = len(tables)
-    print(msize)
+    # print(msize)
 
     if msize == 1: continue
 

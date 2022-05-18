@@ -58,7 +58,7 @@ def Calc_average_profile_pressure(dft, xcolumn):
 # dfm = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Uccle_Metada_DQA_nors80.csv')
 
 
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # allFiles = sorted(glob.glob(path + "DQA_nors80/*all_hom_nors80.hdf"))
 #
 # listall = []

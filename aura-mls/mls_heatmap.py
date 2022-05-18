@@ -7,9 +7,16 @@ import matplotlib.dates as mdates
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/MLS/'
 # df1 = pd.read_csv(path + 'MLS_SodankylaInterpolated_dqaprevious_rs80_v04.csv')
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/MLS/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/MLS/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/MLS/'
 
-df1 = pd.read_csv(path + 'new_MLS_LauderInterpolated_rs80_v04_dqa.csv')
+# df1 = pd.read_csv(path + 'new_MLS_LauderInterpolated_rs80_v04_dqa.csv')
+# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_dqa.csv')
+
+# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_ndacc.csv')
+df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_dqa.csv')
+
+
 
 
 df1 = df1[df1.PreLevel < 216]
@@ -20,10 +27,10 @@ df1 = df1[df1.PO3_MLS < 99]
 
 
 # Plotname = 'Raw_vs_MLS_v04_rs80'
+Plotname = 'DQA_vs_MLS_v04_nors80'
 # Plotname = 'NDACC_vs_MLS_v04_rs80'
-
 # Plotname = 'NIWA_vs_MLS_v04_nors80_new'
-Plotname = 'DQA_vs_MLS_v04_rs80_new'
+# Plotname = 'DQA_vs_MLS_v04_rs80_new'
 # Plotname = 'Raw_vs_MLS_v04_nors80_new'
 # Plotname = 'DQA_vs_MLS_v04_nors80_new'
 
@@ -31,8 +38,13 @@ Plotname = 'DQA_vs_MLS_v04_rs80_new'
 # plot_title = 'Lauder O3S-Previous Version - MLS (v04) comparison'
 # plot_title = 'Sodankyla O3S-NDACC - MLS (v04) comparison'
 # plot_title = 'Lauder O3S-Raw - MLS (v04) comparison'
-plot_title = 'Lauder DQA RS80 - MLS (v04) comparison'
+# plot_title = 'Lauder DQA RS80 - MLS (v04) comparison'
 # plot_title = 'Lauder DQA - MLS (v04) comparison'
+
+# plot_title = 'Scoresbysund DQA - MLS (v04) comparison'
+plot_title = 'Scoresbysund DQA - MLS (v04) comparison'
+
+# plot_title = 'Scoresbysund NDACC - MLS (v04) comparison'
 
 # plot_title = 'Lauder NIWA - MLS (v04) comparison'
 

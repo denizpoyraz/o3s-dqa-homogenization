@@ -8,7 +8,7 @@ import pandas as pd
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 
-df = pd.read_csv(path + 'woudc-DataURLFileList_missingMadrid.csv', low_memory=False)
+df = pd.read_csv(path + 'woudc-DataURLFileList_2122.csv', low_memory=False)
 
 size = len(df)
 

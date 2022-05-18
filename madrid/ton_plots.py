@@ -56,8 +56,8 @@ def Calc_average_profile_pressure(dft, xcolumn):
 
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# allFiles = sorted(glob.glob(path + "DQA_nors80/*_o3smetadata_nors80.csv"))
-#
+allFiles = sorted(glob.glob(path + "DQA_nors80/*_o3smetadata_nors80.csv"))
+
 # dfmeta = pd.DataFrame()
 # metadata = []
 #
@@ -79,7 +79,7 @@ dfm1 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/D
 
 print(list(dfm1))
 #
-# dfm2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_upd/Madrid_Metada_DQA_rs80.csv')
+# dfm2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_upd/Madrid_Metada_DQA_nors80.csv')
 # #
 # dfw = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/Madrid_Metadata.csv')
 # # print('dfw', list(dfw))
@@ -140,9 +140,9 @@ fig, axs = plt.subplots(1, sharex=True, sharey=False, figsize=(17, 9))
 # axs.plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label = 'O3Sonde DQA 10 hPa',  marker = ".")
 # axs.plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10 hPa',  marker = ".")
 
-dfm1['R'] = (dfm1.O3Sonde_hom_10hpa - dfm1.O3Sonde_10hpa_raw) / dfm1.O3Sonde_10hpa_raw * 100
+# dfm1['R'] = (dfm1.O3Sonde_hom_10hpa - dfm1.O3Sonde_10hpa_raw) / dfm1.O3Sonde_10hpa_raw * 100
 
-axs.plot(dfm1.DateTime, dfm1.R, label='DQA - WOUDC / DQA', marker=".", linestyle='None')
+axs.plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label='DQA - WOUDC / DQA', marker=".", linestyle='None')
 
 # axs.plot(dfm1.DateTime, dfm1.O3ratio, label = 'TON WOUDC',  marker = ".",  linestyle = ''None'')
 # axs.plot(dfm1.DateTime, dfm1.O3ratio_hom, label = 'TON DQA',  marker = ".", linestyle = ''None'')
@@ -175,64 +175,47 @@ plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
 plt.show()
 plt.close()
 
-Plotname = 'TON_allplots_woudc'
+dfm1['ratio'] = dfm1['BrewO3']/dfm1['O3SondeTotal']
+dfm1['ratio_raw'] = dfm1['BrewO3']/dfm1['O3SondeTotal_raw']
+dfm1['ratio_hom'] = dfm1['BrewO3']/dfm1['O3SondeTotal_hom']
 
-fig, axs = plt.subplots(4, sharex=False, sharey=False, figsize=(17, 9))
-# fig.suptitle('Sharing both axes')
-# axs[0].plot(x, y ** 2)
-# axs[1].plot(x, 0.3 * y, 'o')
-# axs[2].plot(x, y, '+')
+dfm1 = dfm1[dfm1.ratio < 2]
+dfm1 = dfm1[dfm1.ratio > 0.5]
 
-# original
-axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label='O3Sonde DQA 10hPa', marker=".")
-axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa, label='O3Sonde WOUDC 10hPa', marker=".")
-# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10hPa',  marker = "." )
-axs[0].xaxis.set_major_locator(mdates.YearLocator(1))
-axs[0].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+
+print(dfm1.DateTime.min(), dfm1.DateTime.max())
+
+Plotname = 'TON_sonde_woudc_nors80'
+
+fig, axs = plt.subplots(3, sharex=True, sharey=False, figsize=(17, 9))
+fig.suptitle('Madrid TO and TON values')
+
+axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom, label = 'O3Sonde DQA',  marker = "s", linestyle='None', markersize = 4)
+# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_raw, label = 'O3Sonde Raw',  marker = ".", linestyle='None')
+axs[0].plot(dfm1.DateTime, dfm1.O3Sonde, label = 'O3Sonde WOUDC',  marker = ".",  linestyle='None')
+
 axs[0].set_ylabel('O3 [DU]')
+axs[0].set_ylim(100, 500)
+
 axs[0].legend(loc="upper right")
 
-axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label='Total O3 DQA', marker=".")
-axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal, label='Total O3 WOUDC', marker=".")
-# axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_raw, label = 'Total O3 Raw',  marker = "." )
-axs[1].xaxis.set_major_locator(mdates.YearLocator(1))
-axs[1].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+#
+
+axs[1].plot(dfm1.DateTime, dfm1.BrewO3, label = 'Brewer TO',  marker = ".", linestyle='None')
 axs[1].set_ylabel('O3 [DU]')
 axs[1].legend(loc="upper right")
-#
-axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal, label='O3Sonde WOUDC + ROC', marker=".")
-# axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'O3Sonde_DQA + ROC',  marker = ".", linestyle = ''None'')
-# axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label = 'Brewer', marker = ".",  linestyle = ''None'')
-# axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'O3Sonde_DQA + ROC',  marker = "." )
-axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label='Brewer', marker=".")
-axs[2].xaxis.set_major_locator(mdates.YearLocator(1))
-axs[2].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-axs[2].set_ylabel('O3 [DU]')
+
+axs[2].plot(dfm1.DateTime, dfm1.ratio_hom, label = 'TON DQA',  marker = "s", linestyle='None', markersize = 4)
+# axs[2].plot(dfm1.DateTime, dfm1.ratio_raw, label = 'TON Raw ',  marker = ".", linestyle='None')
+axs[2].plot(dfm1.DateTime, dfm1.ratio, label = 'TON WOUDC',  marker = ".", linestyle='None')
+
+axs[2].set_ylabel('TON')
 axs[2].legend(loc="upper right")
-#
-# axs[2].plot(dfm1.DateTime, dfm1.O3Sonde - dfm1.O3Sonde_hom, label = 'O3Sonde diff (no dqa - dqa)')
-# axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal - dfm1.O3SondeTotal_hom, label = 'O3Sonde + ROC diff (no dqa - dqa)')
-# # axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label = 'Brewer')
-# axs[2].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# axs[2].set_xticklabels(xtick_labels, rotation=0)
-# # axs[2].set_ylabel('O3 [DU]')
-# axs[2].legend(loc="upper right")
-#
-# axs[3].plot(dfm1.DateTime, dfm1.BrewO3, label = 'Brewer')
-# axs[3].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# axs[3].set_xticklabels(xtick_labels, rotation=0)
-# axs[3].set_ylabel('O3 [DU]')
-# axs[3].legend(loc="upper right")
-#
-axs[3].plot(dfm1.DateTime, dfm1.O3ratio_hom, label='O3 Ratio DQA', marker=".")
-# axs[3].plot(dfm1.DateTime, dfm1.O3ratio, label = 'O3 Ratio WOUDC', marker = ".")
-axs[3].plot(dfm1.DateTime, dfm1.O3ratio_raw, label='O3 Ratio Raw', marker=".")
-axs[3].xaxis.set_major_locator(mdates.YearLocator(1))
-axs[3].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
-axs[3].set_ylabel('O3 ratio')
-axs[3].axhline(y=1, color='grey', linestyle=':')
-axs[3].legend(loc="upper right")
-#
+# axs[3].set_ylim(0.9, 1.1)
+axs[2].set_ylim(0.7, 1.4)
+
+axs[2].axhline(y=1, color='grey', linestyle ="-")
+
 path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.png')
 plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
@@ -240,164 +223,57 @@ plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
 #
 plt.show()
 
-# axs[0].plot(dfw.Date, dfw.O3sonde_int_woudc, label = 'O3 Sonde from metadata (O3S - Residual)', marker = ".", color = '#ff7f0e')
-# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_burst , label = 'O3 Sonde WOUDC int until burst', marker = ".", color = '#1f77b4')
-# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom_burst , label = 'O3 Sonde DQA int until burst', marker = ".", color = '#bcbd22')
-# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_burst , label = 'O3 Sonde WOUDC int until burst', marker = ".")
-# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom_burst , label = 'O3 Sonde DQA int until burst', marker = ".")
 
-# axs[1].plot(dfm1.DateTime, dfm1.O3Sonde_hom_burst - dfm1.O3Sonde_burst , label = 'O3Sonde DQA - WOUDC', marker = ".")
-# axs[1].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # axs[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[1].set_ylabel('O3 [DU]')
-# # axs[1].set_ylim(11, 3)
-# axs[1].legend(loc="upper right")
 
-# axs[1].plot(dfm1.DateTime, 100 * (dfm1.O3Sonde_hom_burst - dfm1.O3Sonde_burst)/dfm1.O3Sonde_burst , label = 'O3Sonde DQA - WOUDC [%]', marker = ".")
-# axs[1].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[1].set_ylabel('%')
-# # axs[2].set_ylim(11, 3)
-# axs[1].legend(loc="upper right")
+# Plotname = 'TON_allplots_woudc'
 #
-# # axs[3].plot(dfm1.DateTime, dfm1.O3Sonde_hom_burst - dfm1.O3Sonde_burst_raw , label = 'O3Sonde DQA - Raw', marker = ".")
-# # axs[3].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # # ax2[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# # axs[3].set_ylabel('O3 [DU]')
-# # # axs[2].set_ylim(11, 3)
-# # axs[3].legend(loc="upper right")
-#
-# axs[2].plot(dfm1.DateTime, (dfm1.O3Sonde_hom_burst - dfm1.O3Sonde_burst_raw)/dfm1.O3Sonde_burst_raw * 100 , label = 'O3Sonde DQA - Raw [%]', marker = ".")
-# axs[2].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax2[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[2].set_ylabel('%')
-# # axs[2].set_ylim(11, 3)
-# axs[2].legend(loc="upper right")
-#
-# axs[3].plot(dfm1.DateTime, dfm1.o3max, label = 'O3S Max WOUDC', marker = ".")
-# axs[3].plot(dfm1.DateTime, dfm1.o3max_hom, label = 'O3S Max DQA', marker = ".")
-# axs[3].plot(dfm1.DateTime, dfm1.o3max_raw, label = 'O3S Max Raw', marker = ".")
-# axs[3].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax2[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[3].set_ylabel('O3 [DU]')
-# # axs[2].set_ylim(11, 3)
-# axs[3].legend(loc="upper right")
-#
-# axs[4].plot(dfm1.DateTime, (dfm1.o3max_hom - dfm1.o3max)/dfm1.o3max * 100, label = 'DQA - WOUDC (o3max) [%]', marker = ".")
-# axs[4].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax2[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[4].set_ylabel('%')
-# # axs[2].set_ylim(11, 3)
-# axs[4].legend(loc="upper right")
-#
-# # axs[5].plot(dfm1.DateTime, (dfm1.o3min_hom - dfm1.o3min)/dfm1.o3min * 100, label = 'DQA - WOUDC (o3min) [%]', marker = ".")
-# # axs[5].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # # ax2[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# # axs[5].set_ylabel('%')
-# # # axs[2].set_ylim(11, 3)
-# # axs[5].legend(loc="upper right")
-
-#
-# fig, ax1 = plt.subplots(figsize=(17, 9))
-#
-# ax1.plot(dfm1.DateTime, dfm1.O3Sonde, label = 'O3 Sonde WOUDC until 10hPa', marker = ".")
-# ax1.plot(dfm1.DateTime, dfm1.O3Sonde_hom, label = 'O3 Sonde DQA until 10hPa', marker = ".")
-# # # ax1.plot(dfm1.DateTime, dfm1.O3Sonde_raw - dfm1.ROC, label = 'O3 Sonde Raw', marker = ".")
-# # ax1.plot(dfw.Date, dfw.O3sonde_int_woudc, label = 'O3 Sonde from metadata (O3S - Residual)', marker = ".")
-# # ax1.plot(dfm1.DateTime, dfm1.O3Sonde_burst , label = 'O3 Sonde WOUDC int until burst', marker = ".")
-# # ax1.plot(dfm1.DateTime, dfm1.O3Sonde_hom_burst , label = 'O3 Sonde DQA int until burst', marker = ".")
-# # ax1.plot(dfm1.DateTime, dfm1.burst , label = 'burst pressure', marker = ".")
-# ## ax1.plot(dfm1.DateTime, dfm1.O3Sonde , label = 'O3 Sonde WOUDC', marker = ".")
-# # ax1.plot(dfm1.DateTime, dfm1.O3Sonde_hom, label = 'O3 Sonde DQA', marker = ".")
-# # ax1.plot(dfm1.DateTime, dfm1.O3Sonde_raw, label = 'O3 Sonde Raw', marker = ".")
-# # ax1.plot(dfw.Date, dfw.O3sonde_total_woudc, label = 'O3 Sonde from metadata', marker = ".")
-#
-# # ax1.plot(dfm.Date, dfm.BrewO3, label = 'Brewer')
-# # ax1.plot(dfm.Date, dfm.O3ratio, label = 'O3 Ratio')
-# # ax1.plot(dfm.Date, dfm.O3ratio_hom, label = 'O3 Ratio DQA')
-# ax1.set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax1.set_xticklabels(xtick_labels, rotation=0)
-# plt.xticks(rotation = 45)
-#
-# ax1.set_ylabel('O3 [DU]')
-# # ax1.set_ylabel('P Air [hPa]')
-#
-# # ax1.set_ylabel('O3 ratio')
-# # ax1.set_ylim(0.8,1.2)
-#
-# ax1.axhline(y=1, color='grey', linestyle=':')
-# ax1.legend(loc="upper right")
-#
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.png')
-# plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
-# plt.savefig(path + 'Plots/TON_updated/  ' + Plotname + '.pdf')
-#
-# plt.show()
-# plt.close()
-
-# Plotname = 'TON_sonde_burst_stepbystep_corrections_zoom'
-#
-# fig, axs = plt.subplots(6, sharex=True, sharey=False, figsize=(17, 9))
+# fig, axs = plt.subplots(4, sharex=False, sharey=False, figsize=(17, 9))
 # # fig.suptitle('Sharing both axes')
 # # axs[0].plot(x, y ** 2)
 # # axs[1].plot(x, 0.3 * y, 'o')
 # # axs[2].plot(x, y, '+')
 #
-# axs[0].plot(dfm1.DateTime, 100*(dfm1.O3Sonde_burst_etabkg - dfm1.O3Sonde_burst_raw)/dfm1.O3Sonde_burst_raw , label = 'Effect of Bkg corr. on TO [%] ',  marker = ".")
-# # axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_burst_etabkgtpump, label = 'O3Sonde  Pump Temp. corr.',  marker = ".")
-# # axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_burst_etabkgtpumpphigr, label = 'O3Sonde Pump grounf corr.',  marker = ".")
-# # axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_burst_etabkgtpumpphigref, label = 'O3Sonde Pump Eff. corr.',  marker = ".")
-# axs[0].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# axs[0].set_ylabel('%')
-# axs[0].set_ylim(-5, 5)
-#
+# # original
+# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom_10hpa, label='O3Sonde DQA 10hPa', marker=".")
+# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa, label='O3Sonde WOUDC 10hPa', marker=".")
+# # axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_10hpa_raw, label = 'O3Sonde Raw 10hPa',  marker = "." )
+# axs[0].xaxis.set_major_locator(mdates.YearLocator(1))
+# axs[0].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+# axs[0].set_ylabel('O3 [DU]')
 # axs[0].legend(loc="upper right")
 #
-# axs[1].plot(dfm1.DateTime, 100*(dfm1.O3Sonde_burst_etabkgtpump - dfm1.O3Sonde_burst_etabkg)/dfm1.O3Sonde_burst_etabkg ,
-#             label = 'Effect of Pump Temp. corr. on TO [%] ',  marker = ".")
-# axs[1].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # axs[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[1].set_ylabel('%')
-# axs[1].set_ylim(0, 5)
+# axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label='Total O3 DQA', marker=".")
+# axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal, label='Total O3 WOUDC', marker=".")
+# # axs[1].plot(dfm1.DateTime, dfm1.O3SondeTotal_raw, label = 'Total O3 Raw',  marker = "." )
+# axs[1].xaxis.set_major_locator(mdates.YearLocator(1))
+# axs[1].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+# axs[1].set_ylabel('O3 [DU]')
 # axs[1].legend(loc="upper right")
-#
-# axs[2].plot(dfm1.DateTime, 100*(dfm1.O3Sonde_burst_etabkgtpumpphigr - dfm1.O3Sonde_burst_etabkgtpump)/dfm1.O3Sonde_burst_etabkgtpump ,
-#             label = 'Effect of PF humidity corr. on TO [%] ',  marker = ".")
-# axs[2].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[2].set_ylabel('%')
-# axs[2].set_ylim(-5, 5)
+# #
+# axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal, label='O3Sonde WOUDC + ROC', marker=".")
+# # axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'O3Sonde_DQA + ROC',  marker = ".", linestyle = ''None'')
+# # axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label = 'Brewer', marker = ".",  linestyle = ''None'')
+# # axs[2].plot(dfm1.DateTime, dfm1.O3SondeTotal_hom, label = 'O3Sonde_DQA + ROC',  marker = "." )
+# axs[2].plot(dfm1.DateTime, dfm1.BrewO3, label='Brewer', marker=".")
+# axs[2].xaxis.set_major_locator(mdates.YearLocator(1))
+# axs[2].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+# axs[2].set_ylabel('O3 [DU]')
 # axs[2].legend(loc="upper right")
 #
-# axs[3].plot(dfm1.DateTime, 100*(dfm1.O3Sonde_burst_etabkgtpumpphigref - dfm1.O3Sonde_burst_etabkgtpumpphigr)/dfm1.O3Sonde_burst_etabkgtpumpphigr ,
-#             label = 'Effect of PF Eff. corr. on TO [%] ',  marker = ".")
-# axs[3].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax2[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[3].set_ylabel('%')
-# axs[3].set_ylim(-5, 5)
+# #
+# axs[3].plot(dfm1.DateTime, dfm1.O3ratio_hom, label='O3 Ratio DQA', marker=".")
+# # axs[3].plot(dfm1.DateTime, dfm1.O3ratio, label = 'O3 Ratio WOUDC', marker = ".")
+# axs[3].plot(dfm1.DateTime, dfm1.O3ratio_raw, label='O3 Ratio Raw', marker=".")
+# axs[3].xaxis.set_major_locator(mdates.YearLocator(1))
+# axs[3].xaxis.set_major_formatter(mdates.DateFormatter('%Y'))
+# axs[3].set_ylabel('O3 ratio')
+# axs[3].axhline(y=1, color='grey', linestyle=':')
 # axs[3].legend(loc="upper right")
-#
-# axs[4].plot(dfm1.DateTime, (dfm1.O3Sonde_hom_burst - dfm1.O3Sonde_burst_raw)/dfm1.O3Sonde_raw * 100 , label = 'O3Sonde DQA - Raw [%]', marker = ".")
-# axs[4].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax2[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[4].set_ylabel('%')
-# axs[4].set_ylim(-5, 5)
-# axs[4].legend(loc="upper right")
-#
-# axs[5].plot(dfm1.DateTime, (dfm1.O3Sonde_hom_burst- dfm1.O3Sonde_burst)/dfm1.O3Sonde_burst * 100 , label = 'O3Sonde DQA - WOUDC [%]', marker = ".")
-# axs[5].set_xticks(np.arange(0, len(dfm1)+1, xfreq))
-# # ax5[1].set_xticklabels(xtick_labels, rotation=45)plt.xticks(rotation = 45)
-# axs[5].set_ylabel('%')
-# axs[5].set_ylim(-5, 5)
-# axs[5].legend(loc="upper right")
-#
-# plt.xticks(rotation = 45)
-#
+# #
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 # plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.png')
 # plt.savefig(path + 'Plots/TON_updated/' + Plotname + '.eps')
-# plt.savefig(path + 'Plots/TON_updated/  ' + Plotname + '.pdf')
-#
+# # plt.savefig(path + 'Plots/TON_updated/  ' + Plotname + '.pdf')
+# #
 # plt.show()
-# plt.close()
+

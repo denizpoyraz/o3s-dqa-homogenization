@@ -70,21 +70,21 @@ def lt_condition(x):
     if  len(x) == 4: return float(x) * 60/10000
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_rs80/'
 
-data_files = sorted(glob.glob(path + "*_o3sdqa_nors80.hdf"))
+data_files = sorted(glob.glob(path + "*_o3sdqa_rs80.hdf"))
 
 for (filename) in(data_files):
 
-    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_nors80.csv'
+    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_rs80.csv'
     extcsv = woudc_extcsv.Writer(template=True)
-    print(metaname)
+    # print(metaname)
 
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
     if dfm.at[0,'Date'] < 19941012: continue  # # no bkg values
-    # if dfm.at[0, 'Date'] > 19970306: continue # alreday written
+    # if dfm.at[0, 'Date'] > 19991229: continue # alreday written
     # if dfm.at[0, 'Date'] < 20000101: continue # alreday written
 
 
@@ -129,9 +129,9 @@ for (filename) in(data_files):
 
     # BurstOzonePressure
 
-    burst_height = df.Height.max()
-    burst_pressure = df[df.Height == burst_height].Pair.tolist()
-    dfm['BurstOzonePressure'] = float(burst_pressure[0])
+    burst_pressure = df.Pair.min()
+
+    dfm['BurstOzonePressure'] = float(burst_pressure)
 
     dfm['Date'] = dfm['Date'].astype('str')
     dfm['Datenf'] = dfm['Date'].astype('str')
@@ -149,7 +149,7 @@ for (filename) in(data_files):
                     'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2022-02-11,FMI,2.1.3,Rigel Kivi',
+                    '2022-04-27,FMI,2.1.3,Rigel Kivi',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
                     'STN,262,SODANKYLA,FI,9999',
@@ -265,15 +265,26 @@ for (filename) in(data_files):
     # FLIGHT_SUMMARY 	IntegratedO3, CorrectionCode, SondeTotalO3, NormalizationFactor, BackgroundCorrection,
     dfm['CorrectionCode'] = 6
     dfm['BackgroundCorrection'] = "constant_ib2"
-    try: dfm['O3ratio_hom'] = -dfm['O3ratio_hom']
-    except KeyError: dfm['O3ratio_hom'] = 9999
+
+    try:
+        dfm['O3ratio_hom'] = round(dfm['TotalO3_Col2A'] / dfm['O3SondeTotal_hom'], 3)
+    except KeyError:
+        dfm['O3ratio_hom'] = 9999
+
+    if burst_pressure > 32:
+        dfm['O3ratio_hom'] = 9999
+
+    try:
+        dfm['O3ratio_hom'] = -dfm['O3ratio_hom']
+    except KeyError:
+        dfm['O3ratio_hom'] = 9999
 
     try:
         if dfm.at[0,'TotalO3_Col2A'] > 700: dfm['O3ratio_hom'] = 9999
     except KeyError: dfm['O3ratio_hom'] = 9999
 
-    if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib0"
-    if dfm.at[dfm.first_valid_index(), 'iB2'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_climatologicalmean_ib0"
+    if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib2"
+    if dfm.at[dfm.first_valid_index(), 'iB2'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_climatologicalmean_ib2"
     flight_field = 'IntegratedO3,CorrectionCode,SondeTotalO3,NormalizationFactor,BackgroundCorrection'
     df_names = 'O3Sonde_hom', 'CorrectionCode', 'O3SondeTotal_hom', 'O3ratio_hom', 'BackgroundCorrection'
     flight_summary = make_summary(dfm, df_names)
@@ -311,7 +322,7 @@ for (filename) in(data_files):
     # print(dfm.at[0, 'SerialECC'][:-1])
     # print(fileout)Ftmp
 
-    out_name = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/WOUDC/' + fileout
+    out_name = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/WOUDC_rs80/' + fileout
     # print(out_name)
 
     woudc_extcsv.dump(extcsv, out_name)

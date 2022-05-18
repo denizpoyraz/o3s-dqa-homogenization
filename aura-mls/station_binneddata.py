@@ -18,13 +18,16 @@ ozone = 'O3' #woudc
 # ozone = 'PO3_dqar'
 
 
-# name_out = 'SodankylaInterpolated_dqa_rs80'
-# name_out = 'UccleInterpolated_dqa_rs80'
-# name_out = 'LauderInterpolated_dqa_rs80'
-name_out = 'LauderInterpolated_dqa_nors80'
+# name_out = 'SodankylaInterpolated_dqa_nors80'
+# name_out = 'UccleInterpolated_dqa_nors80'
+# name_out = 'LauderInterpolated_dqa_nors80'
+# name_out = 'LauderInterpolated_dqa_nors80'
+name_out = 'scoresbyInterpolated_dqa_nors80'
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
+
+path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 allFiles = sorted(glob.glob(path + "*_all_hom_nors80.hdf"))
@@ -41,7 +44,10 @@ for (filename) in (allFiles):
     print(filename)
 
     df = pd.read_hdf(filename)
-    df['date'] = df['DateTime'].dt.strftime("%Y%m%d")
+    # df['date'] = df['Date'].dt.strftime("%Y%m%d")
+    df['date'] = df['Date']
+    # df['date'] = df['DateTime'].dt.strftime("%Y%m%d")
+
     datestr = df.at[df.first_valid_index(), 'date']
     # print(datestr)
 
@@ -86,10 +92,13 @@ for (filename) in (allFiles):
 
     #for lauder
     # df['Height'] = df['GPHeight']
-    df['Height'] = df['Alt']
+    # df['Height'] = df['Alt']
 
  # now downsample the lauder data remove descent list
-    dfn = df[df.Height > 0]
+    try: dfn = df[df.Height > 0]
+    except TypeError:
+        df['Height'] = df['Height'].astype(int)
+        dfn = df[df.Height > 0]
     maxh = dfn.Height.max()
 
     if len(dfn) < 10:
@@ -252,8 +261,8 @@ for (filename) in (allFiles):
 # df = pd.concat(list_data, ignore_index=True)
 dfall = pd.concat(listall_data, ignore_index=True)
 #
-dfall.to_csv(path + "/Binned/test_" + name_out + ".csv")
-dfall.to_hdf(path + "/Binned/test_" + name_out + ".h5", key = 'df')
+dfall.to_csv(path + "/Binned/" + name_out + ".csv")
+dfall.to_hdf(path + "/Binned/" + name_out + ".h5", key = 'df')
 
 
 ###########################################################################################################################33

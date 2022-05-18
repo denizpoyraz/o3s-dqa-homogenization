@@ -13,10 +13,10 @@ from math import log
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 
 
-dfmeta = pd.read_csv(path + '/metadata/Lauder_MetadaAll.csv')
+dfmeta = pd.read_csv(path + '/Metadata/All_metadata.csv')
 # dfmeta = pd.read_csv(path + '/Madrid_Metadata.csv')
 # dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
 
@@ -39,12 +39,12 @@ dfmeta['Date'] = dfmeta["DateTime"].dt.strftime('%Y%m%d')
 
 # name = 'AURA_MLSData_MatchedUccle_DQA_v05'
 # name = 'AURA_MLSData_MatchedMadrid_DQA_v04'
-name = 'AURA_MLSData_MatchedLauder_DQA_v04'
-
+# name = 'AURA_MLSData_MatchedLauder_DQA_v04'
+name = 'AURA_MLSData_MatchedScoresby_DQA_v04'
 # fname = 'aura_mls_l2gpovp_o3_v05_uccle.txt'
-fname = 'aura_mls_l2gpovp_o3_v04_lauder.txt'
+# fname = 'aura_mls_l2gpovp_o3_v04_lauder.txt'
 # fname = 'aura_mls_l2gpovp_o3_v04_madrid.barajas.txt'
-
+fname = 'aura_mls_l2gpovp_o3_v04_scoresbysund.txt'
 
 file = open(path + fname, "r")
 file.readline()

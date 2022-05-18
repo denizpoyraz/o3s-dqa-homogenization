@@ -57,14 +57,14 @@ def make_summary(df, column_names):
     return field_summary
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/'
 path2 = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 
-data_files = sorted(glob.glob(path + "*_o3sdqa_nors80.hdf"))
+data_files = sorted(glob.glob(path + "*_o3sdqa_rs80.hdf"))
 
 for (filename) in(data_files):
 
-    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_nors80.csv'
+    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_rs80.csv'
     extcsv = woudc_extcsv.Writer(template=True)
 
     df = pd.read_hdf(filename)
@@ -133,14 +133,15 @@ for (filename) in(data_files):
 
     # BurstOzonePressure
 
-    burst_height = df.Height.max()
-    burst_pressure = df[df.Height == burst_height].Pair.tolist()
+    # burst_height = df.Height.max()
+    burst_pressure = df.Pair.min()
+
     # print(burst_pressure, len(burst_pressure))
     #
     # if len(burst_pressure) >1:
     #     print(burst_pressure, len(burst_pressure))
     #     burst_pressure = burst_pressure[0]
-    dfm['BurstOzonePressure'] = float(burst_pressure[0])
+    dfm['BurstOzonePressure'] = float(burst_pressure)
 
     dfm['Datenf'] = dfm['Datenf'].astype('int')
     dfm['Datenf'] = dfm['Datenf'].astype('str')
@@ -157,7 +158,7 @@ for (filename) in(data_files):
                     'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2022-07-03,RMIB,2.1.3,Roeland Van Malderen',
+                    '2022-04-25,RMIB,2.1.3,Roeland Van Malderen',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
                     'STN,053,UCCLE,BEL,6447',
@@ -252,6 +253,19 @@ for (filename) in(data_files):
     # FLIGHT_SUMMARY 	IntegratedO3, CorrectionCode, SondeTotalO3, NormalizationFactor, BackgroundCorrection,
     dfm['CorrectionCode'] = 6
     dfm['BackgroundCorrection'] = "constant_ib0"
+
+    try:
+        dfm['O3ratio_hom'] = round(dfm['TO_Brewer'] / dfm['O3SondeTotal_hom'], 3)
+    except KeyError:
+        dfm['O3ratio_hom'] = 9999
+
+    if burst_pressure > 32:
+        dfm['O3ratio_hom'] = 9999
+
+    # print('O3SondeTotal_hom', dfm.at[0,'O3SondeTotal_hom'])
+    # print('TO_Brewer', dfm.at[0,'TO_Brewer'])
+    # print('O3ratio_hom', dfm.at[0,'O3ratio_hom'])
+
     try: dfm['O3ratio_hom'] = -dfm['O3ratio_hom']
     except KeyError: dfm['O3ratio_hom'] = 9999
     if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib0"
@@ -282,7 +296,7 @@ for (filename) in(data_files):
 
     fileout = str(dfm.at[0,'Datenf']) + ".ECC." + dfm.at[0,'SensorType'] + "." + str(dfm.at[0,'SerialECC']) + ".RMIB.csv"
 
-    out_name = path2 + '/WOUDC/' + fileout
+    out_name = path2 + '/WOUDC_rs80/' + fileout
     # print(out_name)
 
     woudc_extcsv.dump(extcsv, out_name)

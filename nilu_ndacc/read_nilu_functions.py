@@ -2,6 +2,10 @@ import pandas as pd
 import math
 from re import search
 from scipy.interpolate import interp1d
+from datetime import datetime
+
+
+from functions.homogenization_functions import stoichmetry_conversion
 
 
 VecP_ECC6A = [0, 2, 3, 5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 1100]
@@ -77,7 +81,7 @@ def organize_df(df1, df2):
         if (search('ackground', list2[j])) and (search('current', list2[j])) and (search('used', list2[j])) and (
         search('computation', list2[j])):
             bkg = list2[j]
-            print('in function', bkg)
+            # print('in function', bkg)
             dfm_out.at[0,'BkgUsed'] = df2.at[df2.first_valid_index(), bkg]
 
         if ((search('Sensor', list2[j])) and (search('air', list2[j])) and (search('flow', list2[j]))) and \
@@ -230,6 +234,12 @@ def organize_df(df1, df2):
     # in case there is no PF it is written to 9999
     try:
         dfm_out['PF'] = dfm_out['PF'].astype('float')
+        dfm_out['Pground'] = dfm_out['Pground'].astype('float')
+        dfm_out['SolutionConcentration'] = dfm_out['SolutionConcentration'].astype('float')
+        dfm_out['SolutionVolume'] = dfm_out['SolutionVolume'].astype('float')
+        dfm_out['TLab'] = dfm_out['TLab'].astype('float')
+
+
     except KeyError:
         dfm_out['PF'] = 28
     # in case there is no iB0 or iB2 it is written to 9999
@@ -254,7 +264,7 @@ def missing_tpump(dfl):
 
 
     if len(pair_missing) > 0:
-        print('no sample temperature', len(pair_missing), len(dfl))
+        # print('no sample temperature', len(pair_missing), len(dfl))
 
         x = dfl[dfl.value_is_NaN == 0]['TboxC'].tolist()
         y = dfl[dfl.value_is_NaN == 0]['Pair'].tolist()
@@ -293,7 +303,82 @@ def missing_tpump(dfl):
     return dfl
 
 
-def o3tocurrent(dft, dfm):
+def o3tocurrent(dft, dfm, dfmmain):
+    '''
+
+    :param dft: data df
+    :param dfm: metadata df
+    :return: dft
+    '''
+    # o3(mPa) = 4.3087 * 10e-4 * (i - ibg) * tp * t * cef * cref
+    # tp: pump temp. in K, t: pumping time for 100 ml of air in seconds, cef: correction due to reduced ambient pressure for pump
+    # cref: additional correction factor
+    # i = o3 / (4.3087 * 10e-4 * tp * t * cef * cref ) + ibg
+
+    sensortype = dfm.at[dfm.first_valid_index(), 'SensorType']
+    # print(sensortype)
+
+    enscitag = (search('DMT-Z', sensortype)) or (search('Z', sensortype)) or (search('ECC6Z', sensortype)) or (
+        search('_Z', sensortype))
+    if enscitag:
+        dft['SensorType'] = 'DMT-Z'
+        dfm['SensorType'] = 'DMT-Z'
+    spctag = (search('SPC', sensortype)) or (search('4A', sensortype)) or (search('5A', sensortype)) or (
+        search('6A', sensortype))
+    if spctag:
+        dft['SensorType'] = 'SPC'
+        dfm['SensorType'] = 'SPC'
+
+        # check PF values
+    if (dfm.at[dfm.first_valid_index(), 'PF'] > 35) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[
+        dfm.first_valid_index(), 'PF'] = dfmmain.PF.mean()
+
+    dft['Cef'] = ComputeCef(dft,dfm)
+
+    cref = 1
+    dft['ibg'] = 0
+    dft['ibg_tmp'] = 0
+
+    dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2']
+    dft['iB0'] = dfm.at[dfm.first_valid_index(), 'iB0']
+
+    # # # by default uses iB2 as background current
+
+    dfmmain['Date2'] = dfmmain['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    dfmmain['Date3'] = dfmmain['Date2'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+
+    dfm_date = dfm.at[dfm.first_valid_index(), 'Date']
+
+    #if iB2 is missing uses mean of the iB2
+    if (dfm.at[dfm.first_valid_index(), 'iB2'] > 0.9):
+        # print('here bad ib2', dfm.at[dfm.first_valid_index(), 'iB2'],
+        #       dfm_date, dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean'])
+        # print(dfmmain[['Date','Date2','Date3']][0:4])
+
+        dfm['iB2'] = dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean']
+
+
+
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2')
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
+
+    #if iB2 values are missing
+    # if  (dfm.at[dfm.first_valid_index(), 'iB0'] < 0.9) & (dfm.at[dfm.first_valid_index(), 'iB2'] > 0.9):
+    #     dfm['BkgUsed'] = 'Ibg1'
+
+    # # # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
+    # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
+    #     dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC'):
+    #     dft['ibg'] = ComputeIBG(dft, 'iB0')
+
+    dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+
+
+    return dft
+
+
+def o3tocurrent_stoich(dft, dfm):
     '''
 
     :param dft: data df
@@ -332,6 +417,11 @@ def o3tocurrent(dft, dfm):
 
     dft['Cef'] = ComputeCef(dft,dfm)
 
+    dft['stoich'], dft['unc_stoich'] = stoichmetry_conversion(dft, 'Pair', dfm.at[0, 'SensorType'],
+                                                            dfm.at[0, 'SolutionConcentration'], 'SPC10')
+
+    # print(dft.at[10,'stoich'])
+
     cref = 1
     dft['ibg'] = 0
     dft['ibg_tmp'] = 0
@@ -353,10 +443,16 @@ def o3tocurrent(dft, dfm):
     if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC'):
         dft['ibg'] = ComputeIBG(dft, 'iB0')
 
-    dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+    dft['O3_uncor'] = dft['O3'] / dft['stoich'] #original
+
+
+    dft['I'] = dft['O3_uncor'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] *
+                            cref) + dft['ibg']
 
 
     return dft
+
+
 
 
 def ComputeCef(dft, dfm):

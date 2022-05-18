@@ -57,54 +57,54 @@ def make_summary(df, column_names):
     return field_summary
 
 # make a df of woudc metadata
-# allFiles = sorted(glob.glob('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/*metadata.csv'))
+allFiles = sorted(glob.glob('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/*metadata.csv'))
+
+dfmeta = pd.DataFrame()
+metadata = []
+
+for (filename) in (allFiles):
+    df = pd.read_csv(filename)
+
+    metadata.append(df)
 #
-# dfmeta = pd.DataFrame()
-# metadata = []
-#
-# for (filename) in (allFiles):
-#     df = pd.read_csv(filename)
-#
-#     metadata.append(df)
-# #
-# name_out = 'Madrid_WOUDC_Metadata'
-# dfall = pd.concat(metadata, ignore_index=True)
-#
-# dfall.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/' + name_out + ".csv")
+name_out = 'Madrid_WOUDC_Metadata'
+dfall = pd.concat(metadata, ignore_index=True)
+
+dfall.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/' + name_out + ".csv")
 
 dfm_woudc = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/Madrid_WOUDC_Metadata.csv')
 
 print('done')
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/'
 path2 = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 
-data_files = sorted(glob.glob(path + "*_o3sdqa_nors80.hdf"))
+data_files = sorted(glob.glob(path + "*_o3sdqa_rs80.hdf"))
 
 for (filename) in(data_files):
 
-    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_nors80.csv'
+    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_rs80.csv'
     extcsv = woudc_extcsv.Writer(template=True)
 
     df = pd.read_hdf(filename)
     dfm = pd.read_csv(metaname)
 
 
-    print(filename)
     # some exceptions
-    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20190606_o3sdqa_nors80.hdf':
+    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/20190605_o3sdqa_rs80.hdf':
         dfm['DateTime'] = '2019-06-06'
-    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20191006_o3sdqa_nors80.hdf':
+    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/20191006_o3sdqa_rs80.hdf':
         dfm['DateTime'] = '2019-10-06'
-    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20191009_o3sdqa_nors80.hdf':
+    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/20191010_o3sdqa_rs80.hdf':
         dfm['DateTime'] = '2019-10-09'
-    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/20200903_o3sdqa_nors80.hdf':
+    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/20200902_o3sdqa_rs80.hdf':
         # dfm['Date'] = '2020-09-03'
         dfm['DateTime'] = '2020-09-03'
         print('why noyt')
         print(dfm['Date'])
 
 
+    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/20191226_o3sdqa_rs80.hdf':continue
 
     dfm['Date'] = pd.to_datetime(dfm['DateTime'], format='%Y-%m-%d')
     dfm['Date2'] = pd.to_datetime(dfm['Date'], format='%Y%m%d')
@@ -112,8 +112,9 @@ for (filename) in(data_files):
     dfm['Datenw'] = dfm['Date'].apply(lambda x: x.strftime('%Y-%m-%d'))
     dfm['Datenf'] = dfm['Datenf'].astype('int')
 
-    if dfm.at[0,'Datenf'] < 20200903: continue  # already homogenized
+    # if dfm.at[0,'Datenf'] < 20200810: continue  # already homogenized
 
+    print(filename)
 
     dfmw = dfm_woudc[dfm_woudc['TIMESTAMP_Date'] == dfm.loc[0,'Datenw']]
     dfmw = dfmw.reset_index()
@@ -147,10 +148,9 @@ for (filename) in(data_files):
 
     # BurstOzonePressure
 
-    burst_height = df.GPHeight.max()
-    burst_pressure = df[df.GPHeight == burst_height].Pair.tolist()
+    burst_pressure = df.Pair.min()
 
-    dfm['BurstOzonePressure'] = float(burst_pressure[0])
+    dfm['BurstOzonePressure'] = float(burst_pressure)
     dfm['Datenf'] = dfm['Datenf'].astype('str')
     dfm['Date'] = dfm['Datenf'].apply(lambda _: datetime.strptime(_, "%Y%m%d"))
     dfm['Date'] = dfm['Date'].apply(lambda _: datetime.strftime(_, '%Y-%m-%d'))
@@ -165,7 +165,7 @@ for (filename) in(data_files):
                     'WOUDC,OzoneSonde,1,1',
                     field='Class,Category,Level,Form')
     extcsv.add_data('DATA_GENERATION',
-                    '2022-03-03,AEMET,2.1.3,Jose Luis Hernandez',
+                    '2022-04-26,AEMET,2.1.3,Jose Luis Hernandez',
                     field='Date,Agency,Version,ScientificAuthority')
     extcsv.add_data('PLATFORM',
                     'STN,308,Madrid,ESP,MAD',
@@ -253,6 +253,14 @@ for (filename) in(data_files):
     # FLIGHT_SUMMARY 	IntegratedO3, CorrectionCode, SondeTotalO3, NormalizationFactor, BackgroundCorrection,
     dfm['CorrectionCode'] = 6
     dfm['BackgroundCorrection'] = "constant_ib2"
+    try:
+        dfm['O3ratio_hom'] = round(dfm['BrewO3'] / dfm['O3SondeTotal_hom'], 3)
+    except KeyError:
+        dfm['O3ratio_hom'] = 9999
+
+    if burst_pressure > 32:
+        dfm['O3ratio_hom'] = 9999
+
     try: dfm['O3ratio_hom'] = -dfm['O3ratio_hom']
     except KeyError: dfm['O3ratio_hom'] = 9999
     if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['BackgroundCorrection'] = "constant_ib2"
@@ -271,7 +279,7 @@ for (filename) in(data_files):
     #
      # PROFILE
     data_names = 'Duration, Height, Pressure, Temperature, Humidity, TemperatureSonde, O3PartialPressure, SondeCurrent,UncO3PartialPressure'
-    df_names = ['Duration', 'GPHeight','Pressure', 'Temperature', 'RelativeHumidity',  'SampleTemperature', 'O3',  'I', 'dO3']
+    df_names = ['Duration', 'GPHeight','Pair', 'Temperature', 'RelativeHumidity',  'Tbox', 'O3',  'I', 'dO3']
 
     size = len(df)
 
@@ -284,7 +292,7 @@ for (filename) in(data_files):
     fileout = str(dfm.at[dfm.first_valid_index(),'Datenf']) + ".ECC." + dfm.at[0,'SensorType'] + "." + dfm.at[0,'SerialECC'] + ".AEMET.csv"
     # print(fileout)
 
-    out_name = path2 + '/WOUDC/' + fileout
+    out_name = path2 + '/WOUDC_rs80/' + fileout
     # print(out_name)
 
     woudc_extcsv.dump(extcsv, out_name)

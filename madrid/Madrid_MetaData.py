@@ -1,6 +1,11 @@
 import numpy as np
 import pandas as pd
 
+import glob
+
+path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
+
+
 columnString = "Year DateTime O3ratio BrewO3 ResidO3 PLab TLab ULab iB0 iB1 iB2 PF PumpT400hpa PumpT200hpa PumpT50hpa PumpT25hpa Psup O3STotal"
 columnStr = columnString.split(" ")
 
@@ -23,3 +28,18 @@ print(list(dfmeta))
 
 # dfmeta.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/Madrid_1992-2020_MetaData.csv')
 dfmeta.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/Madrid_Metadata.csv')
+
+allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
+
+listall = []
+
+for (filename) in (allFiles):
+    df = pd.read_hdf(filename)
+    # print(filename)
+
+    listall.append(df)
+
+name_out = 'Madrid_AllData_woudc'
+dfall = pd.concat(listall, ignore_index=True)
+
+dfall.to_hdf(path + "DQA_nors80/" + name_out + ".hdf", key = 'df')

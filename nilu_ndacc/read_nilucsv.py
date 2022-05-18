@@ -4,16 +4,21 @@ from datetime import datetime
 from re import search
 
 
-from nilu_ndacc.read_nilu_functions import organize_df, o3tocurrent, missing_tpump
+# from nilu_ndacc.read_nilu_functions import organize_df, o3tocurrent, missing_tpump, o3tocurrent_stoich
+from nilu_ndacc.read_nilu_functions import organize_df, o3tocurrent, o3tocurrent_stoich, missing_tpump
 
 K = 273.15
 k = 273.15
 
 
+# filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 filepath = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
+station_name = 'scoresby'
+
+dfmeta = pd.read_csv(filepath + "Metadata/All_metadata_ndacc_ib2.csv" )
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "Raw/*0603*.hdf"))
+allFiles = sorted(glob.glob(filepath + "ndacc/*.hdf"))
 
 # print(allFiles)
 
@@ -29,9 +34,8 @@ for filename in (allFiles):
     # not to read metada files with _md extension
     if (search("md", fname)) or (search("metadata", fname)): continue
     # if (fname == 'so980827') | (fname == 'so990708'): continue #one problematic file in sodankyal
-    print(fname)
 
-    metafile = filepath + 'Raw/' + fname + "_md.csv"
+    metafile = filepath + 'ndacc/' + fname + "_md.csv"
 
     # extract the date from file name
     date = datetime.strptime(name, '%y%m%d')
@@ -71,6 +75,11 @@ for filename in (allFiles):
 
     if (len(dfl) < 100): continue
 
+    if datef < '20151217':continue
+
+    print(fname)
+
+
     # print(dfm.at[dfm.first_valid_index(), 'SensorType'])
 
     # for some files that the value were written wrong
@@ -97,12 +106,17 @@ for filename in (allFiles):
 
     #check for missing/wrong O3 values
     dfl = dfl[dfl.O3 > 0]
-    dfl = dfl[dfl.O3 <  99]
+    dfl = dfl[dfl.O3 < 99]
 
+    dfl = dfl[dfl.Pair > 0]
 
     if len(dfl)< 100: continue
     # convert the partial pressure to current
-    dfl = o3tocurrent(dfl, dfm)
+    #for scoresbysund transfer functions have been used for ensci 1.0% to spc1.0 after 20151217
+    dfl = o3tocurrent(dfl, dfm, dfmeta)
+    if (datef >= '20151217') & (station_name == 'scoresby'):
+        dfl = o3tocurrent_stoich(dfl, dfm)
+
     # set the date
     dfl['Date'] = datef
     dfm['Date'] = datef
@@ -113,16 +127,16 @@ for filename in (allFiles):
     # dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
 
 
-    dfl.to_hdf(filepath + '/Current/test_' + rawname, key = 'df')
-    dfm.to_csv(filepath + '/Metadata/test_' + metaname)
+    dfl.to_hdf(filepath + '/Current/' + rawname, key = 'df')
+    dfm.to_csv(filepath + '/Metadata/' + metaname)
 
     list_metadata.append(dfm)
 
 # save all the metada in one file, either in hdf format or csv format
-dff = pd.concat(list_metadata, ignore_index=True)
-hdfall = filepath + "Metadata/All_metadata.hdf"
-csvall = filepath + "Metadata/All_metadata.csv"
-
-dff.to_hdf(hdfall, key = 'df')
-dff.to_csv(csvall)
+# dff = pd.concat(list_metadata, ignore_index=True)
+# hdfall = filepath + "Metadata/All_metadata.hdf"
+# csvall = filepath + "Metadata/All_metadata.csv"
+#
+# dff.to_hdf(hdfall, key = 'df')
+# dff.to_csv(csvall)
 
