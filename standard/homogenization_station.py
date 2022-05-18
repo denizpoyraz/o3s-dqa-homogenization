@@ -90,12 +90,6 @@ for (filename) in (allFiles):
     if datestr < date_start_hom: continue
 
 
-    if datestr < '20151217':continue
-
-    #
-    # if datestr == '20040607': continue
-
-
     print(filename)
 
     df = pd.read_hdf(filename)
