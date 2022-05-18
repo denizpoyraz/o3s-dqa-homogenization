@@ -68,7 +68,7 @@ def station_inone(st_name):
     if st_name == 'lauder':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
         dfmetaf = pd.read_csv(pathf + 'metadata/Lauder_MetadaAll.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/1996*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
         dfmetaf = organize_lauder(dfmetaf)
 
@@ -82,9 +82,16 @@ def station_inone(st_name):
     if st_name == 'scoresbysund':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
         dfmetaf = pd.read_csv(pathf + 'metadata/Scoresby_MetadaAll.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Current/*sc03*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "/Current/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_scoresbysund_roc.txt')
         dfmetaf = organize_scoresby(dfmetaf)
+
+    if st_name == 'sodankyla':
+        pathf = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
+        dfmetaf = pd.read_hdf(pathf + 'Metadata/All_metadata.hdf')
+        allFilesf = sorted(glob.glob(pathf + "/Current/*raw*hdf"))
+        roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
+        dfmetaf = organize_sodankyla(dfmetaf)
 
     return pathf, allFilesf, roc_table_filef, dfmetaf
 
@@ -119,6 +126,13 @@ def station_inbool(st_name):
         organize_dff = True
         descent_dataf = False
 
+    if st_name == 'sodankyla':
+        humidity_correctionf = True
+        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        calculate_currentf = False
+        organize_dff = True
+        descent_dataf = False
+
 
     return humidity_correctionf, df_missing_tpumpf, calculate_currentf, organize_dff, descent_dataf
 
@@ -126,8 +140,8 @@ def station_invar(st_name):
 
     if st_name == 'madrid':
         date_start_homf = '' # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
-        rs80_beginf = '' # the date where there was a change from nors80
-        rs80_endf = ''
+        rs80_beginf = '19600101' # the date where there was a change from nors80
+        rs80_endf = '20060301'
         IBGsplitf = '2004'  # the date if there is a lower/higher bkg value region
         sonde_tbcf = 'SPC10'
 
@@ -140,25 +154,81 @@ def station_invar(st_name):
 
     if st_name == 'uccle':
         date_start_homf = '19961001'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
-        rs80_beginf = '20070901'  # the date where there was a change from nors80
+        rs80_beginf = '19961001'  # the date where there was a change from nors80
         rs80_endf = '20070901'
         IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
         sonde_tbcf = 'ENSCI05'
 
     if st_name == 'scoresbysund':
-        date_start_homf = '19961001'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        date_start_homf = '19890208'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
         rs80_beginf = '19890208'  # the date where there was a change from nors80
         rs80_endf = '20070104'
         # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
         IBGsplitf = ''  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'SPC10'
 
+    if st_name == 'sodankyla':
+        date_start_homf = '19941012'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = '19941012'  # the date where there was a change from nors80
+        rs80_endf = '20051124'
+        # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
+        IBGsplitf = '2005'  # the date if there is a lower/higher bkg value region
         sonde_tbcf = 'ENSCI05'
+
 
     return date_start_homf, IBGsplitf, sonde_tbcf, rs80_beginf, rs80_endf
 
 
+def df_drop(dft, st_name):
+
+    if st_name == 'madrid':
+        dft = dft.drop(['Pressure', 'LevelCode', 'Tpump', 'unc_Tpump', 'DateTime', 'value_is_NaN',
+         'TboxK', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
+         'iB2', 'CorP', 'Pground', 'Pcor', 'Phip', 'Eta', 'dPhip', 'unc_cPH', 'unc_cPL', 'unc_alpha_o3',
+         'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor',
+         'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
+         'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor',
+         'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr',
+         'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor'], axis=1)
+
+    if st_name == 'uccle':
+        dft = dft.drop(['Tpump', 'unc_Tpump','TboxK',
+         'iB2','Phip', 'Eta', 'dPhip', 'unc_cPH', 'unc_cPL', 'unc_alpha_o3',
+         'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor',
+         'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab','cPH', 'TLabK', 'cPL',
+                        'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor',
+         'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr',
+         'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor'], axis=1)
+
+    if st_name == 'sodankyla':
+        dft = dft.drop(['TboxK', 'TboxC', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
+                        'iB2', 'iB0', 'Tpump', 'Phip', 'Eta',
+                        'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
+                        'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
+                        'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
+                        'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+                        'Phip_cor', 'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
+                        'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
+                        'dTpump_cor'], axis=1)
+
+    if st_name == 'scoresbysund':
+        dft = dft.drop(['TboxK', 'TboxC', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
+                        'iB2', 'iB0', 'Tpump', 'Phip', 'Eta',
+                        'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
+                        'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
+                        'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
+                        'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+                        'Phip_cor', 'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
+                        'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
+                        'dTpump_cor'], axis=1)
+
+
+    return dft
+
+
 def organize_uccle(dum):
 
+    dum = dum[dum.Date != '9999.0']
 
     dum['string_bkg_used'] = 'ib0'
 
@@ -195,7 +265,9 @@ def organize_madrid(dmm):
         except ValueError:
             dmm.at[i, 'BrewO3'] = 0
 
-    dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+    dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    # dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+
     dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 
     #specific for ulab, since there is not enough data the overall mean is used, not monthly
@@ -244,6 +316,7 @@ def organize_madrid(dmm):
     dmm.loc[dmm.Date <= '19981202', 'string_pump_location'] = 'case3'
     dmm.loc[dmm.Date > '19981202', 'string_pump_location'] = 'case5'
 
+    dmm['iB2'] = dmm['iB2'].astype('float')
 
     #since there are missing iB2 values, assign the corresponding mean to iB2
     # before and after ibg_split if it is nan
@@ -251,11 +324,13 @@ def organize_madrid(dmm):
     dmm.loc[(dmm['iB2'].isnull() == 1),'bkg_tag'] = 'mean'
     dmm.loc[(dmm['iB2'].isnull())== 0,'bkg_tag'] = 'iB2'
 
-    mean_before = dmm[dmm.DateTime < '2004'].iB2.mean()
-    mean_after = dmm[dmm.DateTime > '2004'].iB2.mean()
+    mean_before = dmm[dmm.Date < '20040101'].iB2.mean()
+    mean_after = dmm[dmm.Date > '20040101'].iB2.mean()
 
-    dmm.loc[(dmm['iB2'].isnull()) & (dmm.DateTime < '2004'), 'iB2'] = mean_before
-    dmm.loc[(dmm['iB2'].isnull()) & (dmm.DateTime > '2004'), 'iB2'] = mean_after
+    dmm.loc[(dmm['iB2'].isnull()) & (dmm.Date < '20040101'), 'iB2'] = mean_before
+    dmm.loc[(dmm['iB2'].isnull()) & (dmm.Date > '20040101'), 'iB2'] = mean_after
+
+    dmm['TotalO3_Col2A'] = dmm['BrewO3']
 
 
     return dmm
@@ -368,6 +443,8 @@ def organize_sodankyla(dsm):
     # allFiles = sorted(glob.glob(path + "Current/*961211*rawcurrent.hdf"))
     # roc_table_file = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
 
+    dsm['Date'] = dsm['Date'].astype(str)
+
     dsm = dsm[dsm.iB2 < 9]
     dsm = dsm[dsm.iB0 < 9]
 
@@ -384,7 +461,7 @@ def organize_sodankyla(dsm):
     ulab = missing_station_values(dsm, 'ULab', False, 'nan')
     pflab = missing_station_values(dsm, 'PF', True, '20040101')  # PF values are
 
-    print(pflab)
+    print('pflab', pflab)
 
     dsm = assign_missing_ptupf(dsm, True, True, True, True, date_missing_p, date_missing_t, date_missing_u,
                                   date_missing_pf, plab, tlab, ulab, pflab)
@@ -426,7 +503,8 @@ def organize_scoresby(dms):
     dms['PLab'] = dms['Pground']
     dms['string_bkg_used'] = 'ib2'
 
-    dms['string_pump_location'] = 'case0'
+
+    dms['string_pump_location'] = 'case5'
     dms.loc[dms['SerialECC'].str.contains("4a", case=False), 'string_pump_location'] = 'case1'
     dms.loc[dms['SerialECC'].str.contains("5a", case=False), 'string_pump_location'] = 'case3'
     dms.loc[dms['SerialECC'].str.contains("6a", case=False), 'string_pump_location'] = 'case5'
@@ -435,21 +513,23 @@ def organize_scoresby(dms):
 
 
     # part related with missing ptupf
-    date_missing_p = '2009-12-31'
-    date_missing_t = '2000-10-06'
-    date_missing_u = '2010-10-06'
+    date_missing_p = '2009-12-31' #(after)
+    date_missing_t = '1999-09-03' #(before)
+    date_missing_u = '2000-10-13' #(before)
     # date_missing_pf = '2020-11-18'
 
-    plab = missing_station_values(dms, 'PLab', False, 'nan')
-    tlab = missing_station_values(dms, 'TLab', False, 'nan')
-    ulab = missing_station_values(dms, 'ULab', False, 'nan')
-    pflab = [0]
+    plab = missing_station_values(dms[dms.Pground != 1000.0], 'PLab', False, 'nan')
+    tlab = missing_station_values(dms[dms.TLab != 99.9], 'TLab', False, 'nan')
+    ulab = missing_station_values(dms[dms.ULab != 999.0], 'ULab', False, 'nan')
 
     dms.loc[dms.Date > date_missing_p, 'PLab'] = \
         dms.loc[dms.Date > date_missing_p, 'DateTime2'].dt.month.apply(lambda x: plab[x - 1])
+    dms.loc[dms.Date < date_missing_t, 'TLab'] = \
+        dms.loc[dms.Date < date_missing_t, 'DateTime2'].dt.month.apply(lambda x: tlab[x - 1])
+    dms.loc[dms.Date < date_missing_u, 'ULab'] = \
+        dms.loc[dms.Date < date_missing_u, 'DateTime2'].dt.month.apply(lambda x: ulab[x - 1])
 
-    dms = assign_missing_ptupf(dms, False, True, True, False, date_missing_p, date_missing_t, date_missing_u,
-                               date_missing_u, plab, tlab, ulab, pflab)
+
     #there are also some values where OTU are missing:
     dms.loc[dms.PLab == 1000, 'PLab'] = \
         dms.loc[dms.PLab == 1000, 'DateTime2'].dt.month.apply(lambda x: plab[x - 1])
@@ -568,7 +648,7 @@ def df_station(dl, datevalue, dml, station):
             dl['Height'] = dl['Alt']
 
     if station == 'madrid':
-        dl = rename_variables(dl,['Pressure','O3PartialPressure','SampleTemperature'], ['Pair','O3','Tpump'])
+        dl = rename_variables(dl,['Pressure','O3PartialPressure','SampleTemperature','GPHeight'], ['Pair','O3','Tpump','Height'])
 
 
     if station == 'uccle':
@@ -590,9 +670,11 @@ def df_station(dl, datevalue, dml, station):
         dl['Pair'] = dl['P']
         dl['TLab'] = 20
         dl['iB2'] = dml.at[dml.first_valid_index(), 'iB0']
+        dl = dl[dl.Pair > 0]
 
     if station == 'scoresbysund':
-        dl = rename_variables(dl,['Tbox'], ['TboxK'])
+        dl = dl[dl['O3'] < 99]
+        # dl = dl[dl['Tbox'] < 999]
 
 
     return return_string, dl
