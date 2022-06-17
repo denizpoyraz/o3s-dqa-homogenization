@@ -20,16 +20,19 @@ ozone = 'O3' #woudc
 
 # name_out = 'SodankylaInterpolated_dqa_nors80'
 # name_out = 'UccleInterpolated_dqa_nors80'
+name_out = 'LauderInterpolated_dqa_nors80'
 # name_out = 'LauderInterpolated_dqa_nors80'
-# name_out = 'LauderInterpolated_dqa_nors80'
-name_out = 'scoresbyInterpolated_dqa_nors80'
+# name_out = 'scoresbyInterpolated_dqa_nors80'
+# name_out = 'MadridInterpolated_dqa_nors80'
 
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
+
 allFiles = sorted(glob.glob(path + "*_all_hom_nors80.hdf"))
 print('len of files', len(allFiles))
 
@@ -56,7 +59,7 @@ for (filename) in (allFiles):
     # fname = filename.split('/')[-1].split('.')[0][0:8]
     # fullname = filename.split('/')[-1].split('.')[0]
     # metaname = path  + fname + "_o3smetadata_nors80.csv"
-    # metaname = path  + datestr + "_o3smetadata_nors80.csv"
+    # metaname = path  + datestr + "_o3smetadata_nors80 .csv"
     # print(metaname)
 
 
@@ -233,8 +236,11 @@ for (filename) in (allFiles):
     header_date = df.at[df.first_valid_index(), 'Date']
     ddate = [df.at[df.first_valid_index(), 'Date']] * len(ymain)
 
-    dfl = pd.DataFrame(
-        columns=['Date', 'PreLevel', 'PO3_UcIntLin'])
+    # dfl = pd.DataFrame(
+    #     columns=['Date', 'PreLevel', 'PO3_UcIntLin'])
+
+    dfl = pd.DataFrame()
+
 
     dfl['Date'] = ddate
     dfl['PreLevel'] = np.asarray(ymain)

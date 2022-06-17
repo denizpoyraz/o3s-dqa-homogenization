@@ -5,23 +5,23 @@ from re import search
 import numpy as np
 
 
-dfs = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/Nyaalesund_Metadata_8812.csv')
+dfp = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/Nyaalesund_Metadata_8812.csv')
 
 dfa = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/Nyaalesund_Metadata_All.csv')
 
-print(list(dfs))
+print(list(dfp))
 print(list(dfa))
 
 
 
-dfs['Date'] = pd.to_datetime(dfs['Date'], format='%Y-%m-%d')
-dfs['Date'] = dfs['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+dfp['Date'] = pd.to_datetime(dfp['Date'], format='%Y-%m-%d')
+dfp['Date'] = dfp['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 dfa['Date'] = pd.to_datetime(dfa['Date'], format='%Y%m%d')
 
 dfa['Date'] = dfa['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 
 
-df1 = dfs[['Date','ibs','Air flow s']].copy()
+df1 = dfp[['Date','ibs','Air flow s']].copy()
 df1['Airflows'] = df1['Air flow s']
 
 df2 = dfa[['Date','iB0','iB2','PF']]

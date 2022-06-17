@@ -41,18 +41,23 @@ def organize_df(df1, df2):
             pump_temp = list1[i]
             df_out['TboxK'] = df1[pump_temp].astype('float') + K
             df_out['TboxC'] = df1[pump_temp].astype('float')
+
         if (search('Time', list1[i])) and (search('after', list1[i])):
             time = list1[i]
             df_out['Time'] = df1[time]
+
         if (search('Geopotential', list1[i])) and (search('height', list1[i])):
             height = list1[i]
             df_out['Height'] = df1[height]
+
         if (search('wind ', list1[i])) and (search('direction', list1[i])):
             windd = list1[i]
             df_out['WindDirection'] = df1[windd]
+
         if (search('wind ', list1[i])) and (search('speed', list1[i])):
             winds = list1[i]
             df_out['WindSpeed'] = df1[winds]
+
         if (search('ressure ', list1[i])) and (search('observation', list1[i])):
             pair = list1[i]
             df_out['Pair'] = df1[pair].astype('float')
@@ -73,7 +78,8 @@ def organize_df(df1, df2):
             bkg = list2[j]
             dfm_out.at[0,'iB2'] = df2.at[df2.first_valid_index(), bkg]
 
-        if (search('ackground', list2[j])) and (search('current', list2[j])) and (search('launch', list2[j])):
+        if (search('ackground', list2[j])) and (search('launch', list2[j])  and
+                                                ( (search('current', list2[j])) or (search('b2', list2[j]))) ):
             bkg = list2[j]
             dfm_out.at[0,'iB2'] = df2.at[df2.first_valid_index(), bkg]
 
@@ -89,8 +95,45 @@ def organize_df(df1, df2):
             pumpt = list2[j]
             dfm_out.at[0,'PF'] = df2.at[df2.first_valid_index(), pumpt]
 
-            # if (float(df2.at[df2.first_valid_index(), pumpt]) < 25) | (float(df2.at[df2.first_valid_index(), pumpt]) > 35):
-            #     df_out['PF'] = 29
+        if (search('pump flow rate', list2[j])):
+            dfm_out.at[0,'PF'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('emperature during flow rate measurement', list2[j])):
+            dfm_out.at[0,'TLab'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('elative humidity during flow rate measurement', list2[j])):
+            dfm_out.at[0,'RHLab'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('umidity correction factor to flow rate', list2[j])):
+            dfm_out.at[0,'RHCor'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('Solution amount', list2[j])):
+            dfm_out.at[0,'SolutionVolume'] = df2.at[df2.first_valid_index(),  list2[j]]
+
+        if (search('Buffer amount', list2[j])):
+            dfm_out.at[0,'buffer'] = df2.at[df2.first_valid_index(),  list2[j]]
+        if (search('KBr amount', list2[j])):
+            dfm_out.at[0,'kbr'] = df2.at[df2.first_valid_index(),  list2[j]]
+
+
+        if (search('Surface pressure', list2[j])):
+            dfm_out.at[0, 'GroundPre'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('Surface temperature', list2[j])):
+            dfm_out.at[0, 'GroundTemp'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('Surface humidity', list2[j])):
+            dfm_out.at[0, 'GroundRH'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('Serial number of ozonesonde', list2[j])):
+            dfm_out.at[0, 'SondeSerial'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('Radiosonde type', list2[j])):
+            dfm_out.at[0, 'RSType'] = df2.at[df2.first_valid_index(), list2[j]]
+
+        if (search('Radiosonde type', list2[j])):
+            dfm_out.at[0, 'RSType'] = df2.at[df2.first_valid_index(), list2[j]]
+
 
         if (search('Serial number', list2[j])) and ((search('RS-80', list2[j]))):
             rs80 = 'RS80'
@@ -127,6 +170,7 @@ def organize_df(df1, df2):
             dfm_out.at[0,'TotalO3_Col2B'] = df2.at[df2.first_valid_index(), list2[j]]
 
         if (search('Background', list2[j])) and (search('correction', list2[j])):
+            print(list2[j])
             dfm_out.at[0,'BackgroundCorrection'] = df2.at[df2.first_valid_index(), list2[j]]
             # print(df2.at[df2.first_valid_index(), list2[j]])
 
@@ -224,22 +268,47 @@ def organize_df(df1, df2):
         if (search('Pump', list2[j])) and (search('correction', list2[j])):
             pump_table = list2[j]
             dfm_out.at[0,'PumpTable'] = df2.at[df2.first_valid_index(), pump_table]
+    try:
+        df_out['O3'] = df1['Ozone partial pressure (mPa)'].astype('float')
+    except KeyError:
+        df_out['O3'] = df1['PO3'].astype('float')
 
-    df_out['O3'] = df1['Ozone partial pressure (mPa)'].astype('float')
-    df_out['T'] = df1['Temperature (C)'].astype('float')
-    df_out['U'] = df1['Relative humidity (%)'].astype('float')
-    dfm_out['LaunchTime'] = dfm_out['LaunchTime'].astype('str')
+    try:
+        df_out['T'] = df1['Temperature (C)'].astype('float')
+    except KeyError:
+        df1['Temp'].astype('float')
 
+    try:
+        df_out['U'] = df1['Relative humidity (%)'].astype('float')
+    except KeyError:
+        df_out['U'] = df1['RH'].astype('float')
+
+    #     dfm_out['LaunchTime'] = dfm_out['LaunchTime'].astype('str')
+    # except KeyError:
+    #     df_out['O3'] = df1['PO3'].astype('float')
+    #     df_out['T'] = df1['Temp'].astype('float')
+    #     df_out['U'] = df1['RH'].astype('float')
+    #     df_out['TboxK'] = df1['TPump'].astype('float')
+    #     df_out['TboxC'] = df1['TPump'].astype('float') - K
+    #     df_out['I'] = df1['I'].astype('float')
+    #     df_out['Alt'] = df1['Alt'].astype('float')
+    #     df_out['GPSAlt'] = df1['GPSAlt'].astype('float')
+
+
+        dfm_out['LaunchTime'] = dfm_out['LaunchTime'].astype('str')
+
+    if ( dfm_out.at[0, 'buffer'] == '1.00') & (dfm_out.at[0, 'kbr'] == '1.00'):
+        dfm_out.at[0, 'SolutionConcentration'] = 10
 
     # in case there is no PF it is written to 9999
+
+    # dfm_out['Pground'] = dfm_out['Pground'].astype('float')
+    # dfm_out['SolutionConcentration'] = dfm_out['SolutionConcentration'].astype('float')
+    # dfm_out['SolutionVolume'] = dfm_out['SolutionVolume'].astype('float')
+    # dfm_out['TLab'] = dfm_out['TLab'].astype('float')
+
     try:
         dfm_out['PF'] = dfm_out['PF'].astype('float')
-        dfm_out['Pground'] = dfm_out['Pground'].astype('float')
-        dfm_out['SolutionConcentration'] = dfm_out['SolutionConcentration'].astype('float')
-        dfm_out['SolutionVolume'] = dfm_out['SolutionVolume'].astype('float')
-        dfm_out['TLab'] = dfm_out['TLab'].astype('float')
-
-
     except KeyError:
         dfm_out['PF'] = 28
     # in case there is no iB0 or iB2 it is written to 9999
@@ -252,6 +321,206 @@ def organize_df(df1, df2):
     except KeyError:
         dfm_out['iB2'] = 9999
     # df_out['Cef'] = 1
+
+    return df_out, dfm_out
+
+
+def organize_df_nya(df1, df2,dates):
+    '''
+    searches for patterns to read metadata and writes them into a new dataframe
+    :param df1: main data dataframe in pandas format
+    :param df2: metadata dataframe in pandas format
+    :return: df_out: a dataframe that has data and the metadata
+    '''
+
+    df_out = df1.copy()
+    dfm_out = pd.DataFrame()
+
+    list1 = list(df1)
+
+    if dates < '20170313':
+        for i in range(len(list1)):
+
+            if (search('TPump', list1[i])):
+                pump_temp = list1[i]
+                if (df1.at[10,pump_temp] < K):
+                    df_out['TboxK'] = df1[pump_temp].astype('float') + K
+                    df_out['TboxC'] = df1[pump_temp].astype('float')
+                if (df1.at[10,pump_temp] > K):
+                    df_out['TboxK'] = df1[pump_temp].astype('float')
+                    df_out['TboxC'] = df1[pump_temp].astype('float') - K
+
+        list2 = list(df2)
+        for j in range(len(list2)):
+
+            dfm_out.at[0, 'buffer'] = '0'
+            dfm_out.at[0, 'kbr'] = '0'
+
+            if (search('our of launch', list2[j])) :
+                dfm_out.at[0,'HourLaunch'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('inute of launch', list2[j])) :
+                dfm_out.at[0,'MinuteLaunch'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('ongitude', list2[j])) and (search('station', list2[j])):
+                dfm_out.at[0,'Lon'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('atitude', list2[j])) and (search('station', list2[j])):
+                dfm_out.at[0,'Lat'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('mount', list2[j])) and (search('cathode', list2[j]) and (search('solution',list2[j]))):
+                dfm_out.at[0,'SolutionVolume'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('air flow', list2[j])) and not (search('calibrator', list2[j])):
+                dfm_out.at[0,'PF'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('ackground', list2[j])) and (search('sensor current', list2[j])) and (
+            search('before', list2[j])):
+                dfm_out.at[0,'iB0'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('ackground', list2[j])) and (search('end', list2[j])) and (search('pre-flight', list2[j])):
+                bkg = list2[j]
+                dfm_out.at[0,'iB2'] = df2.at[df2.first_valid_index(), bkg]
+
+            if (search('ackground', list2[j])) and (search('surface', list2[j])) and (search('pressure', list2[j])):
+                dfm_out.at[0,'SurfacePressure'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('ressure', list2[j])) and (search('corection', list2[j])) and (search('ground', list2[j])):
+                dfm_out.at[0,'PCor'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('emperature', list2[j])) and (search('corection', list2[j])) and (search('ground', list2[j])):
+                dfm_out.at[0, 'TCor'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('umidity', list2[j])) and (search('corection', list2[j])):
+                dfm_out.at[0, 'RHCor'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('otal', list2[j])) and (search('ozone', list2[j])) and (search('COL2A', list2[j])):
+                dfm_out.at[0, 'TotalO3_Col2A'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('otal', list2[j])) and (search('ozone', list2[j])) and (search('COL2B', list2[j])):
+                dfm_out.at[0, 'TotalO3_Col2B'] = df2.at[df2.first_valid_index(), list2[j]]
+
+
+
+            dfm_out.at[0,'BkgUsed'] = 'Constant'
+            if (search('ackground', list2[j])) and (search('current', list2[j])) and (search('used', list2[j])) and (
+            search('computation', list2[j])):
+                bkg = list2[j]
+                # print('in function', bkg)
+                dfm_out.at[0,'BkgUsed'] = df2.at[df2.first_valid_index(), bkg]
+
+            if (search('emperature', list2[j])) and (search('laboratory', list2[j])):
+                dfm_out.at[0,'TLab'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('elative humidity', list2[j])) and (search('laboratory during sonde flow', list2[j])) :
+                dfm_out.at[0,'RHLab'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('Serial number of', list2[j])) and (search('ECC',list2[j])):
+                dfm_out.at[0, 'SondeSerial'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('Radiosonde type', list2[j])):
+                dfm_out.at[0, 'RSType'] = df2.at[df2.first_valid_index(), list2[j]]
+
+
+            if (search('oncentration', list2[j])) and (search('cathode', list2[j])):
+                dfm_out.at[0, 'SolutionConcentration'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('ECC', list2[j])) and (search('erial', list2[j])):
+                serial = list2[j]
+                # print('ozone sensor type', list2[j], df2.at[df2.first_valid_index(),serial][-1])
+                if (df2.at[df2.first_valid_index(), serial][0] == "z") | (
+                        df2.at[df2.first_valid_index(), serial][0] == "Z") \
+                        | (df2.at[df2.first_valid_index(), serial][1] == "Z") | (
+                        df2.at[df2.first_valid_index(), serial][1] == "z") | (
+                        df2.at[df2.first_valid_index(), serial][-1] == "Z"):
+                    dfm_out.at[0, 'SensorType'] = 'DMT-Z'
+                    # print('why not', dfm_out.at[0,'SensorType'])
+                if (df2.at[df2.first_valid_index(), serial][0] == "4"): dfm_out.at[0, 'SensorType'] = 'SPC-4A'
+                if (df2.at[df2.first_valid_index(), serial][0] == "5"): dfm_out.at[0, 'SensorType'] = 'SPC-5A'
+                if (df2.at[df2.first_valid_index(), serial][0] == "6"): dfm_out.at[0, 'SensorType'] = 'SPC-6A'
+
+
+
+
+    if dates >= '20170313':
+        for i in range(len(list1)):
+
+            if (search('TPump', list1[i])):
+                pump_temp = list1[i]
+                if (df1.at[10,pump_temp] < K):
+                    df_out['TboxK'] = df1[pump_temp].astype('float') + K
+                    df_out['TboxC'] = df1[pump_temp].astype('float')
+                if (df1.at[10,pump_temp] > K):
+                    df_out['TboxK'] = df1[pump_temp].astype('float')
+                    df_out['TboxC'] = df1[pump_temp].astype('float') - K
+
+        list2 = list(df2)
+        for j in range(len(list2)):
+
+            dfm_out.at[0, 'buffer'] = '0'
+            dfm_out.at[0, 'kbr'] = '0'
+
+            if (search('Launch time', list2[j])):
+                dfm_out.at[0, 'LaunchTime'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Inverse pump flow rate', list2[j])):
+                dfm_out.at[0, 'PF'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Temperature during flow rate measurement', list2[j])):
+                dfm_out.at[0, 'TLab'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Relative humidity during flow rate', list2[j])):
+                dfm_out.at[0, 'RHLab'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('umidity correction', list2[j])):
+                dfm_out.at[0, 'RHCor'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Ib0', list2[j])):
+                dfm_out.at[0, 'iB0'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Ib1', list2[j])):
+                dfm_out.at[0, 'iB1'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Ib2', list2[j])):
+                dfm_out.at[0, 'iB2'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('Buffer amount', list2[j])):
+                dfm_out.at[0, 'buffer'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('KBr amount', list2[j])):
+                dfm_out.at[0, 'kbr'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('mount', list2[j])) and (search('olution',list2[j])):
+                dfm_out.at[0,'SolutionVolume'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('urface pressure correction', list2[j])) :
+                dfm_out.at[0,'PCor'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('urface temperature correction', list2[j])) :
+                dfm_out.at[0,'TCor'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('urface humidity correction', list2[j])) :
+                dfm_out.at[0,'RHCor'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('urface pressure', list2[j])) :
+                dfm_out.at[0,'PLab'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('Background subtraction', list2[j])):
+                # print('here', list2[j])
+                dfm_out.at[0, 'BkgCorrection'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Background subtracted', list2[j])):
+                # print('here', list2[j])
+                dfm_out.at[0, 'BkgCorrectionBool'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('Serial number of ozonesonde', list2[j])):
+                dfm_out.at[0, 'SondeSerial'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Radiosonde type', list2[j])):
+                dfm_out.at[0, 'RSType'] = df2.at[df2.first_valid_index(), list2[j]]
+            if (search('Serial number of radiosonde', list2[j])):
+                dfm_out.at[0, 'RSSerial'] = df2.at[df2.first_valid_index(), list2[j]]
+
+
+    if ( dfm_out.at[0, 'buffer'] == '1.00') & (dfm_out.at[0, 'kbr'] == '1.00'):
+        dfm_out.at[0, 'SolutionConcentration'] = 10
+
+    try:
+        dfm_out['PF'] = dfm_out['PF'].astype('float')
+    except KeyError:
+        dfm_out['PF'] = 28
+        # in case there is no iB0 or iB2 it is written to 9999
+    try:
+        dfm_out['iB0'] = dfm_out['iB0'].astype('float')
+    except KeyError:
+        dfm_out['iB0'] = 9999
+    try:
+        dfm_out['iB2'] = dfm_out['iB2'].astype('float')
+    except KeyError:
+        dfm_out['iB2'] = 9999
 
     return df_out, dfm_out
 
@@ -373,6 +642,84 @@ def o3tocurrent(dft, dfm, dfmmain):
     #     dft['ibg'] = ComputeIBG(dft, 'iB0')
 
     dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+
+
+    return dft
+
+def o3tocurrent_nya(dft, dfm, dfmmain):
+    '''
+
+    :param dft: data df
+    :param dfm: metadata df
+    :return: dft
+    '''
+    # o3(mPa) = 4.3087 * 10e-4 * (i - ibg) * tp * t * cef * cref
+    # tp: pump temp. in K, t: pumping time for 100 ml of air in seconds, cef: correction due to reduced ambient pressure for pump
+    # cref: additional correction factor
+    # i = o3 / (4.3087 * 10e-4 * tp * t * cef * cref ) + ibg
+
+    sensortype = dfm.at[dfm.first_valid_index(), 'SensorType']
+    # print(sensortype)
+
+    enscitag = (search('DMT-Z', sensortype)) or (search('Z', sensortype)) or (search('ECC6Z', sensortype)) or (
+        search('_Z', sensortype))
+    if enscitag:
+        dft['SensorType'] = 'DMT-Z'
+        dfm['SensorType'] = 'DMT-Z'
+    spctag = (search('SPC', sensortype)) or (search('4A', sensortype)) or (search('5A', sensortype)) or (
+        search('6A', sensortype))
+    if spctag:
+        dft['SensorType'] = 'SPC'
+        dfm['SensorType'] = 'SPC'
+
+        # check PF values
+    if (dfm.at[dfm.first_valid_index(), 'PF'] > 35) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[
+        dfm.first_valid_index(), 'PF'] = dfmmain.PFcurrent.mean()
+
+    dft['Cef'] = ComputeCef(dft,dfm)
+
+    cref = 1
+    dft['ibg'] = 0
+    dft['ibg_tmp'] = 0
+
+    dfm_date = dfm.at[dfm.first_valid_index(), 'Date']
+
+    dfm['iB2current'] = dfmmain.loc[dfmmain.Date == dfm_date,'iB2current']
+    dfm['PFcurrent'] = dfmmain.loc[dfmmain.Date == dfm_date,'PFcurrent']
+
+    dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2current']
+    # dft['iB0'] = dfm.at[dfm.first_valid_index(), 'iB0']
+
+    # # # by default uses iB2 as background current
+
+    dfmmain['Date2'] = dfmmain['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    dfmmain['Date3'] = dfmmain['Date2'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+
+
+    #if iB2 is missing uses mean of the iB2
+    if (dfm.at[dfm.first_valid_index(), 'iB2current'] > 0.9):
+        # print('here bad ib2', dfm.at[dfm.first_valid_index(), 'iB2'],
+        #       dfm_date, dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean'])
+        # print(dfmmain[['Date','Date2','Date3']][0:4])
+
+        dfm['iB2current'] = dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean']
+
+
+
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2current')
+    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2current']
+
+    #if iB2 values are missing
+    # if  (dfm.at[dfm.first_valid_index(), 'iB0'] < 0.9) & (dfm.at[dfm.first_valid_index(), 'iB2'] > 0.9):
+    #     dfm['BkgUsed'] = 'Ibg1'
+
+    # # # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
+    # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z'):
+    #     dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC'):
+    #     dft['ibg'] = ComputeIBG(dft, 'iB0')
+
+    dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PFcurrent'] * dft['Cef'] * cref) + dft['ibg']
 
 
     return dft

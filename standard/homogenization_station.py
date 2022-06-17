@@ -40,7 +40,7 @@ roc_plevel = 10 # pressure value to obtain roc
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-station_name = 'scoresbysund'
+station_name = 'lauder'
 main_rscorrection = False  #if you want to apply rs80 correction
 
 file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
@@ -87,8 +87,9 @@ for (filename) in (allFiles):
 
     # print(datestr)
 
-    if datestr < date_start_hom: continue
+    # if datestr < date_start_hom: continue
 
+    # if datestr < '20100101': continue
 
     print(filename)
 
@@ -165,8 +166,8 @@ for (filename) in (allFiles):
 
     #       background correction       #
     if station_name != 'scoresbysund':
-        if dfm.at[0, 'string_bkg_used'] == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', ibg_split)
-        if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', ibg_split)
+        if dfm.at[0, 'string_bkg_used'] == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', ibg_split, station_name)
+        if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', ibg_split, station_name)
     if station_name == 'scoresbysund':
         df['iBc'], df['unc_iBc'] = background_correction_3split(df, dfmeta, dfm, 'iB2', '1993', '1995', '2017')
 

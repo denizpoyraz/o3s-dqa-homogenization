@@ -17,8 +17,8 @@ problem = open("DQA_ProblematicFiles.txt", "a")
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 
 # ozone = 'O3_nc' # raw, no correction applied
 # ozone = 'O3c_eta' # etac correction applied
@@ -26,21 +26,25 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 # ozone = 'O3c_etabkgtpump' # only phip correction applied
 # ozone = 'O3c_etabkgtpumpphigr' # only tpump applied
 # ozone = 'O3c_bkgphip'
-ozone = 'O3c'
+ozone = 'O3'
 # ozone = 'PO3_dqar'
 
-# name_out = 'MLS_SodankylaInterpolated_raw_rs80_v04'
-# name_out = 'MLS_LauderInterpolated_previousversion_rs80_v04'
-# name_out = 'MLS_MadridInterpolated_rs80_v04_dqa'
-# name_out = 'MLS_LauderInterpolated_rs80_v04_dqa'
-name_out = 'MLS_ScoresbyInterpolated_nors80_v04_dqa'
+# name_out = 'MLS_SodankylaInterpolated_raw_nors80_v04'
+# name_out = 'MLS_LauderInterpolated_previousversion_nors80_v04'
+# name_out = 'MLS_MadridInterpolated_nors80_v04_dqa'
+name_out = 'MLS_LauderInterpolated_nors80_v04_niwa'
+# name_out = 'MLS_LauderInterpolated_nors80_v04_dqa'
+
+# name_out = 'MLS_ScoresbyInterpolated_nors80_v04_dqa'
+# name_out = 'MLS_UccleInterpolated_nors80_v04_dqa'
 
 
 # mls data frame to read
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
-dfm = pd.read_csv(path + 'AURA_MLSData_MatchedScoresby_DQA_v04.csv')
+dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
+# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedScoresby_DQA_v04.csv')
+# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedUccle_DQA_v04.csv')
 
 
 # dfm = dfm[dfm.Date < 20080612]
@@ -54,7 +58,7 @@ listall_data = []
 
 for date in date_list:
     # print(date, type(date))
-    # if (date == 20190605) | (date == 20191010) | (date == 20200902) | (date == 20210414): continue
+    if (date == 20190605) | (date == 20191010) | (date == 20200902) | (date == 20210414): continue
     # if date == 20190605:
     #     continue
     try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
@@ -70,6 +74,8 @@ for date in date_list:
     # df['Height'] = df['Alt']
 
     print(date)
+
+    if date == 20190605:continue
 
     # df['Height'] = df['GPHeight']
  # now downsample the uccle data remove descent list

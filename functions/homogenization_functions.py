@@ -364,7 +364,7 @@ def return_phipcor(df,phip_grd, unc_phip_grd, cpf, unc_cpf):
 
     return df['Phip_cor'], df['unc_Phip_cor']
 
-def background_correction(df, dfmeta, dfm, ib, year):
+def background_correction(df, dfmeta, dfm, ib, year, station_name):
     """
     O3S-DQA 8.2
     :param df: data df
@@ -437,15 +437,16 @@ def background_correction(df, dfmeta, dfm, ib, year):
             df.loc[df.Date >= year, 'unc_iBc'] = std2
             # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
 
-
-        if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < year):
-            df.loc[df.Date < year, 'iBc'] = mean1
-            df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
-            # print('before 2004 no bkg', mean1)
-        if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= year):
-            df.loc[df.Date >= year, 'iBc'] = mean2
-            df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
-            # print('after 2004 no bkg', mean2)
+        # if station_name == 'lauder':
+        #
+        #     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < year):
+        #         df.loc[df.Date < year, 'iBc'] = mean1
+        #         df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+        #         # print('before 2004 no bkg', mean1)
+        #     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= year):
+        #         df.loc[df.Date >= year, 'iBc'] = mean2
+        #         df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+        #         # print('after 2004 no bkg', mean2)
 
     # print('end of function',dfm.at[dfm.first_valid_index(), ib],  df.at[df.first_valid_index(), 'iBc'])
           # df.at[df.first_valid_index(), 'ibg'])

@@ -7,12 +7,14 @@ import glob
 
 #example path of where the WOUDC csv files are
 # path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
+
 
 efile = open("errorfile.txt", "w")
 
 
-allFiles = sorted(glob.glob(path + "/MD22*.csv"))
+allFiles = sorted(glob.glob(path + "/.csv"))
 
 # /home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/20050406_testwoudc.csv
 
@@ -83,6 +85,9 @@ for filename in allFiles:
 
     filenamestr = filename.split('.csv')[0][-8:] + '_out'
     metastr = filename.split('.csv')[0][-8:] + '_metadata'
+
+    print(filename)
+    print(metastr)
 
     df.to_csv(path + "out/" + filenamestr + ".csv")
     df.to_hdf(path + "out/" + filenamestr + ".hdf", key = 'df')

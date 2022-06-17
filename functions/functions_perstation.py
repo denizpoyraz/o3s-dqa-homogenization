@@ -68,14 +68,14 @@ def station_inone(st_name):
     if st_name == 'lauder':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
         dfmetaf = pd.read_csv(pathf + 'metadata/Lauder_MetadaAll.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/1996*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
         dfmetaf = organize_lauder(dfmetaf)
 
     if st_name == 'uccle':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
         dfmetaf = pd.read_csv(pathf + 'Raw_upd/All_metadata.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/20100210*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt')
         dfmetaf = organize_uccle(dfmetaf)
 
@@ -146,7 +146,8 @@ def station_invar(st_name):
         sonde_tbcf = 'SPC10'
 
     if st_name == 'lauder':
-        date_start_homf = '19941012'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        # date_start_homf = '19941012'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        date_start_homf = '19860803'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
         rs80_beginf = '19890101'  # the date where there was a change from nors80
         rs80_endf = '20070501'
         IBGsplitf = '1996'  # the date if there is a lower/higher bkg value region

@@ -10,7 +10,7 @@ from re import search
 
 K = 273.15
 
-# /home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/20190723_all_hom_nors80.hdf
+# /home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nonors80/20190723_all_hom_nonors80.hdf
 # Traceback (most recent call last):
 #   File "/home/poyraden/Analysis/Homogenization_public/o3s-dqa-homogenization/lauder/write_to_woudc_csv_lauder.py", line 251, in <module>
 #     fileout = str(dfm.at[0,'Datenf']) + ".ECC." + dfm.at[0,'SensorType'] + "." + str(dfm.at[0,'SondeSerial']) + ".NIWA-LAU.csv"
@@ -64,15 +64,18 @@ def make_summary(df, column_names):
     return field_summary
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_rs80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
 path2 = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
 
-data_files = sorted(glob.glob(path + "*_o3sdqa_rs80.hdf"))
-# data_files = sorted(glob.glob(path + "*all_hom_rs80.hdf"))
+data_files = sorted(glob.glob(path + "*_o3sdqa_nors80.hdf"))
+# data_files = sorted(glob.glob(path + "*all_hom_nors80.hdf"))
 
 for (filename) in(data_files):
 
-    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_rs80.csv'
+    print('one', filename)
+
+
+    metaname = path + filename.split('/')[-1].split('_')[0] + '_o3smetadata_nors80.csv'
     extcsv = woudc_extcsv.Writer(template=True)
 
     df = pd.read_hdf(filename)
@@ -118,7 +121,7 @@ for (filename) in(data_files):
 
     # if dfm.at[0,'Datenf'] < '20190716': continue  # already homogenized
 
-    print(filename)
+    print('two',filename)
 
 
     df = round(df,3)
@@ -270,7 +273,7 @@ for (filename) in(data_files):
         dfm.at[0, 'SensorType'] = 'nan'
     fileout = str(dfm.at[0,'Datenf']) + ".ECC." + dfm.at[0,'SensorType'] + "." + str(dfm.at[0,'SondeSerial']) + ".NIWA-LAU.csv"
 
-    out_name = path2 + '/WOUDC_rs80/' + fileout
+    out_name = path2 + '/WOUDC_nors80/' + fileout
 
     woudc_extcsv.dump(extcsv, out_name)
 

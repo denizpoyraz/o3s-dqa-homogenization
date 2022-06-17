@@ -9,7 +9,7 @@ import glob
 
 #
 path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
-allFiles = sorted(glob.glob(path + 'DQA_rs80/*o3smetadata_rs80.csv'))
+allFiles = sorted(glob.glob(path + 'DQA_nors80/*o3smetadata_nors80.csv'))
 
 
 dfmeta = pd.DataFrame()
@@ -20,13 +20,13 @@ for (filename) in (allFiles):
 
     metadata.append(df)
 
-name_out = 'Uccle_Metada_DQA_rs80'
+name_out = 'Uccle_Metada_DQA_nors80'
 dfall = pd.concat(metadata, ignore_index=True)
 
-dfall.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/' + name_out + ".csv")
-dfall.to_hdf('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/' + name_out + ".h5", key = 'df')
+dfall.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/' + name_out + ".csv")
+dfall.to_hdf('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/' + name_out + ".h5", key = 'df')
 
-dfm1 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/Uccle_Metada_DQA_rs80.csv')
+dfm1 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Uccle_Metada_DQA_nors80.csv')
 
 print(list(dfm1))
 
@@ -55,7 +55,7 @@ dfm1 = dfm1[dfm1.ratio < 2]
 
 print(dfm1.DateTime.min(), dfm1.DateTime.max())
 
-Plotname = 'TON_sonde_raw_rs80'
+Plotname = 'TON_sonde_raw_nors80'
 
 fig, axs = plt.subplots(3, sharex=True, sharey=False, figsize=(17, 9))
 fig.suptitle('Uccle TO and TON values')
@@ -110,7 +110,7 @@ plt.show()
 
 
 
-# Plotname = 'TON_allplots_rs80_bkgcor'
+# Plotname = 'TON_allplots_nors80_bkgcor'
 #
 # fig, axs = plt.subplots(5, sharex=False, sharey=False, figsize=(17, 9))
 # # fig.suptitle('Sharing both axes')
