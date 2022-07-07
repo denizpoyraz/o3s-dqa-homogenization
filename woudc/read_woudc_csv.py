@@ -1,4 +1,3 @@
-import csv
 import numpy as np
 from io import StringIO
 from woudc_extcsv import load, WOUDCExtCSVReaderError
@@ -6,15 +5,14 @@ import pandas as pd
 import glob
 
 #example path of where the WOUDC csv files are
-path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
+# path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/WOUDC_nors80/'
 
 efile = open("errorfile.txt", "w")
 
-
-allFiles = sorted(glob.glob(path + "*06*testwoudc.csv"))
-
-# /home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/20050406_testwoudc.csv
-
+allFiles = sorted(glob.glob(path + "/*.csv"))
 
 list_data = []
 list_udata = []
@@ -23,6 +21,8 @@ fi = 0
 
 for filename in allFiles:
     print(filename)
+    tmp = filename.split('.')[0][-8:]
+    if tmp == 'MD010613': continue
     # try except is applied for the cases when there is formatting error: WOUDCExtCSVReaderError
     extcsv_to = load(filename)
 
@@ -45,7 +45,6 @@ for filename in allFiles:
 
 
     msize = len(tables)
-    print(msize)
 
     if msize == 1: continue
 
@@ -78,14 +77,15 @@ for filename in allFiles:
     df['Station'] = dfm.at[fi, 'DATA_GENERATION_Agency']
     list_data.append(df)
 
-    filenamestr = filename.split('.csv')[0][-8:] + '_out'
-    metastr = filename.split('.csv')[0][-8:] + '_metadata'
+    filenamestr = tmp + '_out'
+    metastr = tmp + '_metadata'
 
-    df.to_csv(path + "out/" + filenamestr + ".csv")
-    df.to_hdf(path + "out/" + filenamestr + ".hdf", key = 'df')
+
+    df.to_csv(path + "/read_out/" + filenamestr + ".csv")
+    df.to_hdf(path + "/read_out/" + filenamestr + ".hdf", key = 'df')
 
     dfmt = dfm[fi:fi+1]
-    dfmt.to_csv(path + "out/" + metastr + ".csv")
+    dfmt.to_csv(path + "/read_out/" + metastr + ".csv")
 
     fi = fi + 1
     #
