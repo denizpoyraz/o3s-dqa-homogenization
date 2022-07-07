@@ -17,8 +17,10 @@ problem = open("DQA_ProblematicFiles.txt", "a")
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
+
 
 # ozone = 'O3_nc' # raw, no correction applied
 # ozone = 'O3c_eta' # etac correction applied
@@ -32,8 +34,10 @@ ozone = 'O3'
 # name_out = 'MLS_SodankylaInterpolated_raw_nors80_v04'
 # name_out = 'MLS_LauderInterpolated_previousversion_nors80_v04'
 # name_out = 'MLS_MadridInterpolated_nors80_v04_dqa'
-name_out = 'MLS_LauderInterpolated_nors80_v04_niwa'
+# name_out = 'MLS_LauderInterpolated_nors80_v04_niwa'
 # name_out = 'MLS_LauderInterpolated_nors80_v04_dqa'
+name_out = 'MLS_NyalesundInterpolated_nors80_v04_ames'
+# name_out = 'MLS_NyalesundInterpolated_nors80_v04_dqa'
 
 # name_out = 'MLS_ScoresbyInterpolated_nors80_v04_dqa'
 # name_out = 'MLS_UccleInterpolated_nors80_v04_dqa'
@@ -42,7 +46,7 @@ name_out = 'MLS_LauderInterpolated_nors80_v04_niwa'
 # mls data frame to read
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
-dfm = pd.read_csv(path + 'AURA_MLSData_MatchedLauder_DQA_v04.csv')
+dfm = pd.read_csv(path + 'AURA_MLSData_MatchedNYalesund_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedScoresby_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedUccle_DQA_v04.csv')
 

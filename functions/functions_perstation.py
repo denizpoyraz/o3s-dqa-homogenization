@@ -93,6 +93,13 @@ def station_inone(st_name):
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
         dfmetaf = organize_sodankyla(dfmetaf)
 
+    if st_name == 'ny-alesund':
+        pathf = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
+        dfmetaf = pd.read_csv(pathf + 'NY_metadata_corrected.csv')
+        allFilesf = sorted(glob.glob(pathf + "/Current/*raw*hdf"))
+        roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_nyalesund_roc.txt')
+        dfmetaf = organize_nyalesund(dfmetaf)
+
     return pathf, allFilesf, roc_table_filef, dfmetaf
 
 
@@ -127,6 +134,13 @@ def station_inbool(st_name):
         descent_dataf = False
 
     if st_name == 'sodankyla':
+        humidity_correctionf = True
+        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        calculate_currentf = False
+        organize_dff = True
+        descent_dataf = False
+
+    if st_name == 'ny-alesund':
         humidity_correctionf = True
         df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
         calculate_currentf = False
@@ -176,6 +190,14 @@ def station_invar(st_name):
         IBGsplitf = '2005'  # the date if there is a lower/higher bkg value region
         sonde_tbcf = 'ENSCI05'
 
+    if st_name == 'ny-alesund':
+        date_start_homf = '19920101'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = '19920101'  # the date where there was a change from nors80
+        rs80_endf = '20020529'
+        # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
+        IBGsplitf = ''  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'SPC10'
+
 
     return date_start_homf, IBGsplitf, sonde_tbcf, rs80_beginf, rs80_endf
 
@@ -215,6 +237,17 @@ def df_drop(dft, st_name):
     if st_name == 'scoresbysund':
         dft = dft.drop(['TboxK', 'TboxC', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
                         'iB2', 'iB0', 'Tpump', 'Phip', 'Eta',
+                        'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
+                        'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
+                        'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
+                        'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+                        'Phip_cor', 'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
+                        'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
+                        'dTpump_cor'], axis=1)
+
+    if st_name == 'ny-alesund':
+        dft = dft.drop(['TboxK', 'TboxC', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
+                        'iB2', 'Tpump', 'Phip', 'Eta',
                         'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
                         'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
                         'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
@@ -545,6 +578,18 @@ def organize_scoresby(dms):
 
     return dms
 
+def organize_nyalesund(dfn):
+
+    dfn.Date = dfn.Date.astype(str)
+    dfn['SolutionVolume'] = 3
+    dfn['string_bkg_used'] = 'ib2'
+
+    print('list dfmeta', list(dfn))
+
+
+
+    return dfn
+
 def organize_lauder(dfl):
 
     # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
@@ -676,6 +721,29 @@ def df_station(dl, datevalue, dml, station):
     if station == 'scoresbysund':
         dl = dl[dl['O3'] < 99]
         # dl = dl[dl['Tbox'] < 999]
+
+    if station == 'ny-alesund':
+
+        if datevalue > '20170309':
+            dml['string_pump_location'] = 'case5'
+
+        dl = dl[dl['O3'] < 99]
+        dl['Height'] = dl['Alt']
+        # dl = dl[dl['Tbox'] < 999]
+        dml['string_pump_location'] = 'case5'
+
+        # print('sonde serial', dml.at[dml.first_valid_index(),'SondeSerial'])
+
+        if datevalue < '20170313':
+
+
+            if (search('5a',dml.at[dml.first_valid_index(),'SondeSerial'])) or (search('5A',dml.at[dml.first_valid_index(),'SondeSerial'])):
+                dml['string_pump_location'] = 'case3'
+
+            if (search('6a',dml.at[dml.first_valid_index(),'SondeSerial'])) or (search('6A',dml.at[dml.first_valid_index(),'SondeSerial'])):
+                dml['string_pump_location'] = 'case5'
+
+        dl['I'] = dl['Ical']
 
 
     return return_string, dl

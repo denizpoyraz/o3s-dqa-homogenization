@@ -10,9 +10,9 @@ def plot_rdif(dft, ptitlet):
     # t = df1.pivot_table(index='PreLevel', columns='date2', values='RDif_UcIntLin', fill_value = 0, dropna = False)
 
     min_dist_days = t.columns.to_series().diff()
-    # print('min_dist_days', min_dist_days)
+    print('min_dist_days', min_dist_days)
     min_mean = min_dist_days.median()
-    # print('min distance 2 launches', min_mean)
+    print('min distance 2 launches', min_mean)
     # resample to see missing dates
     t = t.T.resample(min_mean).mean().T
 
@@ -48,10 +48,11 @@ def plot_rdif(dft, ptitlet):
 
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/Binned/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/Binned/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/Binned/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Binned/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/Binned/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Binned/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/Binned/'
 
 
 # df1 = pd.read_csv(path + 'scoresbyInterpolated_dqa_nors80.csv')
@@ -64,10 +65,10 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/Bi
 # df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
 #                   'Binned/UccleInterpolated_dqa_nors80.csv')
 
-df1 = pd.read_csv(path + 'LauderInterpolated_dqa_nors80.csv')
+df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80.csv')
 # UccleInterpolated_dqa_nors80
-df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_rs80/'
-                  'Binned/LauderInterpolated_dqa_rs80.csv')
+# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_rs80/'
+#                   'Binned/LauderInterpolated_dqa_rs80.csv')
 
 # df1 = pd.read_csv(path + 'MadridInterpolated_dqa_nors80.csv')
 # df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/'
@@ -78,35 +79,35 @@ df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQ
 # df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80.csv')
 # df1 = pd.read_csv(path + 'new_LauderInterpolated_dqa_nors80.csv')
 
-df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
-df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y-%m-%d')
+# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
+# df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y-%m-%d')
 
 # df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y%m%d')
-# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
+df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
 
 # df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d') #sodankyla
 
 df1['date'] = df1['DateTime'].apply(lambda x: x.date())
-df2['date'] = df2['DateTime'].apply(lambda x: x.date())
+# df2['date'] = df2['DateTime'].apply(lambda x: x.date())
 
 df1 = df1[df1.PreLevel > 7]
-df2 = df2[df2.PreLevel > 7]
+# df2 = df2[df2.PreLevel > 7]
 
 # df1 = df1[df1.Date > '2008-01-01']
 # df2 = df2[df2.Date > '2008-01-01']
 
 df1['PreLevel'] = df1['PreLevel'].astype(int)
-df2['PreLevel'] = df2['PreLevel'].astype(int)
+# df2['PreLevel'] = df2['PreLevel'].astype(int)
 
 
-Plotname = 'RS80_vs_noRS80'
-heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
-ptitle = 'Effect of RS80 Radiosonde Correction'
-# #
-min = -5
-max = 5
-df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
-plot_rdif(df1, ptitle)
+# Plotname = 'RS80_vs_noRS80'
+# heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
+# ptitle = 'Effect of RS80 Radiosonde Correction'
+# # #
+# min = -5
+# max = 5
+# df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
+# plot_rdif(df1, ptitle)
 
 # (2 - 1) / 1
 Plotname = 'Eta_vs_Raw_alltimerange'

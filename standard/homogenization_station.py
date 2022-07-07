@@ -4,6 +4,7 @@ from re import search
 from datetime import datetime
 pd.set_option('mode.chained_assignment', None)
 
+
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
     return_phipcor, o3_integrate, roc_values, RS_pressurecorrection, o3tocurrent, background_correction_3split
@@ -40,8 +41,8 @@ roc_plevel = 10 # pressure value to obtain roc
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-station_name = 'lauder'
-main_rscorrection = False  #if you want to apply rs80 correction
+station_name = 'ny-alesund'
+main_rscorrection = True  #if you want to apply rs80 correction
 
 file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
 #only needed for madrid (for the moment) to calculate means of the tmpump
@@ -89,7 +90,7 @@ for (filename) in (allFiles):
 
     # if datestr < date_start_hom: continue
 
-    # if datestr < '20100101': continue
+    # if datestr > '20000101': continue
 
     print(filename)
 

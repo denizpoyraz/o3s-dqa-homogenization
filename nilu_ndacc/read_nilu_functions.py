@@ -5,7 +5,7 @@ from scipy.interpolate import interp1d
 from datetime import datetime
 
 
-from functions.homogenization_functions import stoichmetry_conversion
+from functions.homogenization_functions import stoichmetry_conversion, calculate_cph,pf_groundcorrection
 
 
 VecP_ECC6A = [0, 2, 3, 5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 1100]
@@ -338,17 +338,32 @@ def organize_df_nya(df1, df2,dates):
 
     list1 = list(df1)
 
-    if dates < '20170313':
-        for i in range(len(list1)):
+    # df1 = df1[]
 
-            if (search('TPump', list1[i])):
-                pump_temp = list1[i]
-                if (df1.at[10,pump_temp] < K):
-                    df_out['TboxK'] = df1[pump_temp].astype('float') + K
-                    df_out['TboxC'] = df1[pump_temp].astype('float')
-                if (df1.at[10,pump_temp] > K):
-                    df_out['TboxK'] = df1[pump_temp].astype('float')
-                    df_out['TboxC'] = df1[pump_temp].astype('float') - K
+    if dates < '20170313':
+
+        df_out['TboxC'] = df_out['TPump']
+        df_out['TboxK'] = df_out['TPump']
+
+        # df_out[(df_out.TboxK > K) & (df_out.TboxK < 999)]['TboxK'] = df_out[(df_out.TboxK > K) & (df_out.TboxK < 999)][
+        #     'TboxK']
+        df_out.loc[(df_out.TboxK < K), 'TboxK'] = df_out.loc[(df_out.TboxK < K), 'TboxK'] + K
+
+        # df_out[(df_out.TboxC < K)]['TboxC'] = df_out[(df_out.TboxC < K)]['TboxC']
+        df_out.loc[(df_out.TboxC > K) & (df_out.TboxC < 999), 'TboxC'] = df_out.loc[(df_out.TboxC > K) & (df_out.TboxC < 999),
+                                                                         'TboxC'] - K
+        # for i in range(len(list1)):
+
+            # if (search('TPump', list1[i])):
+            #     pump_temp = list1[i]
+            #     df1 = df1[df1.pump_temp != 999.9]
+            #     print('temp', df1.at[df1.first_valid_index(),pump_temp])
+            #     if (df1[df1[pump_temp] < K]):
+            #         df_out['TboxK'] = df1[pump_temp].astype('float') + K
+            #         df_out['TboxC'] = df1[pump_temp].astype('float')
+            #     if (df1.at[df1.first_valid_index(),pump_temp] > K) and (df1.at[df1.first_valid_index(),pump_temp] < 999):
+            #         df_out['TboxK'] = df1[pump_temp].astype('float')
+            #         df_out['TboxC'] = df1[pump_temp].astype('float') - K
 
         list2 = list(df2)
         for j in range(len(list2)):
@@ -440,16 +455,25 @@ def organize_df_nya(df1, df2,dates):
 
 
     if dates >= '20170313':
-        for i in range(len(list1)):
+        # for i in range(len(list1)):
+        #
+        #     if (search('TPump', list1[i])):
+        #         pump_temp = list1[i]
+        #         if (df1.at[10,pump_temp] < K):
+        #             df_out['TboxK'] = df1[pump_temp].astype('float') + K
+        #             df_out['TboxC'] = df1[pump_temp].astype('float')
+        #         if (df1.at[10,pump_temp] > K):
+        #             df_out['TboxK'] = df1[pump_temp].astype('float')
+        #             df_out['TboxC'] = df1[pump_temp].astype('float') - K
+        df_out['TboxC'] = df_out['TPump']
+        df_out['TboxK'] = df_out['TPump']
 
-            if (search('TPump', list1[i])):
-                pump_temp = list1[i]
-                if (df1.at[10,pump_temp] < K):
-                    df_out['TboxK'] = df1[pump_temp].astype('float') + K
-                    df_out['TboxC'] = df1[pump_temp].astype('float')
-                if (df1.at[10,pump_temp] > K):
-                    df_out['TboxK'] = df1[pump_temp].astype('float')
-                    df_out['TboxC'] = df1[pump_temp].astype('float') - K
+        df_out[(df_out.TboxK > K ) & (df_out.TboxK < 999) ]['TboxK'] = df_out[(df_out.TboxK > K ) & (df_out.TboxK < 999) ]['TboxK']
+        df_out[(df_out.TboxK < K ) ]['TboxK'] = df_out[(df_out.TboxK < K ) ]['TboxK'] + K
+
+        df_out[(df_out.TboxC < K ) ]['TboxC'] = df_out[ (df_out.TboxC < K ) ]['TboxC']
+        df_out[(df_out.TboxC > K ) & (df_out.TboxC < 999) ]['TboxC'] = df_out[ (df_out.TboxC < K ) & (df_out.TboxC < 999)  ]['TboxC'] - K
+
 
         list2 = list(df2)
         for j in range(len(list2)):
@@ -503,6 +527,20 @@ def organize_df_nya(df1, df2,dates):
                 dfm_out.at[0, 'RSType'] = df2.at[df2.first_valid_index(), list2[j]]
             if (search('Serial number of radiosonde', list2[j])):
                 dfm_out.at[0, 'RSSerial'] = df2.at[df2.first_valid_index(), list2[j]]
+
+            if (search('ozonesonde', list2[j])) and (search('erial', list2[j])):
+                serial = list2[j]
+                # print('ozone sensor type', list2[j], df2.at[df2.first_valid_index(),serial][-1])
+                if (df2.at[df2.first_valid_index(), serial][0] == "z") | (
+                        df2.at[df2.first_valid_index(), serial][0] == "Z") \
+                        | (df2.at[df2.first_valid_index(), serial][1] == "Z") | (
+                        df2.at[df2.first_valid_index(), serial][1] == "z") | (
+                        df2.at[df2.first_valid_index(), serial][-1] == "Z"):
+                    dfm_out.at[0, 'SensorType'] = 'DMT-Z'
+                    # print('why not', dfm_out.at[0,'SensorType'])
+                if (df2.at[df2.first_valid_index(), serial][0] == "4"): dfm_out.at[0, 'SensorType'] = 'SPC-4A'
+                if (df2.at[df2.first_valid_index(), serial][0] == "5"): dfm_out.at[0, 'SensorType'] = 'SPC-5A'
+                if (df2.at[df2.first_valid_index(), serial][0] == "6"): dfm_out.at[0, 'SensorType'] = 'SPC-6A'
 
 
     if ( dfm_out.at[0, 'buffer'] == '1.00') & (dfm_out.at[0, 'kbr'] == '1.00'):
@@ -658,6 +696,9 @@ def o3tocurrent_nya(dft, dfm, dfmmain):
     # cref: additional correction factor
     # i = o3 / (4.3087 * 10e-4 * tp * t * cef * cref ) + ibg
 
+    dft[dft.TboxK < K]['TboxK'] = dft[dft.TboxK < K]['TboxK'] + K
+
+
     sensortype = dfm.at[dfm.first_valid_index(), 'SensorType']
     # print(sensortype)
 
@@ -682,12 +723,16 @@ def o3tocurrent_nya(dft, dfm, dfmmain):
     dft['ibg'] = 0
     dft['ibg_tmp'] = 0
 
-    dfm_date = dfm.at[dfm.first_valid_index(), 'Date']
+    dfm_date = int(dfm.at[dfm.first_valid_index(), 'Date'])
 
-    dfm['iB2current'] = dfmmain.loc[dfmmain.Date == dfm_date,'iB2current']
+    # print('dfm_date', dfm_date, type(dfm_date))
+
+    # dfm['iB2current'] = dfmmain.loc[dfmmain.Date == dfm_date,'iB2current']
     dfm['PFcurrent'] = dfmmain.loc[dfmmain.Date == dfm_date,'PFcurrent']
 
-    dft['iB2'] = dfm.at[dfm.first_valid_index(), 'iB2current']
+    dft['iB2'] = dfmmain.loc[dfmmain.Date == dfm_date,'iB2']
+    dfm['iB2'] = dfmmain.loc[dfmmain.Date == dfm_date,'iB2']
+
     # dft['iB0'] = dfm.at[dfm.first_valid_index(), 'iB0']
 
     # # # by default uses iB2 as background current
@@ -695,19 +740,39 @@ def o3tocurrent_nya(dft, dfm, dfmmain):
     dfmmain['Date2'] = dfmmain['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
     dfmmain['Date3'] = dfmmain['Date2'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 
+    # dfm2 = dfmmain[dfmmain.Date == dfm_date]
+    #
+    #
+    # dfm['ULab'] = dfm2['RHLab']
+    # dfmmain['ULab'] = dfmmain['RHLab']
+    # dfmmain = calculate_cph(dfmmain)
+    #
+    # dfmmain.loc[:, 'unc_cPH'] = dfmmain['cPH'].std()
+    # dfmmain.loc[:, 'unc_cPL'] = dfmmain['cPL'].std()
+    dfm2 = dfmmain[dfmmain.Date == dfm_date]
+
+    # dft['dPhip'] = 0.02
+    # dft['unc_cPH'] = dfm2.at[dfm2.first_valid_index(), 'unc_cPH']
+    # dft['unc_cPL'] = dfm2.at[dfm2.first_valid_index(), 'unc_cPL']
+    #
+    dft['Pground'] = dfm2.at[dfm2.first_valid_index(),'PLab']
+    dft['iB2'] = dfm2.at[dfm2.first_valid_index(),'iB2']
+
 
     #if iB2 is missing uses mean of the iB2
-    if (dfm.at[dfm.first_valid_index(), 'iB2current'] > 0.9):
-        # print('here bad ib2', dfm.at[dfm.first_valid_index(), 'iB2'],
+    if (dfm.at[dfm.first_valid_index(), 'iB2'] > 0.9):
+        print('here bad ib2', dfm.at[dfm.first_valid_index(), 'iB2'])
         #       dfm_date, dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean'])
         # print(dfmmain[['Date','Date2','Date3']][0:4])
 
-        dfm['iB2current'] = dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean']
+        dfm['iB2'] = dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean']
 
+        dft['iB2'] = dfmmain.loc[dfmmain.Date3 == dfm_date, 'ib2_mean']
 
-
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC': dft['ibg'] = ComputeIBG(dft, 'iB2current')
-    if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2current']
+    # dft['Pground'] = dft['PLab']
+    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC':
+    dft['ibg'] = ComputeIBG(dft, 'iB2')
+    # if dfm.at[dfm.first_valid_index(), 'SensorType'] == 'DMT-Z': dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2current']
 
     #if iB2 values are missing
     # if  (dfm.at[dfm.first_valid_index(), 'iB0'] < 0.9) & (dfm.at[dfm.first_valid_index(), 'iB2'] > 0.9):
@@ -719,10 +784,20 @@ def o3tocurrent_nya(dft, dfm, dfmmain):
     # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC'):
     #     dft['ibg'] = ComputeIBG(dft, 'iB0')
 
-    dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PFcurrent'] * dft['Cef'] * cref) + dft['ibg']
+    # dft['Phip'] = 100/dfm2.at[dfm2.first_valid_index(), 'PFcurrent']
+    dft['PFcurrent'] = dfm2.at[dfm2.first_valid_index(), 'PFcurrent']
+
+    # # calculate RH humidty correction
+    # dft['Phip_ground'], dft['unc_Phip_ground'] = pf_groundcorrection(dft, dfm2, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab',
+    #                                                                True)
+    # dft['PF_ground'] = 100/dft['Phip_ground']
+
+    # dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PF_ground'] * dft['Cef'] * cref) + dft['ibg']
+    dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PFcurrent'] * dft['Cef'] * cref) + dft['ibg']
+    # dft['Ical3'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PFcurrent'] * dft['Cef'] * cref) + dft['iB2']
 
 
-    return dft
+    return dft, dfm
 
 
 def o3tocurrent_stoich(dft, dfm):

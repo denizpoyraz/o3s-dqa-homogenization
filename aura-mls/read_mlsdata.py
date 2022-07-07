@@ -7,16 +7,24 @@ import glob
 import math
 from math import log
 
+### Bug found in distance, up to now all the mls data was made w.r.t. Uccle coordinates.
+## Need to make MLS data and all related plots from scratch!!!
+## 06/07/2022
+
 # First Code of MLS analysis
 # read the MLS data and write it to a csv file
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
 
-
-dfmeta = pd.read_csv(path + '/Metadata/All_metadata.csv')
+#nyalesund
+lats = 78.930
+lons = 11.880
+dfmeta = pd.read_csv(path + 'NY_metadata_corrected.csv')
+# dfmeta = pd.read_csv(path + '/Metadata/All_metadata.csv')
 # dfmeta = pd.read_csv(path + '/Madrid_Metadata.csv')
 # dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
 
@@ -38,13 +46,16 @@ dfmeta['Date'] = dfmeta["DateTime"].dt.strftime('%Y%m%d')
 
 
 # name = 'AURA_MLSData_MatchedUccle_DQA_v05'
-# name = 'AURA_MLSData_MatchedMadrid_DQA_v04'
-# name = 'AURA_MLSData_MatchedLauder_DQA_v04'
-name = 'AURA_MLSData_MatchedScoresby_DQA_v04'
+# name = 'AURA_MLSData_MatchedMadrid_DQA_v05'
+# name = 'AURA_MLSData_MatchedLauder_DQA_v05'
+# name = 'AURA_MLSData_MatchedScoresby_DQA_v05'
+name = 'AURA_MLSData_MatchedNYalesund_DQA_v05'
+
 # fname = 'aura_mls_l2gpovp_o3_v05_uccle.txt'
-# fname = 'aura_mls_l2gpovp_o3_v04_lauder.txt'
-# fname = 'aura_mls_l2gpovp_o3_v04_madrid.barajas.txt'
-fname = 'aura_mls_l2gpovp_o3_v04_scoresbysund.txt'
+# fname = 'aura_mls_l2gpovp_o3_v05_lauder.txt'
+# fname = 'aura_mls_l2gpovp_o3_v05_madrid.barajas.txt'
+# fname = 'aura_mls_l2gpovp_o3_v05_scoresbysund.txt'
+fname = 'aura_mls_l2gpovp_o3_v05_ny.alesund.txt'
 
 file = open(path + fname, "r")
 file.readline()
@@ -82,8 +93,8 @@ df['timetmp1'] = pd.to_timedelta(df["sec"], unit='s')
 df['timetmp2'] = df['timetmp1'].astype('timedelta64[s]')
 df['Time1'] = pd.to_datetime(df['timetmp2'])
 df['Time2'] = [x.time() for x in df['Time1']]
-df['DifLat'] = abs(50.80 - df['Lat'])
-df['DifLon'] = abs(4.350 - df['Lon'])
+df['DifLat'] = abs(lats - df['Lat'])
+df['DifLon'] = abs(lons - df['Lon'])
 df['Time'] = pd.to_timedelta(df["sec"], unit='s')
 
 # df['Timenf'] = df['Time'].apply(lambda x: time.x())

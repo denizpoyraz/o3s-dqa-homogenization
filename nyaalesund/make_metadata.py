@@ -3,6 +3,8 @@ import glob
 from datetime import datetime
 from re import search
 
+from functions.homogenization_functions import missing_station_values, calculate_cph,assign_missing_ptupf_bynan
+
 K = 273.15
 
 
@@ -13,6 +15,11 @@ dfp = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesu
                   ,names=np, header=0)
 dfp = dfp[dfp.Date < '2014-01-01']
 dfp = dfp.reset_index()
+
+#fix for wrong RH values
+dfp['LabRH'] = dfp['LabRH'].astype(float)
+dfp.loc[dfp.LabRH < 1, 'LabRH'] = dfp.loc[dfp.LabRH < 1, 'LabRH'] * 100
+
 #ames md
 dfa = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/Metadata/All_metadata.csv')
 #error md
@@ -78,7 +85,7 @@ for p in range(len(dfp)):
         dfa.loc[dfa.Date == pdate, 'PF'] = dfp.loc[dfp.Date == pdate, 'Airflows'].tolist()[0]
         dfa.loc[dfa.Date == pdate, 'iB2'] = dfp.loc[dfp.Date == pdate, 'BackgroundCurrentib'].tolist()[0]
         dfa.loc[dfa.Date == pdate, 'PLab'] = dfp[dfp.Date == pdate]['LabPressure'].tolist()[0]
-        print(pdate,dfp.loc[dfp.Date == pdate, 'BackgroundCurrentib'].tolist()[0] )
+        # print(pdate,dfp.loc[dfp.Date == pdate, 'BackgroundCurrentib'].tolist()[0] )
 
         dfa.loc[dfa.Date == pdate, 'TLab'] = dfp[dfp.Date == pdate]['LabTemp'].tolist()[0]
         dfa.loc[dfa.Date == pdate, 'RHLab'] = dfp[dfp.Date == pdate]['LabRH'].tolist()[0]
@@ -108,8 +115,8 @@ for i in range(len(dfe)):
         # print(ddate, dfe.at[i, 'Error Code'] )
 
     if search('ib2X', dfe.at[i, 'Error Code']):
-        dfa.loc[dfa.Date == ddate, 'iB2current'] = dfa[dfa.Date == ddate]['iB2'].tolist()[0]
-        dfa.loc[dfa.Date == ddate, 'iB2'] = dfp[dfp.Date == ddate]['BackgroundCurrentib'].tolist()[0]
+        # dfa.loc[dfa.Date == ddate, 'iB2current'] = dfa[dfa.Date == ddate]['iB2'].tolist()[0]
+        # dfa.loc[dfa.Date == ddate, 'iB2'] = dfp[dfp.Date == ddate]['BackgroundCurrentib'].tolist()[0]
 
         print(ddate, dfe.at[i, 'Error Code'] )
 
@@ -120,10 +127,26 @@ dfp = dfa[dfa.PF != 28.0]
 dfa.loc[dfa.iB2 > 1, 'iB2'] = dfb.iB2.median()
 dfa.loc[dfa.PF == 28.0, 'PF'] = dfp.PF.median()
 
-dfa.loc[dfa.iB2 > 1,'iB2current'] = dfb.iB2.median()
+dfa.loc[dfa.iB2current > 1,'iB2current'] = dfb.iB2.median()
 dfa.loc[dfa.PF == 28.0, 'PFcurrent'] = dfp.PF.median()
 dfa['TLab'] = dfa.TLab.astype(float)
 
 dfa.loc[dfa.TLab > K, 'TLab'] = dfa.loc[dfa.TLab > K,'TLab'] - K
 
-dfa.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/NY_metadata.csv')
+# ## now assign missing PTU Lab values
+plab = missing_station_values(dfa, 'PLab', False, 'nan')
+tlab = missing_station_values(dfa, 'TLab', False, 'nan')
+ulab = missing_station_values(dfa, 'RHLab', False, 'nan')
+#
+pflab = missing_station_values(dfa, 'PF', False, 'nan')  # PF values are
+#
+dfa = assign_missing_ptupf_bynan(dfa, True, True, True, False, plab, tlab, ulab, pflab)
+
+dfa['ULab'] = dfa['RHLab']
+
+dfa = calculate_cph(dfa)
+dfa.loc[:,'unc_cPH'] = dfa['cPH'].std()
+dfa.loc[:,'unc_cPL'] = dfa['cPL'].std()
+
+dfa.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/NY_metadata_corrected.csv')
+# dfa.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/NY_metadata_corrected_test.csv')

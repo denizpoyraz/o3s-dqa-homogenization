@@ -8,13 +8,14 @@ import glob
 #example path of where the WOUDC csv files are
 # path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/WOUDC_nors80/'
 
 
 efile = open("errorfile.txt", "w")
 
 
-allFiles = sorted(glob.glob(path + "/.csv"))
+allFiles = sorted(glob.glob(path + "/*.csv"))
 
 # /home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/20050406_testwoudc.csv
 
@@ -83,17 +84,17 @@ for filename in allFiles:
     df['Station'] = dfm.at[fi, 'DATA_GENERATION_Agency']
     list_data.append(df)
 
-    filenamestr = filename.split('.csv')[0][-8:] + '_out'
-    metastr = filename.split('.csv')[0][-8:] + '_metadata'
+    filenamestr = tmp + '_out'
+    metastr = tmp + '_metadata'
 
     print(filename)
     print(metastr)
 
-    df.to_csv(path + "out/" + filenamestr + ".csv")
-    df.to_hdf(path + "out/" + filenamestr + ".hdf", key = 'df')
+    df.to_csv(path + "/read_out/" + filenamestr + ".csv")
+    df.to_hdf(path + "/read_out/" + filenamestr + ".hdf", key = 'df')
 
     dfmt = dfm[fi:fi+1]
-    dfmt.to_csv(path + "out/" + metastr + ".csv")
+    dfmt.to_csv(path + "/read_out/" + metastr + ".csv")
 
     fi = fi + 1
     #

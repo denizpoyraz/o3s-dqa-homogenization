@@ -124,6 +124,7 @@ def roc_values(dff, dfm, tab):
         dff['Datet'] = dff['Datet'].dt.date
         dff['DateTime'] = pd.to_datetime(dff['Datet'], format='%Y-%m-%d')
         dff['ROC'] = 0
+
         for i in range(1, 13):
             dff.loc[dff.DateTime.dt.month == i, 'ROC'] = tab[i].tolist()[0]
 
@@ -196,6 +197,70 @@ def  assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, d
 
     return dm
 
+
+def  assign_missing_ptupf_bynan(dm, bool_p, bool_t, bool_u, bool_pf,  pl,tl, ul,pfl ):
+
+    dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
+    dm['Date2'] = dm['Date2'].dt.date
+    dm['DateTime2'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
+    # dm['PLab'] = dm['Pground']
+
+    if bool_p:
+        dm = dm[dm.PLab != 'missing']
+        dm['PLab'] = dm['PLab'].astype('float')
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+        dm.loc[dm['PLab'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[(dm['PLab'] > 1100) | (dm['PLab'] < 850), 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'PLab'] = \
+            dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'PLab'] = \
+            dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
+
+    if bool_t:
+        # dm = dm[dm.TLab < 50]
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+        dm.loc[dm['TLab'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[dm['TLab'] > 50, 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'TLab'] = \
+        dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'TLab'] = \
+        dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+
+
+    if bool_u:
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+
+        dm.loc[dm['RHLab'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[dm['RHLab'] > 90, 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'RHLab'] = \
+            dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'RHLab'] = \
+            dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
+
+
+    if bool_pf:
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+
+        dm.loc[dm['PF'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[(dm['PF'] > 35) | (dm['PF'] < 20), 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'PF'] = \
+            dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'PF'] = \
+            dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
+
+    #for some wrong values like in the recent files of sodankyla
+    # dm.loc[dm.TLab > (np.mean(tl) + 2*np.std(tl)), 'TLab'] = \
+    #     dm.loc[dm.TLab > (np.mean(tl) + 2*np.std(tl)), 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+
+    return dm
 
 
 def calculate_cph(dff):

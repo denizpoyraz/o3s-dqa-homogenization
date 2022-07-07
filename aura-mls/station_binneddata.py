@@ -20,18 +20,21 @@ ozone = 'O3' #woudc
 
 # name_out = 'SodankylaInterpolated_dqa_nors80'
 # name_out = 'UccleInterpolated_dqa_nors80'
-name_out = 'LauderInterpolated_dqa_nors80'
+# name_out = 'LauderInterpolated_dqa_nors80'
 # name_out = 'LauderInterpolated_dqa_nors80'
 # name_out = 'scoresbyInterpolated_dqa_nors80'
 # name_out = 'MadridInterpolated_dqa_nors80'
+name_out = 'NyalesundInterpolated_dqa_nors80'
 
 
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/'
+
 
 allFiles = sorted(glob.glob(path + "*_all_hom_nors80.hdf"))
 print('len of files', len(allFiles))
