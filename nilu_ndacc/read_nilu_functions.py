@@ -5,7 +5,13 @@ from scipy.interpolate import interp1d
 from datetime import datetime
 
 
-from functions.homogenization_functions import stoichmetry_conversion, calculate_cph,pf_groundcorrection
+from functions.homogenization_functions import stoichmetry_conversion, calculate_cph,pf_groundcorrection,\
+    pf_groundcorrection_noerr
+
+komhyr_86 = [1, 1, 1.007, 1.018, 1.022, 1.032, 1.055, 1.070, 1.092, 1.124]  # SP Komhyr
+pval = [1100, 200, 100, 50, 30, 20, 10, 7, 5, 3]
+komhyr_86.reverse()
+pval.reverse()
 
 
 VecP_ECC6A = [0, 2, 3, 5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 1100]
@@ -340,17 +346,17 @@ def organize_df_nya(df1, df2,dates):
 
     # df1 = df1[]
 
-    if dates < '20170313':
+    if dates <= '20170313':
 
         df_out['TboxC'] = df_out['TPump']
         df_out['TboxK'] = df_out['TPump']
 
         # df_out[(df_out.TboxK > K) & (df_out.TboxK < 999)]['TboxK'] = df_out[(df_out.TboxK > K) & (df_out.TboxK < 999)][
         #     'TboxK']
-        df_out.loc[(df_out.TboxK < K), 'TboxK'] = df_out.loc[(df_out.TboxK < K), 'TboxK'] + K
+        df_out.loc[(df_out.TboxK < 150), 'TboxK'] = df_out.loc[(df_out.TboxK < 150), 'TboxK'] + K
 
         # df_out[(df_out.TboxC < K)]['TboxC'] = df_out[(df_out.TboxC < K)]['TboxC']
-        df_out.loc[(df_out.TboxC > K) & (df_out.TboxC < 999), 'TboxC'] = df_out.loc[(df_out.TboxC > K) & (df_out.TboxC < 999),
+        df_out.loc[(df_out.TboxC > 50) & (df_out.TboxC < 999), 'TboxC'] = df_out.loc[(df_out.TboxC > K) & (df_out.TboxC < 999),
                                                                          'TboxC'] - K
         # for i in range(len(list1)):
 
@@ -468,11 +474,13 @@ def organize_df_nya(df1, df2,dates):
         df_out['TboxC'] = df_out['TPump']
         df_out['TboxK'] = df_out['TPump']
 
-        df_out[(df_out.TboxK > K ) & (df_out.TboxK < 999) ]['TboxK'] = df_out[(df_out.TboxK > K ) & (df_out.TboxK < 999) ]['TboxK']
-        df_out[(df_out.TboxK < K ) ]['TboxK'] = df_out[(df_out.TboxK < K ) ]['TboxK'] + K
+        # df_out.loc[(df_out.TboxK > K ) & (df_out.TboxK < 999), 'TboxK'] = \
+        #     df_out.loc[(df_out.TboxK > K ) & (df_out.TboxK < 999), 'TboxK']
+        df_out.loc[(df_out.TboxK < 150 ), 'TboxK'] = df_out.loc[(df_out.TboxK < 150 ), 'TboxK'] + K
 
-        df_out[(df_out.TboxC < K ) ]['TboxC'] = df_out[ (df_out.TboxC < K ) ]['TboxC']
-        df_out[(df_out.TboxC > K ) & (df_out.TboxC < 999) ]['TboxC'] = df_out[ (df_out.TboxC < K ) & (df_out.TboxC < 999)  ]['TboxC'] - K
+        # df_out.loc[(df_out.TboxC < K ), 'TboxC'] = df_out.loc[ (df_out.TboxC < K ), 'TboxC']
+        df_out.loc[(df_out.TboxC > 50 ) & (df_out.TboxC < 999), 'TboxC'] = \
+            df_out.loc[ (df_out.TboxC > 50 ) & (df_out.TboxC < 999), 'TboxC'] - K
 
 
         list2 = list(df2)
@@ -549,7 +557,7 @@ def organize_df_nya(df1, df2,dates):
     try:
         dfm_out['PF'] = dfm_out['PF'].astype('float')
     except KeyError:
-        dfm_out['PF'] = 28
+        dfm_out['PF'] = 27.5
         # in case there is no iB0 or iB2 it is written to 9999
     try:
         dfm_out['iB0'] = dfm_out['iB0'].astype('float')
@@ -696,7 +704,7 @@ def o3tocurrent_nya(dft, dfm, dfmmain):
     # cref: additional correction factor
     # i = o3 / (4.3087 * 10e-4 * tp * t * cef * cref ) + ibg
 
-    dft[dft.TboxK < K]['TboxK'] = dft[dft.TboxK < K]['TboxK'] + K
+    # dft.loc[dft.TboxK < K, 'TboxK'] = dft.loc[dft.TboxK < K, 'TboxK'] + K
 
 
     sensortype = dfm.at[dfm.first_valid_index(), 'SensorType']
@@ -755,8 +763,10 @@ def o3tocurrent_nya(dft, dfm, dfmmain):
     # dft['unc_cPH'] = dfm2.at[dfm2.first_valid_index(), 'unc_cPH']
     # dft['unc_cPL'] = dfm2.at[dfm2.first_valid_index(), 'unc_cPL']
     #
-    dft['Pground'] = dfm2.at[dfm2.first_valid_index(),'PLab']
-    dft['iB2'] = dfm2.at[dfm2.first_valid_index(),'iB2']
+    try:    dft['Pground'] = dfm2.at[dfm2.first_valid_index(),'PLab']
+    except KeyError: dft['Pground'] = dfmmain.PLab.median()
+    try:    dft['iB2'] = dfm2.at[dfm2.first_valid_index(),'iB2']
+    except KeyError: dft['iB2'] = dfmmain.iB2.median()
 
 
     #if iB2 is missing uses mean of the iB2
@@ -784,17 +794,37 @@ def o3tocurrent_nya(dft, dfm, dfmmain):
     # if (dfm.at[dfm.first_valid_index(), 'BkgUsed'] == 'Ibg1') & (dfm.at[dfm.first_valid_index(), 'SensorType'] == 'SPC'):
     #     dft['ibg'] = ComputeIBG(dft, 'iB0')
 
-    # dft['Phip'] = 100/dfm2.at[dfm2.first_valid_index(), 'PFcurrent']
-    dft['PFcurrent'] = dfm2.at[dfm2.first_valid_index(), 'PFcurrent']
+    try: dft['PFcurrent'] = dfm2.at[dfm2.first_valid_index(), 'PFcurrent']
+    except KeyError: dft['PFcurrent'] = dfmmain.PFcurrent.median()
+    dft['Phip'] = 100/dft.at[dft.first_valid_index(), 'PFcurrent']
+
+    try: dfm['PFcurrent'] = dfm2.at[dfm2.first_valid_index(), 'PFcurrent']
+    except KeyError: dfm['PFcurrent'] = dfmmain.PFcurrent.median()
+    try: dfm['PLab'] = dfm2.at[dfm2.first_valid_index(), 'PLab']
+    except KeyError: dfm['PLab'] = dfmmain.PLab.median()
+    try: dfm['TLab'] = dfm2.at[dfm2.first_valid_index(), 'TLab']
+    except KeyError: dfm['TLab'] = dfmmain.TLab.median()
+    try: dfm['ULab'] = dfm2.at[dfm2.first_valid_index(), 'ULab']
+    except KeyError: dfm['ULab'] = dfmmain.ULab.median()
+
 
     # # calculate RH humidty correction
-    # dft['Phip_ground'], dft['unc_Phip_ground'] = pf_groundcorrection(dft, dfm2, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab',
-    #                                                                True)
-    # dft['PF_ground'] = 100/dft['Phip_ground']
+    dft['Phip_ground'] = pf_groundcorrection_noerr(dft, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab',
+                                                                   True)
+    dft['PF_ground'] = 100/dft['Phip_ground']
 
-    # dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PF_ground'] * dft['Cef'] * cref) + dft['ibg']
-    dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PFcurrent'] * dft['Cef'] * cref) + dft['ibg']
-    # dft['Ical3'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PFcurrent'] * dft['Cef'] * cref) + dft['iB2']
+    # dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PF_ground']
+    # * dft['Cef'] * cref) + dft['ibg']
+    dft['Ical'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PFcurrent']
+                               * dft['Cef'] * cref) + dft['ibg']
+    dft['Ical1'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PFcurrent']
+                                * dft['Cef'] * cref) + dft['iB2']
+    dft['Ical2'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PF_ground']
+                               * dft['Cef'] * cref) + dft['ibg']
+    dft['Ical3'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PF_ground']
+                                * dft['Cef'] * cref) + dft['iB2']
+
+    # dft['Ical3'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dft.at[dft.first_valid_index(), 'PF_ground'] * dft['Cef'] * cref) + dft['iB2']
 
 
     return dft, dfm
@@ -896,10 +926,15 @@ def ComputeCef(dft, dfm):
         dft['SolutionVolume'] = dft['SolutionVolume'].astype('float')
     except KeyError:
         dft['SolutionVolume'] = 3.0
+
+    # print(dft.at[dft.first_valid_index(), 'SensorType'],dft.at[dft.first_valid_index(), 'SolutionVolume'] )
     #
     if (dft.at[dft.first_valid_index(), 'SensorType'] == 'SPC') and (
             dft.at[dft.first_valid_index(), 'SolutionVolume'] > 2.75):
         dft['Cef'] = VecInterpolate(VecP_ECC6A, VecC_ECC6A_30, dft, 0)
+    # if (dft.at[dft.first_valid_index(), 'SensorType'] == 'SPC') and (
+    #         dft.at[dft.first_valid_index(), 'SolutionVolume'] > 2.75):
+    #     dft['Cef'] = VecInterpolate(pval, komhyr_86, dft, 0)
     if (dft.at[dft.first_valid_index(), 'SensorType'] == 'SPC') and (
             dft.at[dft.first_valid_index(), 'SolutionVolume'] < 2.75):
         dft['Cef'] = VecInterpolate(VecP_ECC6A, VecC_ECC6A_25, dft, 0)
@@ -950,7 +985,9 @@ def ComputeIBG(dft, bkg):
     try:
         dft['Pcor'] = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
     except KeyError:
-        dft['Pground'] = 1000
+        # dft['Pground'] = 1000
+        dft['Pground'] = 997
+
         dft['Pcor'] = ComputeCorP(dft, 'Pair') / ComputeCorP(dft, 'Pground')
 
     if bkg == 'iB0': dft.ibg = dft.Pcor * dft.iB0

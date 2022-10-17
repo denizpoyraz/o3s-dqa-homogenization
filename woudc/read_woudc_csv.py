@@ -11,7 +11,8 @@ import glob
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
 path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/WOUDC_nors80/'
 
-
+name_out = 'lauder_alldata'
+name_mout = 'lauder_metadata'
 efile = open("errorfile.txt", "w")
 
 
@@ -21,6 +22,8 @@ allFiles = sorted(glob.glob(path + "/*.csv"))
 
 
 list_data = []
+list_mdata = []
+
 list_udata = []
 dfm = pd.DataFrame()
 fi = 0
@@ -82,7 +85,6 @@ for filename in allFiles:
     df = pd.read_csv(dfprofile)
     df['Date'] = dfm.at[fi, 'TIMESTAMP_Date']
     df['Station'] = dfm.at[fi, 'DATA_GENERATION_Agency']
-    list_data.append(df)
 
     filenamestr = tmp + '_out'
     metastr = tmp + '_metadata'
@@ -97,10 +99,22 @@ for filename in allFiles:
     dfmt.to_csv(path + "/read_out/" + metastr + ".csv")
 
     fi = fi + 1
+
     #
     # dfprofile_uncertainity = StringIO(profile_uncertainity)
     # df_uncer = pd.read_csv(dfprofile_uncertainity)
     # list_udata.append(df_uncer)
+
+    list_data.append(df)
+    list_mdata.append(dfm)
+
+dfall = pd.concat(list_data, ignore_index=True)
+dfmall = pd.concat(list_mdata, ignore_index=True)
+#
+# dfall.to_csv(path + "/DQM/" + name_out + ".csv")
+dfall.to_hdf(path + "/DQM/" + name_out + ".h5", key='df')
+dfmall.to_hdf(path + "/DQM/" + name_mout + ".h5", key='df')
+dfmall.to_csv(path + "/DQM/" + name_mout + ".csv")
 
 efile.close()
 

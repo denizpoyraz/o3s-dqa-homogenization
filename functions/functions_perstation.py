@@ -96,7 +96,7 @@ def station_inone(st_name):
     if st_name == 'ny-alesund':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
         dfmetaf = pd.read_csv(pathf + 'NY_metadata_corrected.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Current/*raw*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "/Current/final*raw*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_nyalesund_roc.txt')
         dfmetaf = organize_nyalesund(dfmetaf)
 
@@ -583,10 +583,9 @@ def organize_nyalesund(dfn):
     dfn.Date = dfn.Date.astype(str)
     dfn['SolutionVolume'] = 3
     dfn['string_bkg_used'] = 'ib2'
+    dfn['SolutionConcentration'] = 10
 
     print('list dfmeta', list(dfn))
-
-
 
     return dfn
 
@@ -734,8 +733,7 @@ def df_station(dl, datevalue, dml, station):
 
         # print('sonde serial', dml.at[dml.first_valid_index(),'SondeSerial'])
 
-        if datevalue < '20170313':
-
+        if datevalue <= '20170313':
 
             if (search('5a',dml.at[dml.first_valid_index(),'SondeSerial'])) or (search('5A',dml.at[dml.first_valid_index(),'SondeSerial'])):
                 dml['string_pump_location'] = 'case3'
@@ -743,7 +741,7 @@ def df_station(dl, datevalue, dml, station):
             if (search('6a',dml.at[dml.first_valid_index(),'SondeSerial'])) or (search('6A',dml.at[dml.first_valid_index(),'SondeSerial'])):
                 dml['string_pump_location'] = 'case5'
 
-        dl['I'] = dl['Ical']
+            dl['I'] = dl['Ical']
 
 
     return return_string, dl
