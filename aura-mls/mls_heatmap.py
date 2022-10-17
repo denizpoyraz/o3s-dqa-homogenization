@@ -9,20 +9,23 @@ import matplotlib.dates as mdates
 # df1 = pd.read_csv(path + 'MLS_SodankylaInterpolated_dqaprevious_nors80_v04.csv')
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/MLS/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/MLS/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/MLS/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/MLS/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/MLS/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/MLS/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/MLS/'
 
 # .csv
-# df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_dqa.csv')
-df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_ames.csv')
+# df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_rs80_v04_dqa.csv')
+# df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_ames.csv')
 
 # df1 = pd.read_csv(path + 'MLS_LauderInterpolated_nors80_v04_dqa.csv')
 # df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_dqa.csv')
 
 # df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_ndacc.csv')
 # df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_dqa.csv')
-# df1 = pd.read_csv(path + 'MLS_UccleInterpolated_nors80_v04_dqa.csv')
+# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa_tpumpafter2016.csv')
+# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa.csv')
+
+df1 = pd.read_csv(path + 'MLS_UccleInterpolated_nors80_v04_dqa.csv')
 
 # df1 = pd.read_csv(path + 'MLS_UccleInterpolated_nors80_v04_dqa.csv')
 
@@ -41,8 +44,8 @@ df1 = df1[df1.PO3_MLS < 99]
 
 # Plotname = 'WOUDC_vs_MLS_v04_nors80'
 
-# Plotname = 'DQA_vs_MLS_v04_nors80'
-Plotname = 'NDACC_vs_MLS_v04_nors80'
+Plotname = 'DQA_vs_MLS_v04_after2016'
+# Plotname = 'NDACC_vs_MLS_v04_nors80'
 # Plotname = 'NIWA_vs_MLS_v04_nors80'
 # Plotname = 'DQA_vs_MLS_v04_nors80_new'
 # Plotname = 'Raw_vs_MLS_v04_nors80_new'
@@ -59,10 +62,10 @@ Plotname = 'NDACC_vs_MLS_v04_nors80'
 # plot_title = 'Lauder O3S-Raw - MLS (v04) comparison'
 # plot_title = 'Lauder DQA (RS80) - MLS (v04) comparison'
 # plot_title = 'Lauder DQA - MLS (v04) comparison'
-# plot_title = 'NyAlesund DQA - MLS (v04) comparison'
-plot_title = 'NyAlesund NDACC - MLS (v04) comparison'
+# plot_title = 'NyAlesund DQA (RS80) - MLS (v04) comparison'
+# plot_title = 'NyAlesund NDACC - MLS (v04) comparison'
 
-# plot_title = 'Scoresbysund DQA - MLS (v04) comparison'
+plot_title = 'Scoresbysund DQA (tpump after 2016 corr.) - MLS (v04) comparison'
 # plot_title = 'Scoresbysund DQA - MLS (v04) comparison'
 
 # plot_title = 'Uccle DQA - MLS (v04) comparison'
@@ -88,15 +91,17 @@ df1 = df1[df1.PreLevel >= 8]
 df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df1.PO3_MLS)) / np.asarray(df1.PO3_UcIntLin)
 # df2['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin) - np.asarray(df2.PO3_MLS)) / np.asarray(df2.PO3_UcIntLin)
 
-# df1['DateTime'] = df1['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y%m%d'))
-df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
+df1['DateTime'] = df1['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y%m%d'))
+# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
 
 df1['Date'] = df1['DateTime'].apply(lambda x: x.date())
 df1['PreLevel'] = df1['PreLevel'].astype(int)
 
 
-fig, ax = plt.subplots(figsize=(17, 9))
-ax.set_yscale('log')
+# fig, ax = plt.subplots(figsize=(17, 9))
+fig, ax = plt.subplots()
+
+# ax.set_yscale('log')
 t = df1.pivot_table(index='PreLevel', columns='DateTime', values='RDif_UcIntLin', fill_value = 0, dropna = False)
 
 min_dist_days = t.columns.to_series().diff()

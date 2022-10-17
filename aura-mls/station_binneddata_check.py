@@ -18,25 +18,22 @@ ozone = 'O3' #woudc
 # ozone = 'PO3_dqar'
 
 
-# name_out = 'SodankylaInterpolated_dqa_nors80_testall'
-# name_out = 'UccleInterpolated_dqa_nors80'
+# name_out = 'SodankylaInterpolated_dqa_nors80'
+name_out = 'UccleInterpolated_dqa_nors80'
 # name_out = 'LauderInterpolated_dqa_nors80'
 # name_out = 'LauderInterpolated_dqa_nors80'
 # name_out = 'scoresbyInterpolated_dqa_nors80'
 # name_out = 'MadridInterpolated_dqa_nors80'
-name_out = 'NyalesundInterpolated_dqa_nors80_final'
 
 
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/'
 
-
-allFiles = sorted(glob.glob(path + "*all_hom_final_nors80.hdf"))
+allFiles = sorted(glob.glob(path + "*_all_hom_nors80.hdf"))
 print('len of files', len(allFiles))
 
 # list_data = []
@@ -47,8 +44,7 @@ listall_data = []
 for (filename) in (allFiles):
     file = open(filename, 'r')
 
-    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/20000404_all_hom_lastvr_nors80.hdf':
-        continue
+    print(filename)
 
     df = pd.read_hdf(filename)
     # df['date'] = df['Date'].dt.strftime("%Y%m%d")
@@ -56,26 +52,14 @@ for (filename) in (allFiles):
     # df['date'] = df['DateTime'].dt.strftime("%Y%m%d")
 
     datestr = df.at[df.first_valid_index(), 'date']
-    # print(type(datestr),int(datestr))
-
-    # if int(datestr) > 19980101: continue
-
-    if datestr == '20000404':continue
-    if datestr == '20000402':continue
-    if datestr == '20000404':continue
-
-
-    # if datestr > '20120101': continue
-    # if datestr < '20180101': continue
-
-    print(filename)
+    # print(datestr)
 
 
     # date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     # fname = filename.split('/')[-1].split('.')[0][0:8]
     # fullname = filename.split('/')[-1].split('.')[0]
     # metaname = path  + fname + "_o3smetadata_nors80.csv"
-    # metaname = path  + datestr + "_o3smetadata_nors80 .csv"
+    # metaname = path  + datestr + "_o3smetadata_nors80.csv"
     # print(metaname)
 
 
@@ -164,7 +148,6 @@ for (filename) in (allFiles):
 
     dfa['MR_dqa'] = dfa['O3c'] / (dfa['Pair'] * 100000)
 
-    dfa['O3c_ndacc'] = dfa['O3c_ndacc'].round(2)
 
     xstation_nc = np.array(dfa['O3_nc'].tolist())
     xstation_eta = np.array(dfa['O3c_eta'].tolist())
@@ -172,10 +155,6 @@ for (filename) in (allFiles):
     xstation_etabkgtpump = np.array(dfa['O3c_etabkgtpump'].tolist())
     xstation_etabkgtpumpphigr = np.array(dfa['O3c_etabkgtpumpphigr'].tolist())
     xstation_dqa = np.array(dfa['O3c'].tolist())
-    xstation_ndaccrmi = np.array(dfa['O3c_ndacc'].tolist())
-    # if datestr > '20170301':FI
-    #     xstation_ndaccrmi = np.array(dfa['O3c_ndacc2'].tolist())
-
     xstation_dqa_mr = np.array(dfa['MR_dqa'].tolist())
 
 
@@ -200,8 +179,6 @@ for (filename) in (allFiles):
     fl_etabkgtpumpphigr = interp1d(ystation, xstation_etabkgtpumpphigr)
     fl_dqa = interp1d(ystation, xstation_dqa)
     fl_dqa_mr = interp1d(ystation, xstation_dqa_mr)
-    fl_ndaccrmi = interp1d(ystation, xstation_ndaccrmi)
-
 
 
     ## try except part
@@ -213,7 +190,6 @@ for (filename) in (allFiles):
     xinter_linear_etabkgtpumpphigr = [0] * len(ymain);
     xinter_linear_dqa = [0] * len(ymain);
     xinter_linear_dqa_mr = [0] * len(ymain);
-    xinter_linear_ndaccrmi = [0] * len(ymain);
 
     # xinter_linear_woudc = [0] * len(ymain);
     # xinter_linear_woudc_v2 = [0] * len(ymain);
@@ -229,8 +205,6 @@ for (filename) in (allFiles):
             xinter_linear_etabkgtpumpphigr[ix] = fl_etabkgtpumpphigr(ymain[ix])
             xinter_linear_dqa[ix] = fl_dqa(ymain[ix])
             xinter_linear_dqa_mr[ix] = fl_dqa_mr(ymain[ix])
-            xinter_linear_ndaccrmi[ix] = fl_ndaccrmi(ymain[ix])
-
 
         except ValueError:
             xinter_linear[ix] = np.nan
@@ -241,7 +215,7 @@ for (filename) in (allFiles):
             xinter_linear_etabkgtpumpphigr[ix] = np.nan
             xinter_linear_dqa[ix] = np.nan
             xinter_linear_dqa_mr[ix] = np.nan
-            xinter_linear_ndaccrmi[ix] = np.nan
+
 
 
 
@@ -256,7 +230,6 @@ for (filename) in (allFiles):
             xinter_linear_etabkgtpumpphigr[ir] = np.nan
             xinter_linear_dqa[ir] = np.nan
             xinter_linear_dqa_mr[ir] = np.nan
-            xinter_linear_ndaccrmi[ir] = np.nan
 
 
 
@@ -281,7 +254,6 @@ for (filename) in (allFiles):
     dfl['PO3_UcIntLin_etabkgtpumpphigr'] = xinter_linear_etabkgtpumpphigr
     dfl['PO3_UcIntLin_dqa'] = xinter_linear_dqa
     dfl['MR_UcIntLin_dqa'] = xinter_linear_dqa_mr
-    dfl['PO3_UcIntLin_ndaccrmi'] = xinter_linear_ndaccrmi
 
 
     # dfl['PO3_UcIntLin_woudc'] = xinter_linear_woudc

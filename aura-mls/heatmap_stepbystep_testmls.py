@@ -58,72 +58,60 @@ def plot_rdif(dft, ptitlet):
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/Binned/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_rs80/Binned/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/Binned/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/Binned/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/Binned/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/MLS/'
 
-
-# df1 = pd.read_csv(path + 'scoresbyInterpolated_dqa_rs80.csv')
-# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_rs80/'
-#                   'Binned/scoresbyInterpolated_dqa_rs80.csv')
-
-#
-# df1 = pd.read_csv(path + 'UccleInterpolated_dqa_rs80.csv')
-# # UccleInterpolated_dqa_rs80
-# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/'
-#                   'Binned/UccleInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80.csv')
-
-# komhry file
-# df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_lastv_all_ndc2.csv')
-#vaisala file
-df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_lastvr.csv')
-
-# df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80_testall.csv')
+# df2 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa_tpumpmm_v2.csv')
+df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa_plusp201606.csv')
+# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_ndacc.csv')
 
 
 
-# UccleInterpolated_dqa_rs80
-df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_rs80/'
-                  'Binned/NyalesundInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv(path + 'MadridInterpolated_dqa_rs80.csv')
-# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/'
-#                   'Binned/MadridInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/Binned/new_MadridInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_rs80.csv')
-# df1 = pd.read_csv(path + 'new_LauderInterpolated_dqa_rs80.csv')
-
-# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
-# df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y-%m-%d')
-
-df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y%m%d')
 df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
+# df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y%m%d')
 
 # df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d') #sodankyla
 
 df1['date'] = df1['DateTime'].apply(lambda x: x.date())
-df2['date'] = df2['DateTime'].apply(lambda x: x.date())
+# df2['date'] = df2['DateTime'].apply(lambda x: x.date())
 
 df1 = df1[df1.PreLevel > 7]
-df2 = df2[df2.PreLevel > 7]
+df1 = df1[df1.PreLevel < 216]
+
+# df2 = df2[df2.PreLevel > 7]
+# df2 = df2[df2.PreLevel < 216]
 
 # df1 = df1[df1.Date > '2008-01-01']
 # df2 = df2[df2.Date > '2008-01-01']
 
 df1['PreLevel'] = df1['PreLevel'].astype(int)
-df2['PreLevel'] = df2['PreLevel'].astype(int)
+# df2['PreLevel'] = df2['PreLevel'].astype(int)
 
-Plotname = 'NDACCrmi_vs_NDACC_final'
-heatmap_label = 'NDACC-RMI - NDACC Version / NDACC Version  (%)'
-ptitle = 'NDACC-RMI vs NDACC Version-O3S'
-# heatmap_label = 'DQA - NIWA Version / NIWA Version  (%)'
-ptitle = 'NDACC-RMI vs NDACC Version-O3S'
-min = -5
-max = 5
-df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_ndaccrmi) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
-plot_rdif(df1, ptitle)
+# Plotname = 'DQA_vs_MLS_v04_after2016'
+plot_title = 'Scoresbysund DQA (plus pre. corr. after 2016 corr.) - MLS (v04) comparison'
+Plotname = 'DQA_vs_MLS_v04_after2016_plusp'
+# Plotname = 'NDACC_vs_MLS_v04_nors80'
+# Plotname = 'effectof_tpump_mm'
+
+
+# plot_title = 'Scoresbysund NDACC  - MLS (v04) comparison'
+# plot_title = 'effect of Tpump correction'
+
+
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df1.PO3_MLS)) / np.asarray(df1.PO3_UcIntLin)
+# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df2.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
+
+df1['DateTime'] = df1['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y%m%d'))
+# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
+heatmap_label = 'DQA - MLS / DQA  (%)'
+
+df1['Date'] = df1['DateTime'].apply(lambda x: x.date())
+df1['PreLevel'] = df1['PreLevel'].astype(int)
+
+min = -10
+max = 10
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df1.PO3_MLS)) / np.asarray(df1.PO3_UcIntLin)
+plot_rdif(df1, plot_title)
 #
 # Plotname = 'RS80_vs_noRS80'
 # heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
