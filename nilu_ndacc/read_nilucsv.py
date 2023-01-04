@@ -12,13 +12,13 @@ k = 273.15
 
 
 # filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-filepath = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
-station_name = 'scoresby'
+filepath = '/home/poyraden/Analysis/Homogenization_public/Files/lerwick/nilu/'
+station_name = 'lerwick'
 
-dfmeta = pd.read_csv(filepath + "Metadata/All_metadata_ndacc_ib2.csv" )
+# dfmeta = pd.read_csv(filepath + "Metadata/All_metadata_ndacc_ib2.csv" )
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "ndacc/*.hdf"))
+allFiles = sorted(glob.glob(filepath + "read_out/*.csv"))
 
 # print(allFiles)
 
@@ -28,20 +28,21 @@ f = 0
 sensortype = [''] * len(allFiles)
 
 for filename in (allFiles):
-    # print('filename', filename)
+    print('filename', filename)
     name = filename.split(".")[-2].split("/")[-1][2:8]
     fname = filename.split(".")[-2].split("/")[-1]
+    print(name, fname)
     # not to read metada files with _md extension
     if (search("md", fname)) or (search("metadata", fname)): continue
-    # if (fname == 'so980827') | (fname == 'so990708'): continue #one problematic file in sodankyal
+    if (fname == 'va060118') | (fname == 'va060301'): continue #one problematic file in sodankyal
 
-    metafile = filepath + 'ndacc/' + fname + "_md.csv"
+    metafile = filepath + 'read_out/' + fname + "_metadata.csv"
 
     # extract the date from file name
     date = datetime.strptime(name, '%y%m%d')
     datef = date.strftime('%Y%m%d')
 
-    dfd = pd.read_hdf(filename)
+    dfd = pd.read_csv(filename)
     # dfd = pd.read_csv(filename)
     # dfd = dfd[1:]
 
@@ -52,15 +53,29 @@ for filename in (allFiles):
     if len(dfd.columns) < 8: continue
 
     # read the metadata file
-    try:
-        dfm_tmp = pd.read_csv(metafile, index_col=0, names=['Parameter', 'Value'])
-        if (len(dfm_tmp)) < 15:
-            print('skip this dataset')
+    print('metafile', metafile)
+    if station_name != 'lerwick':
+        try:
+            dfm_tmp = pd.read_csv(metafile, index_col=0, names=['Parameter', 'Value'])
+            if (len(dfm_tmp)) < 15:
+                print('skip this dataset')
+                continue
+        except FileNotFoundError:
+            print('why error ')
             continue
-    except FileNotFoundError:
-        continue
 
-    dfm_tmp = dfm_tmp.T
+    if station_name == 'lerwick':
+        dfm_tmp = pd.read_csv(metafile)
+        # if (len(dfm_tmp)) < 15:
+        #     print('skip this dataset')
+        #     continue
+
+
+
+    print(fname)
+
+    if station_name != 'lerwick':
+        dfm_tmp = dfm_tmp.T
 
     dfl = pd.DataFrame()
     dfm = pd.DataFrame()
@@ -75,7 +90,7 @@ for filename in (allFiles):
 
     if (len(dfl) < 100): continue
 
-    if datef < '20151217':continue
+    # if datef < '20151217':continue
 
     print(fname)
 
@@ -113,9 +128,9 @@ for filename in (allFiles):
     if len(dfl)< 100: continue
     # convert the partial pressure to current
     #for scoresbysund transfer functions have been used for ensci 1.0% to spc1.0 after 20151217
-    dfl = o3tocurrent(dfl, dfm, dfmeta)
-    if (datef >= '20151217') & (station_name == 'scoresby'):
-        dfl = o3tocurrent_stoich(dfl, dfm)
+    # dfl = o3tocurrent(dfl, dfm, dfmeta)
+    # if (datef >= '20151217') & (station_name == 'scoresby'):
+    #     dfl = o3tocurrent_stoich(dfl, dfm)
 
     # set the date
     dfl['Date'] = datef
@@ -133,10 +148,10 @@ for filename in (allFiles):
     list_metadata.append(dfm)
 
 # save all the metada in one file, either in hdf format or csv format
-# dff = pd.concat(list_metadata, ignore_index=True)
-# hdfall = filepath + "Metadata/All_metadata.hdf"
-# csvall = filepath + "Metadata/All_metadata.csv"
-#
-# dff.to_hdf(hdfall, key = 'df')
-# dff.to_csv(csvall)
+dff = pd.concat(list_metadata, ignore_index=True)
+hdfall = filepath + "Metadata/All_metadata_nilu.hdf"
+csvall = filepath + "Metadata/All_metadata_nilu.csv"
+
+dff.to_hdf(hdfall, key = 'df')
+dff.to_csv(csvall)
 

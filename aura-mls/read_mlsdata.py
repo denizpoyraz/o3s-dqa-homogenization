@@ -18,16 +18,21 @@ from math import log
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
 
+# #nyalesund
+# lats = 78.930
+# lons = 11.880
 #nyalesund
-lats = 78.930
-lons = 11.880
-dfmeta = pd.read_csv(path + 'NY_metadata_corrected.csv')
+lats = 51.93
+lons = -10.25
+# dfmeta = pd.read_csv(path + 'NY_metadata_corrected.csv')
 # dfmeta = pd.read_csv(path + '/Metadata/All_metadata.csv')
 # dfmeta = pd.read_csv(path + '/Madrid_Metadata.csv')
 # dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
-
+# dfmeta = pd.read_csv(path + 'NY_metadata_corrected.csv')
+dfmeta = pd.read_csv(path + 'joined_Metadata.csv')
 # dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')
 
 
@@ -49,13 +54,15 @@ dfmeta['Date'] = dfmeta["DateTime"].dt.strftime('%Y%m%d')
 # name = 'AURA_MLSData_MatchedMadrid_DQA_v05'
 # name = 'AURA_MLSData_MatchedLauder_DQA_v05'
 # name = 'AURA_MLSData_MatchedScoresby_DQA_v05'
-name = 'AURA_MLSData_MatchedNYalesund_DQA_v05'
+# name = 'AURA_MLSData_MatchedNYalesund_DQA_v05'
+name = 'AURA_MLSData_MatchedValentia_DQA_v04'
 
 # fname = 'aura_mls_l2gpovp_o3_v05_uccle.txt'
 # fname = 'aura_mls_l2gpovp_o3_v05_lauder.txt'
 # fname = 'aura_mls_l2gpovp_o3_v05_madrid.barajas.txt'
 # fname = 'aura_mls_l2gpovp_o3_v05_scoresbysund.txt'
-fname = 'aura_mls_l2gpovp_o3_v05_ny.alesund.txt'
+# fname = 'aura_mls_l2gpovp_o3_v05_ny.alesund.txt'
+fname = 'aura_mls_l2gpovp_o3_v04_valentia.txt'
 
 file = open(path + fname, "r")
 file.readline()

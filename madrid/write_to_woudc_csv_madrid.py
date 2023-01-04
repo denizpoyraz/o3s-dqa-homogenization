@@ -59,18 +59,18 @@ def make_summary(df, column_names):
 # make a df of woudc metadata
 allFiles = sorted(glob.glob('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/*metadata.csv'))
 
-dfmeta = pd.DataFrame()
-metadata = []
-
-for (filename) in (allFiles):
-    df = pd.read_csv(filename)
-
-    metadata.append(df)
+# dfmeta = pd.DataFrame()
+# metadata = []
 #
-name_out = 'Madrid_WOUDC_Metadata'
-dfall = pd.concat(metadata, ignore_index=True)
-
-dfall.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/' + name_out + ".csv")
+# for (filename) in (allFiles):
+#     df = pd.read_csv(filename)
+#
+#     metadata.append(df)
+# #
+# name_out = 'Madrid_WOUDC_Metadata'
+# dfall = pd.concat(metadata, ignore_index=True)
+#
+# dfall.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/' + name_out + ".csv")
 
 dfm_woudc = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/Madrid_WOUDC_Metadata.csv')
 
@@ -199,8 +199,8 @@ for (filename) in(data_files):
 
     # # PREFLIGHT_SUMMARY
     # additional check for ib -1.0 values
-    if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iB0']
-    if dfm.at[dfm.first_valid_index(), 'iB0'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iBc']
+    if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iB0']
+    if dfm.at[dfm.first_valid_index(), 'iB2'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = dfm.at[dfm.first_valid_index(), 'iBc']
 
     dfm['SolutionType'] = '1.0%KIFullBuffer'
     ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected'
@@ -293,8 +293,8 @@ for (filename) in(data_files):
     # print(fileout)
 
     out_name = path2 + '/WOUDC_rs80/' + fileout
-    # print(out_name)
-
+    print(out_name)
+    out_name = out_name.encode('utf-8')
     woudc_extcsv.dump(extcsv, out_name)
 
 

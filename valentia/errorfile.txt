@@ -1,0 +1,11 @@
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19940216.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19941026.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19960211.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19970210.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19970211.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19970215.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19970301.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19990101.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19990111.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/19990305.csv
+/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/20030129.csv

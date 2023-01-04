@@ -54,11 +54,11 @@ def convert_ozonedata(files: List[Path]) -> None:
                 fileout = Path(fileout)
         j = j+1
         # end #
-
-        with open(file, 'r', encoding='ISO-8859-1') as rfile:
+        # with open(file, 'r', encoding='ISO-8859-1') as rfile:
+        with open(file, 'r',         encoding = "latin-1") as rfile:
             data = rfile.read()
 
-        if len(data) < 5000: continue
+        if len(data) < 500: continue
 
         header = get_header(file, regexp, column_names_regexp)
         df = get_data(file, header)
@@ -98,6 +98,7 @@ def get_data(file: Path, header: Header) -> pd.DataFrame:
     return (pd.read_csv(file,
                         delim_whitespace=True,
                         skiprows=header.lines,
+                        encoding= 'ISO-8859-1',
                         names=header.column_names[0:10])).dropna(axis=1)
 
 

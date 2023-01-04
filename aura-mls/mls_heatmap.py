@@ -5,17 +5,67 @@ import seaborn as sns
 import matplotlib.dates as mdates
 
 
+def plot_rdif(dft, ptitlet):
+
+    t = dft.pivot_table(index='PreLevel', columns='DateTime', values='RDif_UcIntLin', fill_value=0, dropna=True)
+    # t = df1.pivot_table(index='PreLevel', columns='date2', values='RDif_UcIntLin', fill_value = 0, dropna = False)
+
+    min_dist_days = t.columns.to_series().diff()
+    print('min_dist_days', min_dist_days)
+    min_mean = min_dist_days.median()
+    print('min distance 2 launches', min_mean)
+    # resample to see missing dates
+    t = t.T.resample(min_mean).mean().T
+
+    x_min_mean = int(str(min_mean.days))
+    labels = t.columns.year.unique()
+    print('labels', labels)
+    xfreq = int(365 / x_min_mean)
+    print('xfreq', xfreq)
+
+    dft.Date = pd.to_datetime(dft.Date)
+    # Plotting
+    # ########################################################################################################################
+    fig, ax = plt.subplots(figsize=(17, 9))
+    ax.set_yscale('log')
+
+    ax = sns.heatmap(t, vmin=min, vmax=max, cmap="vlag", cbar_kws={'label': heatmap_label}, xticklabels=xfreq)
+    # ax = sns.heatmap(t, vmin=min, vmax=max , cmap="vlag", cbar_kws={'label': heatmap_label})
+
+    # labels = [1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+    #  2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
+    #  2016, 2017, 2018, 2019, 2020, 2021, 2022]
+    ax.set_xticklabels(labels, rotation=0)
+    # ax.set_xticklabels([1992, 1993, 1994, 1995, 1996, 1997, 1998], rotation=0)
+
+
+    plt.yticks(fontsize=6)
+    # ax.set_yticklabels(ytick_labels, rotation = 0)
+    plt.xticks(rotation=90)
+    # plt.xticks(fontsize=4)
+    plt.xlabel(" ")
+
+    plt.title(ptitlet)
+    #
+    plt.savefig(path + 'Plots/' + Plotname + '.png')
+    plt.savefig(path + 'Plots/' + Plotname + '.eps')
+    # # plt.savefig(path + 'Plots/' + Plotname + '.pdf')
+
+    plt.show()
+
+
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/MLS/'
 # df1 = pd.read_csv(path + 'MLS_SodankylaInterpolated_dqaprevious_nors80_v04.csv')
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/MLS/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/MLS/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/MLS/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/MLS/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/MLS/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/MLS/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/MLS/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/MLS/'
 
 # .csv
-# df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_rs80_v04_dqa.csv')
-# df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_ames.csv')
+# df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_dqa.csv')
+df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_ames.csv')
 
 # df1 = pd.read_csv(path + 'MLS_LauderInterpolated_nors80_v04_dqa.csv')
 # df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_dqa.csv')
@@ -25,7 +75,10 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/MLS/'
 # df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa_tpumpafter2016.csv')
 # df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa.csv')
 
-df1 = pd.read_csv(path + 'MLS_UccleInterpolated_nors80_v04_dqa.csv')
+# df1 = pd.read_csv(path + 'MLS_ValentiaInterpolated_nors80_v04_dqa.csv')
+# df1 = pd.read_csv(path + 'MLS_ValentiaInterpolated_nors80_v04_woudc.csv')
+
+
 
 # df1 = pd.read_csv(path + 'MLS_UccleInterpolated_nors80_v04_dqa.csv')
 
@@ -44,7 +97,7 @@ df1 = df1[df1.PO3_MLS < 99]
 
 # Plotname = 'WOUDC_vs_MLS_v04_nors80'
 
-Plotname = 'DQA_vs_MLS_v04_after2016'
+# Plotname = 'DQA_vs_MLS_v04_after2016'
 # Plotname = 'NDACC_vs_MLS_v04_nors80'
 # Plotname = 'NIWA_vs_MLS_v04_nors80'
 # Plotname = 'DQA_vs_MLS_v04_nors80_new'
@@ -65,8 +118,7 @@ Plotname = 'DQA_vs_MLS_v04_after2016'
 # plot_title = 'NyAlesund DQA (RS80) - MLS (v04) comparison'
 # plot_title = 'NyAlesund NDACC - MLS (v04) comparison'
 
-plot_title = 'Scoresbysund DQA (tpump after 2016 corr.) - MLS (v04) comparison'
-# plot_title = 'Scoresbysund DQA - MLS (v04) comparison'
+# plot_title = 'Scoresbysund DQA (tpump after 2016 corr.) - MLS (v04) comparison'
 
 # plot_title = 'Uccle DQA - MLS (v04) comparison'
 # plot_title = 'Uccle PRESTO - MLS (v04) comparison'
@@ -97,45 +149,58 @@ df1['DateTime'] = df1['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y%
 df1['Date'] = df1['DateTime'].apply(lambda x: x.date())
 df1['PreLevel'] = df1['PreLevel'].astype(int)
 
+Plotname = 'NDACC_vs_MLS_v04'
+# Plotname = 'DQA_vs_MLS_v04'
 
-# fig, ax = plt.subplots(figsize=(17, 9))
-fig, ax = plt.subplots()
+heatmap_label = 'ECC - MLS / ECC (%)'
+# ptitle = 'Effect of Conversion Efficiency Correction'
+ptitle = 'Nyalesund NDACC - MLS (v04) comparison'
+# ptitle = 'Valentia WOUDC - MLS (v04) comparison'
 
-# ax.set_yscale('log')
-t = df1.pivot_table(index='PreLevel', columns='DateTime', values='RDif_UcIntLin', fill_value = 0, dropna = False)
+min = -10
+max = 10
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df1.PO3_MLS)) / np.asarray(df1.PO3_UcIntLin)
+plot_rdif(df1, ptitle)
 
-min_dist_days = t.columns.to_series().diff()
-min_mean = min_dist_days.median()
-print('min distance 2 launches', min_mean )
-#resample to see missing dates
-t = t.T.resample(min_mean).mean().T
-
-x_min_mean = int(str(min_mean.days))
-labels = t.columns.year.unique()
-xfreq = int(365/x_min_mean)
-print('xfreq', xfreq)
-
-
-# sns.color_palette("vlag", as_cmap=True)
-hm = sns.heatmap(t, vmin=-10, vmax=10, cmap="vlag", xticklabels=xfreq,  square=True,
-                 cbar_kws={'label': 'ECC - MLS / ECC (%)'})
-
-ax.set_xticklabels(labels, rotation=0)
-plt.yticks(fontsize=10)
-# ax.set_yticklabels(ytick_labels, rotation = 0)
-# plt.xticks(rotation = 45)
-plt.xticks(fontsize=10)
-
-plt.title(plot_title)
-
-
-plt.xlabel(" ")
-# ax.set_ylim([68,8])
 #
-plt.savefig(path + 'Plots/' + Plotname + '.png')
-plt.savefig(path + 'Plots/' + Plotname + '.eps')
-# plt.savefig(path + 'Plots/' + Plotname + '.pdf')
-
-plt.show()
+# # fig, ax = plt.subplots(figsize=(17, 9))
+# fig, ax = plt.subplots()
+#
+# # ax.set_yscale('log')
+# t = df1.pivot_table(index='PreLevel', columns='DateTime', values='RDif_UcIntLin', fill_value = 0, dropna = False)
+#
+# min_dist_days = t.columns.to_series().diff()
+# min_mean = min_dist_days.median()
+# print('min distance 2 launches', min_mean )
+# #resample to see missing dates
+# t = t.T.resample(min_mean).mean().T
+#
+# x_min_mean = int(str(min_mean.days))
+# labels = t.columns.year.unique()
+# xfreq = int(365/x_min_mean)
+# print('xfreq', xfreq)
+#
+#
+# sns.color_palette("vlag", as_cmap=True)
+# hm = sns.heatmap(t, vmin=-10, vmax=10, cmap="vlag", xticklabels=xfreq,  square=True,
+#                  cbar_kws={'label': 'ECC - MLS / ECC (%)'})
+#
+# ax.set_xticklabels(labels, rotation=0)
+# plt.yticks(fontsize=10)
+# # ax.set_yticklabels(ytick_labels, rotation = 0)
+# # plt.xticks(rotation = 45)
+# plt.xticks(fontsize=10)
+#
+# plt.title(plot_title)
+#
+#
+# plt.xlabel(" ")
+# # ax.set_ylim([68,8])
+# #
+# plt.savefig(path + 'Plots/' + Plotname + '.png')
+# plt.savefig(path + 'Plots/' + Plotname + '.eps')
+# # plt.savefig(path + 'Plots/' + Plotname + '.pdf')
+#
+# plt.show()
 
 ##########################################################################################################################################################

@@ -18,8 +18,9 @@ problem = open("DQA_ProblematicFiles.txt", "a")
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
 
 
 # ozone = 'O3_nc' # raw, no correction applied
@@ -28,7 +29,7 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 # ozone = 'O3c_etabkgtpump' # only phip correction applied
 # ozone = 'O3c_etabkgtpumpphigr' # only tpump applied
 # ozone = 'O3c_bkgphip'
-ozone = 'O3c'
+ozone = 'O3'
 # ozone = 'PO3_dqar'
 
 # name_out = 'MLS_SodankylaInterpolated_raw_rs80_v04'
@@ -36,19 +37,24 @@ ozone = 'O3c'
 # name_out = 'MLS_MadridInterpolated_rs80_v04_dqa'
 # name_out = 'MLS_LauderInterpolated_rs80_v04_niwa'
 # name_out = 'MLS_LauderInterpolated_rs80_v04_dqa'
-# name_out = 'MLS_NyalesundInterpolated_rs80_v04_ames'
-# name_out = 'MLS_NyalesundInterpolated_rs80_v04_dqa'
+name_out = 'MLS_NyalesundInterpolated_nors80_v04_ames'
+# name_out = 'MLS_NyalesundInterpolated_nors80_v04_dqa'
 
-name_out = 'MLS_ScoresbyInterpolated_rs80_v04_dqa_plusp201606'
+# name_out = 'MLS_ScoresbyInterpolated_rs80_v04_dqa_plusp201606'
 # name_out = 'MLS_UccleInterpolated_rs80_v04_dqa'
+# name_out = 'MLS_UccleInterpolated_rs80_v04_dqa'
+# name_out = 'MLS_ValentiaInterpolated_nors80_v04_woudc'
+# name_out = 'MLS_ValentiaInterpolated_nors80_v04_woudc'
 
 
 # mls data frame to read
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedNYalesund_DQA_v04.csv')
-dfm = pd.read_csv(path + 'AURA_MLSData_MatchedScoresby_DQA_v04.csv')
+dfm = pd.read_csv(path + 'AURA_MLSData_MatchedNYalesund_DQA_v04.csv')
+# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedScoresby_DQA_v04.csv')
 # dfm = pd.read_csv(path + 'AURA_MLSData_MatchedUccle_DQA_v04.csv')
+# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedValentia_DQA_v04.csv')
+
 
 
 # dfm = dfm[dfm.Date < 20080612]
@@ -75,7 +81,7 @@ for date in date_list:
         print(date)
         # print()
         # try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_final_nors80_tpumpmm_v2.hdf")
-        try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_final_nors80_plusp.hdf")
+        try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
 
 
         except FileNotFoundError:
@@ -91,7 +97,7 @@ for date in date_list:
 
     print(date)
 
-    if date == 20190605:continue
+    # if date == 20190605:continue
 
     # df['Height'] = df['GPHeight']
  # now downsample the uccle data remove descent list

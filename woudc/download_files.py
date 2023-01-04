@@ -48,7 +48,7 @@ for i in range(size):
     req = requests.get(url)
     url_content = req.content
 
-    csv_file = open(path + 'CSV/' + name, 'wb')
+    csv_file = open(path + 'WOUDC_CSV/' + name, 'wb')
     csv_file.write(url_content)
     csv_file.close()
 

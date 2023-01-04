@@ -8,7 +8,7 @@ from scipy.interpolate import interp1d
 
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
-    return_phipcor, o3_integrate, roc_values, missing_station_values, assign_missing_ptupf, make_1m_upsamle
+    return_phipcor, o3_integrate, roc_values, missing_station_values, assign_missing_ptupf, make_1m_upsamle, assign_missing_ptupf_byvalue
 import glob
 
 K = 273.15
@@ -75,7 +75,7 @@ def station_inone(st_name):
     if st_name == 'uccle':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
         dfmetaf = pd.read_csv(pathf + 'Raw_upd/All_metadata.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/20100210*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt')
         dfmetaf = organize_uccle(dfmetaf)
 
@@ -100,6 +100,13 @@ def station_inone(st_name):
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_nyalesund_roc.txt')
         dfmetaf = organize_nyalesund(dfmetaf)
 
+    if st_name == 'valentia':
+        pathf = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
+        dfmetaf = pd.read_csv(pathf + 'joined_Metadata.csv')  #
+        allFilesf = sorted(glob.glob(pathf + "CSV/read_out/*_out.hdf"))
+        roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_valentia_roc.txt')
+        dfmetaf = organize_valentia(dfmetaf)
+
     return pathf, allFilesf, roc_table_filef, dfmetaf
 
 
@@ -114,36 +121,43 @@ def station_inbool(st_name):
 
     if st_name == 'lauder':
         humidity_correctionf = True
-        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        df_missing_tpumpf = False
         calculate_currentf = False
         organize_dff = True
         descent_dataf = True
 
     if st_name == 'uccle':
         humidity_correctionf = False
-        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        df_missing_tpumpf = False
         calculate_currentf = False
         organize_dff = True
         descent_dataf = True
 
     if st_name == 'scoresbysund':
         humidity_correctionf = True
-        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        df_missing_tpumpf = False
         calculate_currentf = False
         organize_dff = True
         descent_dataf = False
 
     if st_name == 'sodankyla':
         humidity_correctionf = True
-        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        df_missing_tpumpf = False
         calculate_currentf = False
         organize_dff = True
         descent_dataf = False
 
     if st_name == 'ny-alesund':
         humidity_correctionf = True
-        df_missing_tpumpf = False  # if there are missing variables in df like tpump in madrid
+        df_missing_tpumpf = False
         calculate_currentf = False
+        organize_dff = True
+        descent_dataf = False
+
+    if st_name == 'valentia':
+        humidity_correctionf = True
+        df_missing_tpumpf = False
+        calculate_currentf = True
         organize_dff = True
         descent_dataf = False
 
@@ -194,6 +208,14 @@ def station_invar(st_name):
         date_start_homf = '19920101'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
         rs80_beginf = '19920101'  # the date where there was a change from nors80
         rs80_endf = '20020529'
+        # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
+        IBGsplitf = ''  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'SPC10'
+
+    if st_name == 'valentia':
+        date_start_homf = '19940107'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = ''  # the date where there was a change from nors80
+        rs80_endf = ''
         # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
         IBGsplitf = ''  # the date if there is a lower/higher bkg value region
         sonde_tbcf = 'SPC10'
@@ -368,6 +390,52 @@ def organize_madrid(dmm):
 
 
     return dmm
+
+
+
+def organize_valentia(dmm):
+
+    dmm['string_bkg_used'] = 'ib2'
+
+    dmm['PLab'] = dmm['Pground']
+    dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    # dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+
+    dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+
+
+    PFmean = np.nanmean(dmm.PF)
+    # print('PFmean', PFmean)
+    # dmm['PFmean'] = PFmean
+
+    dpl = dmm[(dmm.PLab < 9999) & (dmm.PLab > 900) ]
+    dtl = dmm[(dmm.TLab < 99) & (dmm.TLab > 10)]
+    # pfl = dmm[(dmm.PF < 40) & (dmm.PF > 25) ]
+    ufl = dmm[(dmm.ULab < 100) & (dmm.ULab > 5) ]
+
+
+    ulab = missing_station_values(ufl, 'ULab', False, 'nan')
+    plab = missing_station_values(dpl, 'PLab', False, 'nan')
+    tlab = missing_station_values(dtl, 'TLab', False, 'nan')
+
+    dmm = assign_missing_ptupf_byvalue(dmm, True, True, True, False,9999, 9999, 9999, 9999, plab, tlab, ulab, ulab)
+
+
+    dmm['SolutionConcentration'] = 10
+    dmm['SensorType'] = 'SPC'
+    dmm['SolutionVolume'] = 3.0
+
+
+    dmm.loc[dmm.Date < '19970131','string_pump_location'] = 'case3'
+    dmm.loc[dmm.Date > '19970131','string_pump_location'] = 'case5'
+
+    dmm.loc[(dmm.EccModel == '5a') | (dmm.EccModel == '5A'), 'string_pump_location'] = 'case3'
+    dmm.loc[(dmm.EccModel == '6a') | (dmm.EccModel == '6A'), 'string_pump_location'] = 'case5'
+
+    dmm['SensorType'] = 'SPC'
+
+    return dmm
+
 
 def rename_variables(dft, pvar, nvar):
     '''
@@ -721,6 +789,14 @@ def df_station(dl, datevalue, dml, station):
         dl = dl[dl['O3'] < 99]
         # dl = dl[dl['Tbox'] < 999]
 
+    if station == 'valentia':
+        dl['Pair'] = dl['Pressure']
+        dl['PO3'] = dl['O3PartialPressure']
+        dl['Tpump'] = dl['SampleTemperature'].astype(float) + k
+        dl['TboxK'] = dl['Tpump']
+        dl['Height'] = dl['GPHeight']
+        dl['O3'] = dl['PO3']
+
     if station == 'ny-alesund':
 
         if datevalue > '20170309':
@@ -745,3 +821,5 @@ def df_station(dl, datevalue, dml, station):
 
 
     return return_string, dl
+
+

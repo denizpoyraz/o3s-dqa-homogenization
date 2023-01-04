@@ -31,9 +31,9 @@ def plot_rdif(dft, ptitlet):
     ax = sns.heatmap(t, vmin=min, vmax=max, cmap="vlag", cbar_kws={'label': heatmap_label}, xticklabels=xfreq)
     # ax = sns.heatmap(t, vmin=min, vmax=max , cmap="vlag", cbar_kws={'label': heatmap_label})
 
-    # labels = [1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-    #  2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
-    #  2016, 2017, 2018, 2019, 2020, 2021]
+    labels = [1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
+     2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
+     2016, 2017, 2018, 2019, 2020, 2021, 2022]
     ax.set_xticklabels(labels, rotation=0)
     # ax.set_xticklabels([1992, 1993, 1994, 1995, 1996, 1997, 1998], rotation=0)
 
@@ -46,8 +46,8 @@ def plot_rdif(dft, ptitlet):
 
     plt.title(ptitlet)
     #
-    plt.savefig(path + 'Plots/f_' + Plotname + '.png')
-    plt.savefig(path + 'Plots/f_' + Plotname + '.eps')
+    plt.savefig(path + 'Plots/' + Plotname + '.png')
+    plt.savefig(path + 'Plots/' + Plotname + '.eps')
     # # plt.savefig(path + 'Plots/' + Plotname + '.pdf')
 
     plt.show()
@@ -59,6 +59,7 @@ def plot_rdif(dft, ptitlet):
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_rs80/Binned/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/Binned/'
 path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/Binned/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/DQA_nors80/Binned/'
 
 
 # df1 = pd.read_csv(path + 'scoresbyInterpolated_dqa_rs80.csv')
@@ -71,20 +72,21 @@ path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors
 # df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/'
 #                   'Binned/UccleInterpolated_dqa_rs80.csv')
 
-# df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80.csv')
+df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_new.csv')#test1
 
 # komhry file
 # df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_lastv_all_ndc2.csv')
 #vaisala file
-df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_lastvr.csv')
+# df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_lastvr.csv')
 
 # df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80_testall.csv')
+# df1 = pd.read_csv(path + 'Valentia_nors80.csv')
 
 
 
 # UccleInterpolated_dqa_rs80
-df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_rs80/'
-                  'Binned/NyalesundInterpolated_dqa_rs80.csv')
+# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_rs80/'
+#                   'Binned/NyalesundInterpolated_dqa_rs80.csv')
 
 # df1 = pd.read_csv(path + 'MadridInterpolated_dqa_rs80.csv')
 # df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/'
@@ -98,33 +100,34 @@ df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesu
 # df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
 # df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y-%m-%d')
 
-df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y%m%d')
+# df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y%m%d')
 df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
 
 # df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d') #sodankyla
 
 df1['date'] = df1['DateTime'].apply(lambda x: x.date())
-df2['date'] = df2['DateTime'].apply(lambda x: x.date())
+# df2['date'] = df2['DateTime'].apply(lambda x: x.date())
 
 df1 = df1[df1.PreLevel > 7]
-df2 = df2[df2.PreLevel > 7]
+# df2 = df2[df2.PreLevel > 7]
 
 # df1 = df1[df1.Date > '2008-01-01']
 # df2 = df2[df2.Date > '2008-01-01']
 
 df1['PreLevel'] = df1['PreLevel'].astype(int)
-df2['PreLevel'] = df2['PreLevel'].astype(int)
+# df2['PreLevel'] = df2['PreLevel'].astype(int)
 
-Plotname = 'NDACCrmi_vs_NDACC_final'
-heatmap_label = 'NDACC-RMI - NDACC Version / NDACC Version  (%)'
-ptitle = 'NDACC-RMI vs NDACC Version-O3S'
+Plotname = 'DQA_vs_NDACC_alltimerange'
+heatmap_label = 'DQA - Previous Version / Previous Version  (%)'
+ptitle = 'DAQ-O3S vs Previous Version-O3S'
 # heatmap_label = 'DQA - NIWA Version / NIWA Version  (%)'
-ptitle = 'NDACC-RMI vs NDACC Version-O3S'
+ptitle = 'DQA-O3S vs Previous Version-O3S'
 min = -5
 max = 5
-df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_ndaccrmi) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
 plot_rdif(df1, ptitle)
-#
+
+
 # Plotname = 'RS80_vs_noRS80'
 # heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
 # ptitle = 'Effect of RS80 Radiosonde Correction'
@@ -136,25 +139,72 @@ plot_rdif(df1, ptitle)
 #######################
 ##########################
 ############################
+# Plotname = 'RS80_vs_noRS80'
+# heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
+# ptitle = 'Effect of RS80 Radiosonde Correction'
+# # #
+# min = -5
+# max = 5
+# df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
+# plot_rdif(df1, ptitle)
 
-##########
-################33
-################33
-########################
-
-Plotname = 'DQA_vs_NDACC_final'
-heatmap_label = 'DQA - Previous Version / Previous Version  (%)'
-ptitle = 'DAQ-O3S vs Previous Version-O3S'
-# heatmap_label = 'DQA - NIWA Version / NIWA Version  (%)'
-ptitle = 'DQA-O3S vs Previous Version-O3S'
+# (2 - 1) / 1
+Plotname = 'Eta_vs_Raw_alltimerange'
+heatmap_label = 'Conversion Efficiency - NoCorrection / NoCorrection  (%)'
+ptitle = 'Effect of Conversion Efficiency Correction'
 min = -5
 max = 5
-df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_ndaccrmi) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_eta) - np.asarray(df1.PO3_UcIntLin_nc)) / np.asarray(df1.PO3_UcIntLin_nc)
+plot_rdif(df1, ptitle)
 
-
+# #
+Plotname = 'EtaBkg_vs_Eta_alltimerange'
+# heatmap_label = 'Conversion and Background Cor. - Conversion Cor. / Conversion Cor.  (%)'
+heatmap_label = 'Eta Bkg Cor. - Eta Cor. / Eta Cor.  (%)'
+ptitle = 'Effect of Background Current Correction'
+min = -5
+max = 5
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_etabkg) - np.asarray(df1.PO3_UcIntLin_eta)) / np.asarray(df1.PO3_UcIntLin_eta)
+print(df1[df1.RDif_UcIntLin < 0].drop_duplicates(['date'])[['date','RDif_UcIntLin']])
 
 plot_rdif(df1, ptitle)
+
+# # #
+Plotname = 'EtaBkgTpump_vs_EtaBkg_alltimerange'
+heatmap_label = 'Eta Bkg Tpump Cor. - Eta Bkg Cor. / Eta Bkg Cor.  (%)'
+ptitle = 'Effect of Pump Temperature Correction'
+min = -5
+max = 5
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_etabkgtpump) - np.asarray(df1.PO3_UcIntLin_etabkg)) / np.asarray(df1.PO3_UcIntLin_etabkg)
+plot_rdif(df1, ptitle)
+
+#
+Plotname = 'EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange'
+heatmap_label = 'Eta Bkg Tpump Phigr Cor. - Eta Bkg Tpump Cor. / Eta Bkg Tpump Cor. (%)'
+ptitle = 'Effect of Pump Flow Rate (humidity) Correction'
+min = -5
+max = 5
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr) - np.asarray(df1.PO3_UcIntLin_etabkgtpump)) / np.asarray(df1.PO3_UcIntLin_etabkgtpump)
+plot_rdif(df1, ptitle)
+
+# # # #
+Plotname = 'EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange'
+heatmap_label = 'Eta Bkg Tpump Phigr PhiEff Cor. - Eta Bkg Tpump Phigr Cor. / Eta Bkg Tpump Phigr Cor.  (%)'
+ptitle = 'Effect of Pump Flow Efficiency Correction'
+min = -5
+max = 5
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr)) / np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr)
+plot_rdif(df1, ptitle)
+
+# # # #
+Plotname = 'DQA_vs_Raw_alltimerange'
+heatmap_label = 'DQA - No Correction / No Correction  (%)'
+ptitle = 'Effect all DQA Corrections'
+min = -10
+max = 10
+df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_nc)) / np.asarray(df1.PO3_UcIntLin_nc)
+plot_rdif(df1, ptitle)
+
 
 # #
 # Plotname = 'DQA_vs_WOUDC_alltimerange'
@@ -168,19 +218,6 @@ plot_rdif(df1, ptitle)
 # ptitle = 'DAQ-O3S vs DQA-previous'
 # min = -3
 # max = 3
-
-
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_eta) - np.asarray(df1.PO3_UcIntLin_nc)) / np.asarray(df1.PO3_UcIntLin_nc)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_etabkg) - np.asarray(df1.PO3_UcIntLin_eta)) / np.asarray(df1.PO3_UcIntLin_eta)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_etabkgtpump) - np.asarray(df1.PO3_UcIntLin_etabkg)) / np.asarray(df1.PO3_UcIntLin_etabkg)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr) - np.asarray(df1.PO3_UcIntLin_etabkgtpump)) / np.asarray(df1.PO3_UcIntLin_etabkgtpump)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr)) / np.asarray(df1.PO3_UcIntLin_etabkgtpumpphigr)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_nc)) / np.asarray(df1.PO3_UcIntLin_nc)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_woudc) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_woudc_v2) - np.asarray(df1.PO3_UcIntLin)) / np.asarray(df1.PO3_UcIntLin)
-
-
 
 #########################################################
 

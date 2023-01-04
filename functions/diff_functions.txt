@@ -1,0 +1,194 @@
+6c6
+< 
+---
+> from re import search
+226c226
+< def background_correction(df, dfmeta, dfm, ib,):
+---
+> def background_correction(df, dfmeta, dfm, ib, year):
+238c238,239
+< 
+---
+> #    year = '2004'
+>     if year < '0':
+240,241c241,242
+<     # mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
+<     # std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+---
+>         mean = np.mean(dfmeta[dfmeta[ib] < 0.1][ib])
+>         std = np.std(dfmeta[dfmeta[ib] < 0.1][ib])
+243,248c244,249
+<     # if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
+<     #     df['iBc'] = mean
+<     #     df['unc_iBc'] = 2 * std
+<     # if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
+<     #     df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
+<     #     df['unc_iBc'] = std
+---
+>         if (dfm.at[dfm.first_valid_index(),ib] > mean + 2 * std):
+>             df['iBc'] = mean
+>             df['unc_iBc'] = 2 * std
+>         if (dfm.at[dfm.first_valid_index(),ib] <= mean + 2 * std):
+>             df['iBc'] = dfm.at[dfm.first_valid_index(),ib]
+>             df['unc_iBc'] = std
+252,262c253,264
+<     dfm['Date'] = dfm['Date'].astype(str)
+<     dfmeta['Date'] = dfmeta['Date'].astype(str)
+<     df['Date'] = df['Date'].astype(str)
+< 
+<     year = '2004' #uccle
+<     year = '2005' #sodankyla
+<     year = '1998' #lauder
+<     mean1 = np.nanmean(dfmeta[dfmeta.Date < year][ib])
+<     std1 = np.nanstd(dfmeta[dfmeta.Date < year][ib])
+<     mean2 = np.nanmean(dfmeta[dfmeta.Date >= year][ib])
+<     std2 = np.nanstd(dfmeta[dfmeta.Date >= year][ib])
+---
+>     if year > '0':
+>         dfm['Date'] = dfm['Date'].astype(str)
+>         dfmeta['Date'] = dfmeta['Date'].astype(str)
+>         df['Date'] = df['Date'].astype(str)
+> 
+>     # year = '2004' #uccle
+>     # year = '2005' #sodankyla
+>     # year = '1998' #lauder
+>         mean1 = np.nanmean(dfmeta[dfmeta.Date < year][ib])
+>         std1 = np.nanstd(dfmeta[dfmeta.Date < year][ib])
+>         mean2 = np.nanmean(dfmeta[dfmeta.Date >= year][ib])
+>         std2 = np.nanstd(dfmeta[dfmeta.Date >= year][ib])
+267,301c269,303
+<     if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
+<         df.loc[df.Date < year, 'iBc'] = mean1
+<         df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+< 
+<         # print('bkg correction before 2004 ', mean1)
+<         # df['iBc'] = mean1
+<         # df['unc_iBc'] = 2 * std1
+<     if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
+<         df.loc[df.Date < year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+<         df.loc[df.Date < year, 'unc_iBc'] = std1
+<         # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
+< 
+<         # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
+<         # df['unc_iBc'] = std1
+< 
+<     if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year):
+<         df.loc[df.Date >= year, 'iBc'] = mean2
+<         df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+<         # print('after 2004 bkg correction', mean1)
+< 
+< 
+<     if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year):
+<         df.loc[df.Date >= year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+<         df.loc[df.Date >= year, 'unc_iBc'] = std2
+<         # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
+< 
+< 
+<     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < year):
+<         df.loc[df.Date < year, 'iBc'] = mean1
+<         df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+<         # print('before 2004 no bkg', mean1)
+<     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= year):
+<         df.loc[df.Date >= year, 'iBc'] = mean2
+<         df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+<         # print('after 2004 no bkg', mean2)
+---
+>         if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
+>             df.loc[df.Date < year, 'iBc'] = mean1
+>             df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+> 
+>             # print('bkg correction before 2004 ', mean1)
+>             # df['iBc'] = mean1
+>             # df['unc_iBc'] = 2 * std1
+>         if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
+>             df.loc[df.Date < year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+>             df.loc[df.Date < year, 'unc_iBc'] = std1
+>             # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
+> 
+>             # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
+>             # df['unc_iBc'] = std1
+> 
+>         if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year):
+>             df.loc[df.Date >= year, 'iBc'] = mean2
+>             df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+>             # print('after 2004 bkg correction', mean1)
+> 
+> 
+>         if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year):
+>             df.loc[df.Date >= year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
+>             df.loc[df.Date >= year, 'unc_iBc'] = std2
+>             # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
+> 
+> 
+>         if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < year):
+>             df.loc[df.Date < year, 'iBc'] = mean1
+>             df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+>             # print('before 2004 no bkg', mean1)
+>         if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= year):
+>             df.loc[df.Date >= year, 'iBc'] = mean2
+>             df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+>             # print('after 2004 no bkg', mean2)
+341,342c343,344
+<         df.loc[(df[im] == 0), 'O3c'] = 0
+<         df['O3c'] = 0.043085 * df[tpump] * (df[im] - df[ib]) / (df[etac] * df[phip])
+---
+>         df.loc[(df[im] == 0), 'O3cor'] = 0
+>         df['O3cor'] = 0.043085 * df[tpump] * (df[im] - df[ib]) / (df[etac] * df[phip])
+344c346
+<     return df['O3c']
+---
+>     return df['O3cor']
+548,549c550,551
+<     dft['SensorType'] = 'SPC'
+<     dfm['SensorType'] = 'SPC'
+---
+>    # dft['SensorType'] = 'SPC'
+>    # dfm['SensorType'] = 'SPC'
+551,552c553,554
+<     dft['SolutionVolume'] = 3
+<     dfm['SolutionVolume'] = 3
+---
+>    # dft['SolutionVolume'] = 3
+>    # dfm['SolutionVolume'] = 3
+554c556
+<     dft['Cef'] = ComputeCef(dft)
+---
+>     dft['Cef'] = ComputeCef(dft, dfm)
+561c563,564
+<     if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = 28
+---
+>     # if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = 28
+>     if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = np.nanmean(dfm.PF)
+570,572c573,576
+< 
+<     dft['I'] = dft['O3'] / (4.3087 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+< 
+---
+>     # print('IBG', dft['ibg'])
+>     # print('Cef',dft['Pair'],dft['Cef'])
+>     # print('PF',dfm.at[dfm.first_valid_index(), 'PF'])
+>     dft['I'] = dft['O3'] / (4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
+577c581
+< def ComputeCef(dft):
+---
+> def ComputeCef(dft,dfm):
+582a587,599
+>     sensortype = dft.at[dft.first_valid_index(), 'SensorType']
+>     #
+>     spctag = (search('SPC', sensortype)) or (search('6A', sensortype)) or (search('5A', sensortype)) or (
+>         search('4A', sensortype))
+>     if spctag: dft['SensorType'] = 'SPC'
+>     enscitag = (search('DMT-Z', sensortype)) or (search('Z', sensortype)) or (search('ECC6Z', sensortype)) or (
+>         search('_Z', sensortype))
+>     if enscitag: dft['SensorType'] = 'DMT-Z'
+> 
+>     try:
+>         dft['SolutionVolume'] = float(dfm['SolutionVolume'].astype('float'))
+>     except KeyError:
+>         dft['SolutionVolume'] = 3.0
+615a633
+>                 x = dft.at[k, 'Pair']
+623c641
+<                 dft.at[k, 'Cef'] = y1 + (dft.at[k, 'Pair'] - x1) * (y2 - y1) / (x2 - x1)
+---
+>                 dft.at[k, 'Cef'] = y1 + (x - x1) * (y2 - y1) / (x2 - x1)

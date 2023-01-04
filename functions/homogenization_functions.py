@@ -165,8 +165,34 @@ def missing_station_values(dff, variable, booldate, datestr):
     :return:
     """
 
+
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
+    series[variable] = series[variable].astype('float')
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    print('date series', series['Date'])
+    series = series.set_index('Date')
+    upsampled = series.resample('1M').mean()
+
+    var_list = [0] * 12
+
+    for i in range(1, 13):
+        j = i - 1
+        var_list[j] = upsampled[upsampled.index.month == i].median()[0]
+
+    return var_list
+
+def missing_station_values_afterdate(dff, variable, booldate, datestr):
+    """
+    function to calculate mean of the missing values to used
+    :param dff:
+    :param variable:
+    :param booldate:
+    :param date:
+    :return:
+    """
+    series = dff[['Date', variable]].copy()
+    if booldate: series = dff.loc[dff.Date > datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
     series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
     series = series.set_index('Date')
@@ -194,14 +220,32 @@ def assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, da
     if bool_u:  dm.loc[dm.Date < date_u, 'ULab'] = \
         dm.loc[dm.Date < date_u, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
 
-    print(date_u)
-    print(ul)
+    # print(date_u)
+    # print(ul)
     if bool_pf:  dm.loc[dm.Date < date_pf, 'PF'] = \
         dm.loc[dm.Date < date_pf, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
 
     # for some wrong values like in the recent files of sodankyla
     dm.loc[dm.TLab > (np.mean(tl) + 2 * np.std(tl)), 'TLab'] = \
         dm.loc[dm.TLab > (np.mean(tl) + 2 * np.std(tl)), 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+
+    return dm
+
+def assign_missing_ptupf_byvalue(dm, bool_p, bool_t, bool_u, bool_pf, m_p, m_t, m_u, m_pf, pl, tl, ul, pfl):
+    dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
+    dm['Date2'] = dm['Date2'].dt.date
+    dm['DateTime2'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
+    # dm['PLab'] = dm['Pground']
+
+    if bool_p:  dm.loc[dm.PLab == m_p, 'PLab'] = \
+        dm.loc[dm.PLab == m_p, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
+    if bool_t:  dm.loc[dm.TLab == m_t, 'TLab'] = \
+        dm.loc[dm.TLab == m_t, 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+    if bool_u:  dm.loc[dm.ULab == m_u, 'ULab'] = \
+        dm.loc[dm.ULab == m_u, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
+
+    if bool_pf:  dm.loc[dm.PF == m_pf, 'PF'] = \
+        dm.loc[dm.PF == m_pf, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
 
     return dm
 
