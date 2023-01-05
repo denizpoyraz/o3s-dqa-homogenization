@@ -1,7 +1,7 @@
 import csv
 import numpy as np
 from io import StringIO
-from woudc_extcsv import load, WOUDCExtCSVReaderError
+from woudc_extcsv import load
 import pandas as pd
 import glob
 
@@ -35,22 +35,22 @@ for filename in allFiles:
     # try except is applied for the cases when there is formatting error: WOUDCExtCSVReaderError
     extcsv_to = load(filename)
 
-    try:
-        extcsv_to = load(filename)
-        # access all tables
-        tables = extcsv_to.sections.keys()
-        ## first copy the profile data and delete this from the keys to save the metadata. For Praha data it is 'PORFILE',
-        # watch out that this naming may change from station to station
-        profile_keys = extcsv_to.sections['PROFILE'].keys()
-        Profile = extcsv_to.sections['PROFILE']['_raw']
-        del extcsv_to.sections['PROFILE']
-        # profile_uncertainity = extcsv_to.sections['PROFILE_UNCERTAINTY']['_raw']
-        # del extcsv_to.sections['PROFILE_UNCERTAINTY']
+    # try:
+    extcsv_to = load(filename)
+    # access all tables
+    tables = extcsv_to.sections.keys()
+    ## first copy the profile data and delete this from the keys to save the metadata. For Praha data it is 'PORFILE',
+    # watch out that this naming may change from station to station
+    profile_keys = extcsv_to.sections['PROFILE'].keys()
+    Profile = extcsv_to.sections['PROFILE']['_raw']
+    del extcsv_to.sections['PROFILE']
+    # profile_uncertainity = extcsv_to.sections['PROFILE_UNCERTAINTY']['_raw']
+    # del extcsv_to.sections['PROFILE_UNCERTAINTY']
 
-    except WOUDCExtCSVReaderError:
-        print('error')
-        efile.write(filename  + '\n')
-        tables = [0]
+    # except WOUDCExtCSVReaderError:
+    #     print('error')
+    #     efile.write(filename  + '\n')
+    #     tables = [0]
 
 
     msize = len(tables)

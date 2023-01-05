@@ -118,13 +118,15 @@ def organize_df_woudc(df, sname):
 
     if sname == 'madrid':
         df['Time'] = df['Duration']
-        df['Height'] = df['GPHeight']
+        # df['Height'] = df['GPHeight']
         df['T'] = df['Temperature']
         df['U'] = df['RelativeHumidity']
+        df['WindDir'] = df['WindDirection']
+        df['WindSp'] = df['WindSpeed']
 
     if sname == 'lauder':
         df = df.drop(
-            ['EvapCath', 'WindSp', 'WindDir', 'Lat', 'Lon', 'RH1', 'RH2', 'GPSTraw', 'GPSTcor', 'GPSRH',
+            ['EvapCath', 'RH1', 'RH2', 'GPSTraw', 'GPSTcor', 'GPSRH',
              'TboxK', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3',
              'alpha_o3', 'stoich',
              'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'unc_Tpump_cor',
@@ -140,6 +142,7 @@ def organize_df_woudc(df, sname):
         df['U'] = df['RH']
         df['O3'] = df['O3c']
         df['T'] = round((df['Temp'] - K), 3)
+        # df['']
 
         df = df.drop(['Press', 'Alt', 'Temp', 'RH', 'O3c'], axis=1)
 

@@ -75,7 +75,7 @@ def station_inone(st_name):
     if st_name == 'uccle':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
         dfmetaf = pd.read_csv(pathf + 'Raw_upd/All_metadata.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "Raw_upd/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt')
         dfmetaf = organize_uccle(dfmetaf)
 

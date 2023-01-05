@@ -1,0 +1,6 @@
+example1.log
+example2.log
+test_writer.py
+writer_test.py
+errorfile.txt
+*.csv

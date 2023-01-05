@@ -60,11 +60,11 @@ file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_no
 ##           end of the parts  TO BE CHANGED By HAND           ##
 ##                                                             ##
 
-filefolder = '/DQA_nors80/'
+filefolder = 'DQA_nors80/'
 file_ext = 'test_nors80'
 
 if main_rscorrection:
-    filefolder = '/DQA_rs80/'
+    filefolder = 'DQA_rs80/'
     file_ext = 'rs80'
 
 path, allFiles, roc_table_file, dfmeta = station_inone(station_name)
@@ -314,7 +314,7 @@ for (filename) in (allFiles):
     # print(list(df))
 
     # df to be converted to WOUDC format together with the metadata
-    df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')
+    df.to_hdf(f"{path}{filefolder}{datestr}_o3sdqa_{file_ext}.hdf", key='df')
     f_write_to_woudc_csv(df, dfm, station_name, path)
 
 
