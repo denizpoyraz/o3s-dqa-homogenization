@@ -6,9 +6,7 @@ from datetime import datetime
 from re import search
 from scipy.interpolate import interp1d
 
-from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
-    background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
-    return_phipcor, o3_integrate, roc_values, missing_station_values, assign_missing_ptupf, make_1m_upsamle, assign_missing_ptupf_byvalue
+from functions.homogenization_functions import  missing_station_values, assign_missing_ptupf, make_1m_upsamle, assign_missing_ptupf_byvalue
 import glob
 
 K = 273.15
@@ -68,7 +66,7 @@ def station_inone(st_name):
     if st_name == 'lauder':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
         dfmetaf = pd.read_csv(pathf + 'metadata/Lauder_MetadaAll.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/2019*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
         dfmetaf = organize_lauder(dfmetaf)
 
@@ -93,7 +91,7 @@ def station_inone(st_name):
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
         dfmetaf = organize_sodankyla(dfmetaf)
 
-    if st_name == 'ny-alesund':
+    if st_name == 'ny-aalesund':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
         dfmetaf = pd.read_csv(pathf + 'NY_metadata_corrected.csv')
         allFilesf = sorted(glob.glob(pathf + "/Current/final*raw*hdf"))
@@ -103,7 +101,7 @@ def station_inone(st_name):
     if st_name == 'valentia':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
         dfmetaf = pd.read_csv(pathf + 'joined_Metadata.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/read_out/*_out.hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/read_out/2019*_out.hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_valentia_roc.txt')
         dfmetaf = organize_valentia(dfmetaf)
 
@@ -147,7 +145,7 @@ def station_inbool(st_name):
         organize_dff = True
         descent_dataf = False
 
-    if st_name == 'ny-alesund':
+    if st_name == 'ny-aalesund':
         humidity_correctionf = True
         df_missing_tpumpf = False
         calculate_currentf = False
@@ -204,7 +202,7 @@ def station_invar(st_name):
         IBGsplitf = '2005'  # the date if there is a lower/higher bkg value region
         sonde_tbcf = 'ENSCI05'
 
-    if st_name == 'ny-alesund':
+    if st_name == 'ny-aalesund':
         date_start_homf = '19920101'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
         rs80_beginf = '19920101'  # the date where there was a change from nors80
         rs80_endf = '20020529'
@@ -267,7 +265,7 @@ def df_drop(dft, st_name):
                         'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
                         'dTpump_cor'], axis=1)
 
-    if st_name == 'ny-alesund':
+    if st_name == 'ny-aalesund':
         dft = dft.drop(['TboxK', 'TboxC', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
                         'iB2', 'Tpump', 'Phip', 'Eta',
                         'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
@@ -322,9 +320,10 @@ def organize_madrid(dmm):
             dmm.at[i, 'BrewO3'] = 0
 
     dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    print('dmm.at[0,Date]', dmm.at[0,'Date'])
     # dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
 
-    dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+    # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 
     #specific for ulab, since there is not enough data the overall mean is used, not monthly
     ulab = [0] * 12
@@ -398,10 +397,15 @@ def organize_valentia(dmm):
     dmm['string_bkg_used'] = 'ib2'
 
     dmm['PLab'] = dmm['Pground']
-    dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
-    # dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+    # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    print('dmm Date', dmm['Date'])
+    # dmm['Date2'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
 
-    dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+    # dmm['Date2'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+
+    # dmm['Date2'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y-%m-%d'))
+    # dmm['Date2'] = dmm['Date'].dt.strftime('%Y-%m-%d')
+    # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 
 
     PFmean = np.nanmean(dmm.PF)
@@ -413,6 +417,12 @@ def organize_valentia(dmm):
     # pfl = dmm[(dmm.PF < 40) & (dmm.PF > 25) ]
     ufl = dmm[(dmm.ULab < 100) & (dmm.ULab > 5) ]
 
+    ufl['Date1'] = ufl['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    ufl['Date'] = ufl['Date1'].dt.strftime('%Y%m%d')
+    dpl['Date1'] = dpl['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    dpl['Date'] = dpl['Date1'].dt.strftime('%Y%m%d')
+    dtl['Date1'] = dtl['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    dtl['Date'] = dtl['Date1'].dt.strftime('%Y%m%d')
 
     ulab = missing_station_values(ufl, 'ULab', False, 'nan')
     plab = missing_station_values(dpl, 'PLab', False, 'nan')
@@ -420,11 +430,12 @@ def organize_valentia(dmm):
 
     dmm = assign_missing_ptupf_byvalue(dmm, True, True, True, False,9999, 9999, 9999, 9999, plab, tlab, ulab, ulab)
 
-
     dmm['SolutionConcentration'] = 10
     dmm['SensorType'] = 'SPC'
     dmm['SolutionVolume'] = 3.0
 
+    dmm['Date1'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+    dmm['Date'] = dmm['Date1'].dt.strftime('%Y-%m-%d')
 
     dmm.loc[dmm.Date < '19970131','string_pump_location'] = 'case3'
     dmm.loc[dmm.Date > '19970131','string_pump_location'] = 'case5'
@@ -433,6 +444,9 @@ def organize_valentia(dmm):
     dmm.loc[(dmm.EccModel == '6a') | (dmm.EccModel == '6A'), 'string_pump_location'] = 'case5'
 
     dmm['SensorType'] = 'SPC'
+    # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    # dmm['Date'] = dmm['Date2']
+
 
     return dmm
 
@@ -788,6 +802,8 @@ def df_station(dl, datevalue, dml, station):
     if station == 'scoresbysund':
         dl = dl[dl['O3'] < 99]
         # dl = dl[dl['Tbox'] < 999]
+        dl['WindSp'] = dl['WindSpeed']
+        dl['WindDir'] = dl['WindDirection']
 
     if station == 'valentia':
         dl['Pair'] = dl['Pressure']
@@ -797,7 +813,8 @@ def df_station(dl, datevalue, dml, station):
         dl['Height'] = dl['GPHeight']
         dl['O3'] = dl['PO3']
 
-    if station == 'ny-alesund':
+
+    if station == 'ny-aalesund':
 
         if datevalue > '20170309':
             dml['string_pump_location'] = 'case5'

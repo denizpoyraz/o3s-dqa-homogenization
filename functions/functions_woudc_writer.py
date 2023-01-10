@@ -124,7 +124,7 @@ def organize_df_woudc(df, sname):
 
     if sname == 'lauder':
         df = df.drop(
-            ['EvapCath', 'WindSp', 'WindDir', 'Lat', 'Lon', 'RH1', 'RH2', 'GPSTraw', 'GPSTcor', 'GPSRH',
+            ['EvapCath', 'RH1', 'RH2', 'GPSTraw', 'GPSTcor', 'GPSRH',
              'TboxK', 'iB2', 'Tpump', 'Phip', 'Eta', 'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3',
              'alpha_o3', 'stoich',
              'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'unc_Tpump_cor',
@@ -154,6 +154,15 @@ def organize_df_woudc(df, sname):
         df['T'] = df['Temperature']
         df['Pair'] = df['Pressure']
         df['U'] = df['RelativeHumidity']
+        df['WindSp'] = df['WindSpeed']
+        df['WindDir'] = df['WindDirection']
+        df['U'] = df['RelativeHumidity']
+        df = df.drop(['LevelCode'], axis=1)
+
+
+    if sname == 'sodankyla':
+        df['WindSp'] = df['WindSpeed']
+        df['WindDir'] = df['WindDirection']
 
     return df
 
@@ -259,8 +268,11 @@ def organize_metadata_woudc(dfm, stationname):
 
         # data generation related
         dfm = station_info(dfm, 'Jose Luis Hernandez', 'AEMET', 'STN', '308', 'Madrid', 'ESP', 'MAD')
-        # print(dfm.loc[0, 'DateTime'])
+        dfm['Date'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
+        dfm['DateTime'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
+
         dfmw = dfm_woudc[dfm_woudc['TIMESTAMP_Date'] == dfm.loc[0, 'DateTime']]
+
         dfmw = dfmw.reset_index()
         # print('dfmw',dfmw.loc[0, 'TIMESTAMP_Date'] )
         # instrument
@@ -322,7 +334,7 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['CorrectionCode'] = 6
         dfm['BackgroundCorrection'] = "constant_ib2"
         try:
-            dfm['O3ratio_hom'] = round(dfm['BrewO3'] / dfm['O3SondeTotal_hom'], 3)
+            dfm['O3ratio_hom'] = round(dfm.at[0, 'BrewO3'] / dfm.at[0, 'O3SondeTotal_hom'], 3)
         except KeyError:
             dfm['O3ratio_hom'] = 9999
 
@@ -347,6 +359,9 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['longitude'] = '169.684'
         dfm['height'] = '370'
         # TIMESTAMP
+        # dfm['DateTime'] = dfm.at[0,'DateTime'].datetime.strftime()
+        dfm['DateTime'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
+
         try:
             dfm['UTCOffset'] = calculate_utcoffset(dfm)
         except KeyError:
@@ -431,6 +446,7 @@ def organize_metadata_woudc(dfm, stationname):
                 dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 10.0) & \
                 (dfm.at[0, 'SensorType'] == 'SPC'): dfm['SolutionType'] = '1.0%KIFullBuffer'
 
+        dfm['SerialECC'] = dfm['SondeSerial']
         dfm['SolutionVolume'] = 3.0
         dfm['RadiosondeManufacturer'] = 'Vaisala'
         dfm['InterfaceManufacturer'] = 'Vaisala'
@@ -461,7 +477,8 @@ def organize_metadata_woudc(dfm, stationname):
         if dfm.at[dfm.first_valid_index(), 'iB2'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm[
             'BackgroundCorrection'] = "constant_climatologicalmean_ib2"
 
-    if stationname == 'scoresby':
+    if stationname == 'scoresbysund':
+
         dfm = station_info(dfm, 'Brnlund M.', 'DMI', 'STN', '406', 'Scoresbysund', 'GRL', 'SCB')
 
         if (len(str(dfm.loc[0, 'LaunchTime'])) == 2) | (len(str(dfm.loc[0, 'LaunchTime'])) == 1):
@@ -477,10 +494,14 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['LaunchTime'] = dfm['LaunchTime_fx']
 
         if search('zzzzz', str(dfm.at[0, 'SerialECC'])):
-            dfm.at[0, 'SerialECC'] = 'NaN'
+            dfm.at[0, 'SerialECC'] = 'xxxxxx'
         # dfm['SensorType'] = dfm['Pump_loc']
         dfm['latitude'] = '70.48'
         dfm['longitude'] = '-21.95'
+        dfm['agency'] = 'DMI'
+
+        dfm['DateTime'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
+
 
         try:
             dfm['UTCOffset'] = calculate_utcoffset(dfm)
@@ -542,11 +563,15 @@ def organize_metadata_woudc(dfm, stationname):
         except KeyError:
             dfm['UTCOffset'] = "00:00:00"
 
-        if dfm.at[0, 'Date'] < 20051024:
+        dfm['DateTime'] = dfm['Date2'].apply(lambda x: x.strftime('%Y-%m-%d'))
+
+
+
+        if dfm.at[0, 'Date'] < '20051024':
             dfm['RadiosondeModel'] = 'RS80'
-        if (dfm.at[0, 'Date'] >= 20051024) & (dfm.at[0, 'Date'] <= 20200826):
+        if (dfm.at[0, 'Date'] >= '20051024') & (dfm.at[0, 'Date'] <= '20200826'):
             dfm['RadiosondeModel'] = 'RS92'
-        if (dfm.at[0, 'Date'] > 20200826):
+        if (dfm.at[0, 'Date'] > '20200826'):
             dfm['RadiosondeModel'] = 'RS41'
         dfm['O3Ref_Name'] = 'Brewer'
 
@@ -558,9 +583,9 @@ def organize_metadata_woudc(dfm, stationname):
         if dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] == 10.0: dfm['SolutionType'] = '1.0%KIFullBuffer'
         if (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 5.0) & (
                 dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 10.0) & \
-                (dfm.at[0, 'Date'] >= 20060201) & (dfm.at[0, 'SensorType'] == 'DMT-Z'): dfm[
+                (dfm.at[0, 'Date'] >= '20060201') & (dfm.at[0, 'SensorType'] == 'DMT-Z'): dfm[
             'SolutionType'] = '0.5%KIHalfBuffer'
-        if (dfm.at[0, 'Date'] < 20060201) & (dfm.at[0, 'SensorType'] == 'DMT-Z'): dfm[
+        if (dfm.at[0, 'Date'] < '20060201') & (dfm.at[0, 'SensorType'] == 'DMT-Z'): dfm[
             'SolutionType'] = '1.0%KIFullBuffer'
         if (dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 5.0) & (
                 dfm.at[dfm.first_valid_index(), 'SolutionConcentration'] != 10.0) & \
@@ -569,7 +594,7 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['SolutionVolume'] = 3.0
         dfm['RadiosondeManufacturer'] = 'Vaisala'
         dfm['InterfaceManufacturer'] = 'Vaisala'
-        if (dfm.at[0, 'Date'] >= 20010720): dfm['TypeOzoneFreeAir'] = 'Purified air'
+        if (dfm.at[0, 'Date'] >= '20010720'): dfm['TypeOzoneFreeAir'] = 'Purified air'
 
         try:
             dfm['O3ratio_hom'] = round(dfm['TotalO3_Col2A'] / dfm['O3SondeTotal_hom'], 3)
@@ -595,7 +620,12 @@ def organize_metadata_woudc(dfm, stationname):
             'BackgroundCorrection'] = "constant_climatologicalmean_ib2"
 
     if stationname == 'valentia':
-        date = dfm.at[0, 'Date']
+
+        dfm['Datet1'] = dfm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+        dfm['Date1'] =  dfm['Datet1'].dt.strftime('%Y%m%d')
+        date = dfm.at[0, 'Date1']
+        dfm['Date'] = dfm['Datet1'].dt.strftime('%Y%m%d')
+        # print('hey you', dfm.at[0, 'Date'])
         pf = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/read_out/'
         wfile = pf + str(date) + '_metadata.csv'
         dfmw = pd.read_csv(wfile)
@@ -613,7 +643,6 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['UTCOffset'] = dfmw.at[0, 'TIMESTAMP_UTCOffset']
         dfm['DateTime'] = dfmw.at[0, 'TIMESTAMP_Date']
         dfm['LaunchTime'] = dfmw.at[0, 'TIMESTAMP_Time']
-        # dfm['DateTime'] = dfmw.at[0, 'TIMESTAMP_Date']
         if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = \
             dfm.at[
                 dfm.first_valid_index(), 'iB2']
@@ -794,11 +823,24 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
         profile[k] = ",".join([str(i) for i in profile[k] if str(i)])
         extcsv.add_data('PROFILE', profile[k], field=data_names)
 
+    if (dfm.at[0, 'SerialECC'][0:2] == '4a') | (dfm.at[0, 'SerialECC'][0:2] == '4A'):
+        dfm.at[0, 'SerialECC'] =  '4A' + dfm.at[0, 'SerialECC'][2:]
+        dfm.at[0, 'SensorType'] = 'SPC'
+    if (dfm.at[0, 'SerialECC'][0:2] == '5a') | (dfm.at[0, 'SerialECC'][0:2] == '5A'):
+        dfm.at[0, 'SerialECC'] =  '5A' + dfm.at[0, 'SerialECC'][2:]
+        dfm.at[0, 'SensorType'] = 'SPC'
+    if (dfm.at[0, 'SerialECC'][0:2] == '6a') | (dfm.at[0, 'SerialECC'][0:2] == '6A'):
+        dfm.at[0, 'SerialECC'] = '6A' + dfm.at[0, 'SerialECC'][2:]
+        dfm.at[0, 'SensorType'] = 'SPC'
+    if (dfm.at[0, 'SerialECC'][0:1] == 'z') | (dfm.at[0, 'SerialECC'][0:1] == 'Z'):
+        dfm.at[0, 'SerialECC'] = 'Z' + dfm.at[0, 'SerialECC'][1:]
+        dfm.at[0, 'SensorType'] = 'ENSCI'
+
     fileout = str(dfm.at[0, 'Date']) + ".ECC." + str(dfm.at[0, 'SensorType']) + "." + str(
         dfm.at[0, 'SerialECC']) + "." + str(dfm.at[0, 'agency']) + ".csv"
 
     out_name = path + '/WOUDC_nors80/' + fileout
-    # print(out_name)
+    print('out_name', out_name)
 
     # this is not working anymore, gives error:
     # woudc_extcsv.dump(extcsv, out_name)

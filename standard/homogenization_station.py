@@ -1,11 +1,13 @@
 # import pickle
 # pickle.HIGHEST_PROTOCOL = 5
 import os
+import pickle
+pickle.HIGHEST_PROTOCOL = 5
 import pandas as pd
 import numpy as np
 from re import search
 from datetime import datetime
-pd.set_option('mode.chained_assignment', None)
+# pd.set_option('mode.chained_assignment', None)
 #! /usr/bin/env python3
 
 
@@ -49,7 +51,7 @@ roc_plevel = 10 # pressure value to obtain roc
 ##           TO BE CHANGED By HAND         ##
 
 # station_name = 'ny-alesund'
-station_name = 'uccle'
+station_name = 'ny-aalesund'
 
 main_rscorrection = False  #if you want to apply rs80 correction
 test_ny = False
@@ -99,13 +101,19 @@ for (filename) in (allFiles):
        # if datestr < '20190101': continue
 
     print(filename)
+    # print('date str test', filename.split(".hdf")[0][-8:])
 
     df = pd.read_hdf(filename)
-    datestr = str(df.at[df.first_valid_index(),'Date'])
+    try:
+        datestr = str(df.at[df.first_valid_index(),'Date'])
+    except KeyError:
+        datestr = str(filename.split(".hdf")[0][-8:])
+
+    print(datestr, dfmeta.at[10,'Date'])
     dfm = dfmeta[dfmeta.Date == datestr]
     dfm = dfm.reset_index()
     if len(dfm) == 0:
-        print('Check dfm')
+        print('Empty dfm')
         continue
 
     if len(dfm) == 1:
@@ -131,6 +139,8 @@ for (filename) in (allFiles):
             df = o3tocurrent(df, dfm) #byault uses ib2, check if another ib is used!
         except (ValueError, KeyError):
             print('BAD File, check FILE')
+
+    print(list(df))
 
     # input variables for hom.
     df['Tpump'] = df['TboxK']
@@ -309,9 +319,10 @@ for (filename) in (allFiles):
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
 
+
+
     df = df_drop(df, station_name)
 
-    # print(list(df))
 
     # df to be converted to WOUDC format together with the metadata
     df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')

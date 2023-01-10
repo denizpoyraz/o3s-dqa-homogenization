@@ -148,7 +148,7 @@ def make_1m_upsamle(dff, variable, booldate, datestr):
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
-    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
     series = series.set_index('Date')
     upsampled = series.resample('1M').mean()
 
@@ -164,13 +164,13 @@ def missing_station_values(dff, variable, booldate, datestr):
     :param date:
     :return:
     """
-
-
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
+    # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
     series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
-    print('date series', series['Date'])
+
+    print('date series', series['Date'][0:5])
     series = series.set_index('Date')
     upsampled = series.resample('1M').mean()
 
