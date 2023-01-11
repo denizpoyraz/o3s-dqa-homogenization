@@ -14,22 +14,17 @@ k = 273.15
 
 def make_madrid_maindl(path):
 
-    # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-
     allFiles = sorted(glob.glob(path + "CSV/out/*.hdf"))
-
     #
     listall = []
 
     for (filename) in (allFiles):
         df = pd.read_hdf(filename)
         print(filename)
-
         listall.append(df)
 
     name_out = 'Madrid_AllData_woudc'
     dfall = pd.concat(listall, ignore_index=True)
-
     dfall.to_hdf(path + "DQA_nors80/" + name_out + ".hdf", key = 'df')
 
 
@@ -50,7 +45,6 @@ def madrid_missing_tpump(dfmainf):
     for i in range(1, 13):
         dfmean[i - 1] = dft[dft.DateTime.dt.month == i]
         dfmean[i - 1] = dfmean[i - 1].groupby(['Pressure']).median()
-
 
     return dfmean
 
@@ -218,7 +212,6 @@ def station_invar(st_name):
         IBGsplitf = ''  # the date if there is a lower/higher bkg value region
         sonde_tbcf = 'SPC10'
 
-
     return date_start_homf, IBGsplitf, sonde_tbcf, rs80_beginf, rs80_endf
 
 
@@ -283,29 +276,18 @@ def df_drop(dft, st_name):
 def organize_uccle(dum):
 
     dum = dum[dum.Date != '9999.0']
-
     dum['string_bkg_used'] = 'ib0'
-
     dum.loc[dum.Datenf.isnull() == 1,'DateTime'] = dum.loc[dum.Datenf.isnull() == 1,'Date']
-
-
-
     dum['Date'] = pd.to_datetime(dum['DateTime'], format='%Y-%m-%d %H:%M:%S')
     dum['Date'] = dum['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
-
     dum['unc_cPH'] = 0
     dum['unc_cPL'] = 0
-
     dum.loc[dum.iB0 == -1, 'iB0'] = 0
-
     dum.loc[dum.Date <= '19981201', 'string_pump_location'] = 'case3'
     dum.loc[dum.Date > '19981201', 'string_pump_location'] = 'case5'
-
     dum['TLab'] = 20
-
     dum['SensorType'] = 'DMT-Z'
     dum['SolutionConcentration'] = 5.0
-
     dum['iB2'] = dum['iB0']
 
     return dum
@@ -322,7 +304,6 @@ def organize_madrid(dmm):
     dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
     print('dmm.at[0,Date]', dmm.at[0,'Date'])
     # dmm['Date'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
-
     # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 
     #specific for ulab, since there is not enough data the overall mean is used, not monthly
@@ -344,7 +325,6 @@ def organize_madrid(dmm):
     tlab = missing_station_values(dmm, 'TLab', False, 'nan')
     pflab = missing_station_values(dmm, 'PF', False, 'nan')  # PF values are
 
-
     dmm = assign_missing_ptupf(dmm, True, True, False, False, date_missing, date_missing, date_missing_u,
                                   date_missing, plab, tlab, ulab, pflab)
 
@@ -363,14 +343,10 @@ def organize_madrid(dmm):
     dmm['value_is_NaN'] = 0
     dmm.loc[dmm['PF'].isnull(), 'value_is_NaN'] = 1
     dmm.loc[dmm.value_is_NaN == 1, 'PF'] = PFmean
-
     dmm['string_bkg_used'] = 'ib2'
-
     dmm['string_pump_location'] = '0'
-
     dmm.loc[dmm.Date <= '19981202', 'string_pump_location'] = 'case3'
     dmm.loc[dmm.Date > '19981202', 'string_pump_location'] = 'case5'
-
     dmm['iB2'] = dmm['iB2'].astype('float')
 
     #since there are missing iB2 values, assign the corresponding mean to iB2
@@ -384,9 +360,7 @@ def organize_madrid(dmm):
 
     dmm.loc[(dmm['iB2'].isnull()) & (dmm.Date < '20040101'), 'iB2'] = mean_before
     dmm.loc[(dmm['iB2'].isnull()) & (dmm.Date > '20040101'), 'iB2'] = mean_after
-
     dmm['TotalO3_Col2A'] = dmm['BrewO3']
-
 
     return dmm
 
@@ -395,18 +369,9 @@ def organize_madrid(dmm):
 def organize_valentia(dmm):
 
     dmm['string_bkg_used'] = 'ib2'
-
     dmm['PLab'] = dmm['Pground']
     # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
-    print('dmm Date', dmm['Date'])
-    # dmm['Date2'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
-
-    # dmm['Date2'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
-
-    # dmm['Date2'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y-%m-%d'))
-    # dmm['Date2'] = dmm['Date'].dt.strftime('%Y-%m-%d')
-    # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
-
+    # print('dmm Date', dmm['Date'])
 
     PFmean = np.nanmean(dmm.PF)
     # print('PFmean', PFmean)
@@ -414,7 +379,6 @@ def organize_valentia(dmm):
 
     dpl = dmm[(dmm.PLab < 9999) & (dmm.PLab > 900) ]
     dtl = dmm[(dmm.TLab < 99) & (dmm.TLab > 10)]
-    # pfl = dmm[(dmm.PF < 40) & (dmm.PF > 25) ]
     ufl = dmm[(dmm.ULab < 100) & (dmm.ULab > 5) ]
 
     ufl['Date1'] = ufl['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
@@ -447,7 +411,6 @@ def organize_valentia(dmm):
     # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
     # dmm['Date'] = dmm['Date2']
 
-
     return dmm
 
 
@@ -468,9 +431,7 @@ def rename_variables(dft, pvar, nvar):
 def df_missing_variable(dft, dfmean):
 
     dft['unc_Tpump'] = 0.5
-
     dft['DateTime'] = pd.to_datetime(dft['Date'], format='%Y-%m-%d')
-
 
     dft.loc[dft['SampleTemperature'].isnull(), 'value_is_NaN'] = 1
     dft.loc[dft['SampleTemperature'].notnull(), 'value_is_NaN'] = 0
@@ -478,23 +439,19 @@ def df_missing_variable(dft, dfmean):
     # print(df[df.value_is_NaN == 'Yes'][['Pressure','Date', 'I', 'SampleTemperature']])
     pair_missing = dft[dft.value_is_NaN == 1].Pressure.tolist()
 
-    # print('missing temp len' , len(pair_missing))
-
     if len(pair_missing) >= 1000:
         dft['unc_Tpump'] = 1 #a larger unc. due to interpolation
         month_index = dft['DateTime'].dt.month.tolist()[0]
-        # print('no sample temperature', month_index, len(pair_missing), len(df))
+
         x = dfmean[month_index - 1]['SampleTemperature'].tolist()
         y = dfmean[month_index - 1].index.tolist()
         fb = interp1d(y, x)
         df_pair = dft[dft.value_is_NaN == 1].Pressure.tolist()
-        # print('df_pair', df_pair)
-        # print('x', x)
-        # print('y', y)
+
         if min(df_pair) < min(y):
             df_pair = dft[(dft.value_is_NaN == 1) & (dft.Pressure >= min(y))].Pressure.tolist()
             df_samptemp = fb(df_pair)
-            print('df_samptemp', len(df_samptemp))
+            # print('df_samptemp', len(df_samptemp))
             dft.loc[(dft.value_is_NaN == 1) & (dft.Pressure >= min(y)), 'SampleTemperature'] = df_samptemp
             dft.loc[(dft.value_is_NaN == 1) & (dft.Pressure < min(y)), 'SampleTemperature'] = np.NaN
 
@@ -513,9 +470,6 @@ def df_missing_variable(dft, dfmean):
             dft.loc[dft.value_is_NaN == 1, 'SampleTemperature_gen'] = df_samptemp
         #
     if (len(pair_missing) < 1000) & (len(pair_missing) > 0):
-        # print('no sample temperature', len(pair_missing), len(dft))
-
-
         x = dft[dft.value_is_NaN == 0]['SampleTemperature'].tolist()
         y = dft[dft.value_is_NaN == 0]['Pressure'].tolist()
         fb = interp1d(y, x)
@@ -526,7 +480,6 @@ def df_missing_variable(dft, dfmean):
             df_samptemp = fb(df_pair)
             dft.loc[(dft.value_is_NaN == 1) & (dft.Pressure >= min(y)), 'SampleTemperature'] = df_samptemp
             dft.loc[(dft.value_is_NaN == 1) & (dft.Pressure < min(y)), 'SampleTemperature'] = np.NaN
-
 
         elif max(df_pair) > max(y):
             df_pair = dft[(dft.value_is_NaN == 1) & (dft.Pressure < max(y))].Pressure.tolist()
@@ -560,10 +513,8 @@ def organize_sodankyla(dsm):
     # roc_table_file = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
 
     dsm['Date'] = dsm['Date'].astype(str)
-
     dsm = dsm[dsm.iB2 < 9]
     dsm = dsm[dsm.iB0 < 9]
-
     dsm['PLab'] = dsm['Pground']
 
     #part related with missing ptupf
@@ -582,12 +533,9 @@ def organize_sodankyla(dsm):
     dsm = assign_missing_ptupf(dsm, True, True, True, True, date_missing_p, date_missing_t, date_missing_u,
                                   date_missing_pf, plab, tlab, ulab, pflab)
 
-
     dsm['string_pump_location'] = '0'
     dsm.loc[dsm.Date <= '20001101', 'string_pump_location'] = 'case3'
     dsm.loc[dsm.Date > '20001101', 'string_pump_location'] = 'case5'
-
-
     dsm.loc[dsm['SolutionVolume'].isnull(), 'value_is_NaN'] = 1
     # dsm.loc[dsm['SolutionVolume'].notnull(), 'value_is_NaN'] = 0
     dsm.loc[dsm.value_is_NaN == 1, 'SolutionVolume'] = '3'
@@ -601,7 +549,6 @@ def organize_sodankyla(dsm):
     dsm.loc[dsm.BkgUsed == 'Ibg1', 'string_bkg_used'] = 'ib0'
     dsm.loc[dsm.BkgUsed == 'Constant', 'string_bkg_used'] = 'ib2'
 
-
     dsm['TotalO3_Col2A'] = dsm['TotalO3_Col2A'].astype('float')
 
     return dsm
@@ -611,22 +558,16 @@ def organize_scoresby(dms):
     dms['Date2'] = pd.to_datetime(dms['Date'], format='%Y-%m-%d')
     dms['Date2'] = dms['Date2'].dt.date
     dms['DateTime2'] = pd.to_datetime(dms['Date2'], format='%Y-%m-%d')
-
     dms['DateTime'] = pd.to_datetime(dms['Date'], format='%Y%m%d')
     dms['Date'] = dms['DateTime'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 
-
     dms['PLab'] = dms['Pground']
     dms['string_bkg_used'] = 'ib2'
-
-
     dms['string_pump_location'] = 'case5'
     dms.loc[dms['SerialECC'].str.contains("4a", case=False), 'string_pump_location'] = 'case1'
     dms.loc[dms['SerialECC'].str.contains("5a", case=False), 'string_pump_location'] = 'case3'
     dms.loc[dms['SerialECC'].str.contains("6a", case=False), 'string_pump_location'] = 'case5'
     dms.loc[dms['SerialECC'].str.contains("Z", case=False), 'string_pump_location'] = 'case5'
-
-
 
     # part related with missing ptupf
     date_missing_p = '2009-12-31' #(after)
@@ -645,7 +586,6 @@ def organize_scoresby(dms):
     dms.loc[dms.Date < date_missing_u, 'ULab'] = \
         dms.loc[dms.Date < date_missing_u, 'DateTime2'].dt.month.apply(lambda x: ulab[x - 1])
 
-
     #there are also some values where OTU are missing:
     dms.loc[dms.PLab == 1000, 'PLab'] = \
         dms.loc[dms.PLab == 1000, 'DateTime2'].dt.month.apply(lambda x: plab[x - 1])
@@ -653,7 +593,6 @@ def organize_scoresby(dms):
         dms.loc[dms.TLab == 99.9, 'DateTime2'].dt.month.apply(lambda x: tlab[x - 1])
     dms.loc[dms.ULab == 999, 'ULab'] = \
         dms.loc[dms.ULab == 999, 'DateTime2'].dt.month.apply(lambda x: ulab[x - 1])
-
 
     #fix the values whwre soleution concentraiton is 3, should be 10 (I assume, no answer from PI yet)
     dms.loc[dms.SolutionConcentration == 3, 'SolutionConcentration'] = 10
@@ -667,19 +606,10 @@ def organize_nyalesund(dfn):
     dfn['string_bkg_used'] = 'ib2'
     dfn['SolutionConcentration'] = 10
 
-    print('list dfmeta', list(dfn))
-
     return dfn
 
 def organize_lauder(dfl):
 
-    # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
-    # dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')  #
-    # allFiles = sorted(glob.glob(path + "CSV/*hdf"))
-    # print('All Files:', len(allFiles))
-    # roc_table_file = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
-    # roc_plevel = 10  # pressure value to obtain roc
-    
     dfl.loc[dfl.TLab > k, 'TLab'] = dfl.loc[dfl.TLab > k, 'TLab'] - k
     dfl['PF'] = dfl['Phip']
 
@@ -721,10 +651,8 @@ def organize_lauder(dfl):
     dfl.loc[dfl.Pump_loc == '6A','string_pump_location'] = 'case5'
     dfl.loc[dfl.Pump_loc == 'Z','string_pump_location'] = 'case5'
 
-
     dfl.loc[(dfl.Date > '20190101') & (dfl.Pump_loc == 'nan'),'string_pump_location'] = 'case5'
     dfl.loc[(dfl.Date > '20190101') & (dfl.Pump_loc.isnull()),'string_pump_location'] = 'case5'
-
 
     return dfl
 
@@ -741,12 +669,10 @@ def df_station(dl, datevalue, dml, station):
         skip_function = 'True'
         return_string = 'stop'
 
-
     if ((datevalue == '20070525') | (datevalue == '20070629') | (datevalue == '20070702') | (datevalue == '20070706')  | (datevalue == '20070709')
         | (datevalue == '20070711') | (datevalue == '20070716') | (datevalue == '20070718')    ) & (station == 'uccle'):
         skip_function = 'True'
         return_string = 'stop'
-
 
     if skip_function == 'False':
 
@@ -776,7 +702,6 @@ def df_station(dl, datevalue, dml, station):
 
     if station == 'madrid':
         dl = rename_variables(dl,['Pressure','O3PartialPressure','SampleTemperature','GPHeight'], ['Pair','O3','Tpump','Height'])
-
 
     if station == 'uccle':
         #to remove some bad values in the df

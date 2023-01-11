@@ -49,7 +49,6 @@ roc_plevel = 10 # pressure value to obtain roc
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-# station_name = 'ny-alesund'
 station_name = 'madrid'
 
 main_rscorrection = False  #if you want to apply rs80 correction
@@ -62,7 +61,7 @@ file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_no
 ##                                                             ##
 
 filefolder = '/DQA_nors80/'
-file_ext = 'test_nors80'
+file_ext = 'nors80'
 
 if main_rscorrection:
     filefolder = '/DQA_rs80/'
@@ -71,7 +70,6 @@ if main_rscorrection:
 path, allFiles, roc_table_file, dfmeta = station_inone(station_name)
 humidity_correction, df_missing_tpump, calculate_current, organize_df, descent_data = station_inbool(station_name)
 date_start_hom, ibg_split, sonde_tbc, rs80_begin, rs80_end = station_invar(station_name)
-
 
 if df_missing_tpump:
     dfmain = pd.read_hdf(file_dfmain)
@@ -85,17 +83,15 @@ if humidity_correction:
 clms = [i for i in range(1,13)]
 table = pd.read_csv(roc_table_file,  skiprows=1, sep="\s *", names = clms,  header=None)
 
-
 #read over all files to do the homogenization
-
 for (filename) in (allFiles):
     file = open(filename, 'r')
 
     date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     fullname = filename.split('/')[-1].split('.')[0]
-
     # date_tmp = filename.split('/')[-1].split("_")[1][2:8]
     # fullname = filename.split('/')[-1].split("_")[1]
+
     # if datestr < date_start_hom: continue
 
     # print(filename)
@@ -105,10 +101,6 @@ for (filename) in (allFiles):
         datestr = str(df.at[df.first_valid_index(),'Date'])
     except KeyError:
         datestr = str(filename.split(".hdf")[0][-8:])
-
-    # if datestr < '20021128': continue
-    # if datestr != '20021201':continue
-
 
     dfm = dfmeta[dfmeta.Date == datestr]
     dfm = dfm.reset_index()
@@ -144,10 +136,8 @@ for (filename) in (allFiles):
 
     # input variables for hom.
     df['Tpump'] = df['TboxK']
-
     df['Phip'] = 100 / dfm.at[dfm.first_valid_index(), 'PF']
     df['Eta'] = 1
-
     df['dPhip'] = 0.02
     df['unc_cPH'] = dfm.at[dfm.first_valid_index(), 'unc_cPH']
     df['unc_cPL'] = dfm.at[dfm.first_valid_index(), 'unc_cPL']
@@ -160,7 +150,6 @@ for (filename) in (allFiles):
     # # Electronic o3 sonde interface  was replaced with the transfer from RS80 to RS92  in 24 Nov 2005.
     rsmodel = ''
     bool_rscorrection = ''
-
     if datestr < rs80_end and datestr >= rs80_begin:
         bool_rscorrection = True
     # if datestr > rs80_end:
@@ -251,7 +240,6 @@ for (filename) in (allFiles):
     dfa = dfa[(dfa.O3c < 99) & (dfa.O3c > 0) ]
 
     dfm['O3Sonde_burst'] = o3_integrate(dfa, 'O3')
-    dfm['O3Sonde_burst_raw'] = o3_integrate(dfa, 'O3_nc')
     dfm['O3Sonde_burst_hom'] = o3_integrate(dfa, 'O3c')
 
     if dfa['Pair'].min() < 10:
@@ -259,41 +247,31 @@ for (filename) in (allFiles):
 
     if dfa['Pair'].min() < 33:
 
-        # for woudc O3 values
+        # for original O3 values
         dfm['O3Sonde'] = o3_integrate(dfa, 'O3')
         dfm['O3SondeTotal'] = dfm['O3Sonde'] + dfm['ROC']
         # the same for the homogenized O3 values
         dfm['O3Sonde_hom'] = o3_integrate(dfa, 'O3c')
         dfm['O3SondeTotal_hom'] = dfm['O3Sonde_hom'] + dfm['ROC']
-        # the same for raw no corrected o3 values
-        dfm['O3Sonde_raw'] = o3_integrate(dfa, 'O3_nc')
-        dfm['O3SondeTotal_raw'] = dfm['O3Sonde_raw'] + dfm['ROC']
+
         try:
             dfm['O3ratio'] = dfm['TotalO3_Col2A'] / dfm['O3SondeTotal']
             dfm['O3ratio_hom'] = dfm['TotalO3_Col2A'] / dfm['O3SondeTotal_hom']
-            dfm['O3ratio_raw'] = dfm['TotalO3_Col2A'] / dfm['O3SondeTotal_raw']
             if dfm.at[0, 'TotalO3_Col2A'] > 999:
                 dfm['O3ratio'] = 9999
                 dfm['O3ratio_hom'] = 9999
-                dfm['O3ratio_raw'] = 9999
         except KeyError:
             dfm['O3ratio'] = 9999
             dfm['O3ratio_hom'] = 9999
-            dfm['O3ratio_raw'] = 9999
 
     if df['Pair'].min() > 32:
         dfm['O3Sonde'] = 9999
         dfm['O3SondeTotal'] = 9999
         dfm['O3ratio'] = 9999
-        dfm['O3Sonde_10hpa'] = 9999
         # the same for the homogenized O3 values
         dfm['O3Sonde_hom'] = 9999
-        dfm['O3Sonde_10hpa_hom'] = 9999
         dfm['O3SondeTotal_hom'] = 9999
         dfm['O3ratio_hom'] = 9999
-        dfm['O3Sonde_raw'] = 9999
-        dfm['O3SondeTotal_raw'] = 9999
-        dfm['O3ratio_raw'] = 9999
 
 
     md_clist = ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',

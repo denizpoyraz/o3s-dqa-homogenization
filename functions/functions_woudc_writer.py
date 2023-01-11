@@ -35,9 +35,7 @@ def make_summary(df, column_names):
     '''
 
     field_summary = [util_func(df, i) for i in column_names]
-    # print(field_summary)
     field_summary = ",".join(map(str, field_summary))
-    # print(field_summary)
 
     return field_summary
 
@@ -56,10 +54,8 @@ def lt_condition(x):
 def calculate_utcoffset(dfm):
     hour = str(dfm.at[0, 'LaunchTime'])[0:2]
     minute = str(dfm.at[0, 'LaunchTime'])[3:5]
-    # print(dfm.at[0, 'LaunchTime'])
-    # print(hour)
-    # print(minute)
-    # i know very bad way but works for utc offset
+
+    # very bad way but works for utc offset
     try:
         utcoffset = (int(hour) * 60 + int(minute)) - (11 * 60 + 30)
         if (utcoffset > 0) and (utcoffset < 60):
@@ -107,7 +103,6 @@ def station_info(dfm, spi, sage, typ, id, sname, country, gawid):
     dfm['gaw_id'] = gawid
 
     return dfm
-
 
 #### writing woudc file related functions:
 
@@ -272,10 +267,7 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['DateTime'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
 
         dfmw = dfm_woudc[dfm_woudc['TIMESTAMP_Date'] == dfm.loc[0, 'DateTime']]
-
         dfmw = dfmw.reset_index()
-        # print('dfmw',dfmw.loc[0, 'TIMESTAMP_Date'] )
-        # instrument
         # INSTRUMENT
         dfm['Name'] = dfmw.loc[0, 'INSTRUMENT_Name']
         dfm['SensorType'] = dfmw.loc[0, 'INSTRUMENT_Model']
@@ -501,9 +493,7 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['latitude'] = '70.48'
         dfm['longitude'] = '-21.95'
         dfm['agency'] = 'DMI'
-
         dfm['DateTime'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
-
 
         try:
             dfm['UTCOffset'] = calculate_utcoffset(dfm)
@@ -522,8 +512,7 @@ def organize_metadata_woudc(dfm, stationname):
 
         dfm['CorrectionCode'] = 6
         dfm['BackgroundCorrection'] = "constant_ib2"
-        # print(list(dfm))
-        # print('O3SondeTotal_hom', dfm.at[0,'O3SondeTotal_hom'])
+
         try:
             dfm['O3ratio_hom'] = round(dfm['Dobson'] / dfm['O3SondeTotal_hom'], 2)
         except KeyError:
@@ -566,8 +555,6 @@ def organize_metadata_woudc(dfm, stationname):
             dfm['UTCOffset'] = "00:00:00"
 
         dfm['DateTime'] = dfm['Date2'].apply(lambda x: x.strftime('%Y-%m-%d'))
-
-
 
         if dfm.at[0, 'Date'] < '20051024':
             dfm['RadiosondeModel'] = 'RS80'
@@ -627,14 +614,12 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['Date1'] =  dfm['Datet1'].dt.strftime('%Y%m%d')
         date = dfm.at[0, 'Date1']
         dfm['Date'] = dfm['Datet1'].dt.strftime('%Y%m%d')
-        # print('hey you', dfm.at[0, 'Date'])
         pf = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/read_out/'
         wfile = pf + str(date) + '_metadata.csv'
         dfmw = pd.read_csv(wfile)
-        # print(list(dfmw))
+
         # for valentia read and write metadata from woudc metadata files
         spi = dfmw.at[0, 'DATA_GENERATION_ScientificAuthority']
-        # print(spi)
         dfm = station_info(dfm, spi, 'ME', 'STN', '318', 'Valentia', 'IRL', dfmw.at[0, 'PLATFORM_GAW_ID'])
         dfm['Name'] = dfmw.at[0, 'INSTRUMENT_Name']
         dfm['SensorType'] = dfmw.at[0, 'INSTRUMENT_Model']
@@ -795,7 +780,6 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
     extcsv.add_data('OZONE_REFERENCE', ozoneref_summary, field=ozoneref_field)
 
     # PROFILE
-
     df_names = ['Time', 'Pair', 'O3', 'T', 'WindSp', 'WindDir', 'LevelCode',
                 'GPHeight', 'U', 'Tbox', 'I', 'PumpMotorCurrent',
                 'PumpMotorVoltage', 'Lat', 'Lon', 'Height', 'dO3']

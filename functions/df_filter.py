@@ -14,10 +14,6 @@ def filter_data(df):
     df = df[df.I != -9999 ]
     df = df[df.Tbox != -9999 ]
 
-    # ['Pair', 'Time', 'Height', 'TboxK', 'TboxC', 'WindDirection', 'WindSpeed', 'O3', 'T', 'U', 'SensorType',
-    #  'SolutionVolume', 'Cef', 'ibg', 'I', 'Date']
-    # 'Time', 'Height', 'P', 'T', 'U', 'Winddir', 'Windv', 'Tbox', 'Tboxcor', 'I', 'Phi', 'PO3_presto', 'dPO3_presto'
-
     return df
 
 
@@ -33,7 +29,6 @@ def filter_metadata(df):
     df.TLab = df.TLab.astype('float')
     df.ULab = df.ULab.astype('float')
 
-
     df = df[df.SolutionVolume.astype('float') < 4]
     df = df[df.SolutionConcentration < 20]
     df = df[df.PF < 35]
@@ -43,6 +38,4 @@ def filter_metadata(df):
     df = df[df.TLab < 40]
     df = df[df.ULab < 9999]
 
-    # ['Pair', 'Time', 'Height', 'TboxK', 'TboxC', 'WindDirection', 'WindSpeed', 'O3', 'T', 'U', 'SensorType',
-    #  'SolutionVolume', 'Cef', 'ibg', 'I', 'Date']
     return df

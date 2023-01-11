@@ -6,9 +6,6 @@ from datetime import datetime
 from re import search
 
 
-# from nilu_ndacc.read_nilu_functions import ComputeIBG
-# from nilu_ndacc.read_nilu_functions import ComputeIBG
-
 
 def ComputeIBG(dft, bkg):
     """ Corrects background current value based on pressure
@@ -53,7 +50,7 @@ def ComputeCorP(dft, Pressure):
 pval = np.array([1100, 200, 100, 50, 30, 20, 10, 7, 5, 3])
 
 pvallog = [np.log10(i) for i in pval]
-print(pvallog)
+# print(pvallog)
 
 pval_sod = np.array([1100, 150, 100, 70, 60, 50, 40, 30, 20, 15, 10, 8, 5])
 corr_sod = np.array([1, 1, 1.010, 1.022, 1.025, 1.035, 1.047, 1.065, 1.092, 1.120, 1.170, 1.206, 1.300])
@@ -73,7 +70,6 @@ vec_ecc = [1, 1, 1.004, 1.006, 1.008, 1.011, 1.015, 1.022, 1.032, 1.055, 1.092, 
 vec_ecc_unc = [0.001]*len(vec_ecc)
 
 t_pvallog = [np.log10(i) for i in pval_ecc]
-
 
 # SensorType = 'DMT-Z'
 VecP_ECCZ = [0, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 1100]
@@ -102,11 +98,7 @@ RS80_cor_err = np.array(
 RS_alt = np.array(
     [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21, 22, 23, 24, 25, 26, 27, 28, 29, 30])
 
-# RS92_cor = np.array([0, 1.11, 0.56, 0.35, 0.23, 0.07, -0.03, -0.11, -0.16, -0.21, -0.26, -0.27, -0.27, -0.24, -0.28, -0.27,
-# -0.25, -0.24, -0.22, -0.20, -0.19, -0.17, -0.15, -0.14, -0.14, -0.13, -0.12, -0.12, -0.12, -0.11, -0.11])
-# RS92_cor_err = np.array([0, 1.42, 1.41, 1.17, 1.03, 0.92, 0.85, 0.78, 0.75, 0.70, 0.65, 0.62, 0.58, 0.75, 0.50, 0.47, 0.45,
-# 0.42, 0.40, 0.35, 0.34, 0.31, 0.30, 0.28, 0.27, 0.27, 0.27, 0.27, 0.26, 0.26, 0.25])
-# # RS_alt = [i * 1000 for i in RS_alt]
+
 
 k = 273.15
 
@@ -220,8 +212,6 @@ def assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, da
     if bool_u:  dm.loc[dm.Date < date_u, 'ULab'] = \
         dm.loc[dm.Date < date_u, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
 
-    # print(date_u)
-    # print(ul)
     if bool_pf:  dm.loc[dm.Date < date_pf, 'PF'] = \
         dm.loc[dm.Date < date_pf, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
 
@@ -565,59 +555,30 @@ def background_correction(df, dfmeta, dfm, ib, year, station_name):
         dfmeta['Date'] = dfmeta['Date'].astype(str)
         df['Date'] = df['Date'].astype(str)
 
-        # year = '2004' #uccle
-        # year = '2005' #sodankyla
-        # year = '1998' #lauder
         mean1 = np.nanmean(dfmeta[dfmeta.Date < year][ib])
         std1 = np.nanstd(dfmeta[dfmeta.Date < year][ib])
         mean2 = np.nanmean(dfmeta[dfmeta.Date >= year][ib])
         std2 = np.nanstd(dfmeta[dfmeta.Date >= year][ib])
 
-        # print('values', mean1, std1, mean2, std2)
-
-        # print(mean1, std1, mean2, std2)
 
         if (dfm.at[dfm.first_valid_index(), ib] > mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
             df.loc[df.Date < year, 'iBc'] = mean1
             df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
 
-            # print('bkg correction before 2004 ', mean1)
-            # df['iBc'] = mean1
-            # df['unc_iBc'] = 2 * std1
         if (dfm.at[dfm.first_valid_index(), ib] <= mean1 + 2 * std1) & (dfm.at[dfm.first_valid_index(), 'Date'] < year):
             df.loc[df.Date < year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
             df.loc[df.Date < year, 'unc_iBc'] = std1
-            # print('before 2004', dfm.at[dfm.first_valid_index(), ib])
 
-            # df['iBc'] = dfm.at[dfm.first_valid_index(), ib]
-            # df['unc_iBc'] = std1
 
         if (dfm.at[dfm.first_valid_index(), ib] > mean2 + 2 * std2) & (dfm.at[dfm.first_valid_index(), 'Date'] >= year):
             df.loc[df.Date >= year, 'iBc'] = mean2
             df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
-            # print('after 2004 bkg correction', mean1)
 
         if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (
                 dfm.at[dfm.first_valid_index(), 'Date'] >= year):
             df.loc[df.Date >= year, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
             df.loc[df.Date >= year, 'unc_iBc'] = std2
-            # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
 
-        # if station_name == 'lauder':
-        #
-        #     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < year):
-        #         df.loc[df.Date < year, 'iBc'] = mean1
-        #         df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
-        #         # print('before 2004 no bkg', mean1)
-        #     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= year):
-        #         df.loc[df.Date >= year, 'iBc'] = mean2
-        #         df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
-        #         # print('after 2004 no bkg', mean2)
-
-    # print('end of function',dfm.at[dfm.first_valid_index(), ib],  df.at[df.first_valid_index(), 'iBc'])
-    # df.at[df.first_valid_index(), 'ibg'])
-
-    # print('end of function', df.at[df.first_valid_index(), 'iBc'])
     return df['iBc'], df['unc_iBc']
 
 
@@ -631,7 +592,6 @@ def background_correction_3split(df, dfmeta, dfm, ib, year0, year1, year2):
     :return: df[ib]
     """
 
-    # print(np.mean(dfmeta[dfmeta[ib] < 0.1][ib]),np.std(dfmeta[dfmeta[ib] < 0.1][ib]))
 
     df['iBc'] = 0
     df['unc_iBc'] = 0
@@ -644,9 +604,6 @@ def background_correction_3split(df, dfmeta, dfm, ib, year0, year1, year2):
         dfmeta['Date'] = dfmeta['Date'].astype(str)
         df['Date'] = df['Date'].astype(str)
 
-        # year = '2004' #uccle
-        # year = '2005' #sodankyla
-        # year = '1998' #lauder
         mean0 = np.nanmean(dfmeta[dfmeta.Date < year0][ib])
         std0 = np.nanstd(dfmeta[dfmeta.Date < year0][ib])
         mean1 = np.nanmean(dfmeta[(dfmeta.Date < year1) & (dfmeta.Date > year0)][ib])
@@ -655,9 +612,6 @@ def background_correction_3split(df, dfmeta, dfm, ib, year0, year1, year2):
         std2 = np.nanstd(dfmeta[(dfmeta.Date >= year1) & (dfmeta.Date < year2)][ib])
         mean3 = np.nanmean(dfmeta[dfmeta.Date > year2][ib])
         std3 = np.nanstd(dfmeta[dfmeta.Date > year2][ib])
-        # print('values', mean1, std1, mean2, std2)
-
-        # print(mean0, mean1, mean2, mean3)
 
         if (dfm.at[dfm.first_valid_index(), ib] > mean0 + 2 * std0) & (dfm.at[dfm.first_valid_index(), 'Date'] < year0):
             df.loc[df.Date < year1, 'iBc'] = mean0
@@ -682,14 +636,12 @@ def background_correction_3split(df, dfmeta, dfm, ib, year0, year1, year2):
                 & (dfm.at[dfm.first_valid_index(), 'Date'] < year2):
             df.loc[(df.Date >= year1) & (df.Date < year2), 'iBc'] = mean2
             df.loc[(df.Date >= year1) & (df.Date < year2), 'unc_iBc'] = 2 * std2
-            # print('after 2004 bkg correction', mean1)
 
         if (dfm.at[dfm.first_valid_index(), ib] <= mean2 + 2 * std2) & (
                 dfm.at[dfm.first_valid_index(), 'Date'] >= year1) \
                 & (dfm.at[dfm.first_valid_index(), 'Date'] < year2):
             df.loc[(df.Date >= year1) & (df.Date < year2), 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
             df.loc[(df.Date >= year1) & (df.Date < year2), 'unc_iBc'] = std2
-            # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
 
         if (dfm.at[dfm.first_valid_index(), ib] > mean3 + 2 * std3) & (dfm.at[dfm.first_valid_index(), 'Date'] > year2):
             print('bkg needed why', mean3, dfm.at[dfm.first_valid_index(), ib])
@@ -701,7 +653,6 @@ def background_correction_3split(df, dfmeta, dfm, ib, year0, year1, year2):
             df.loc[df.Date > year2, 'iBc'] = dfm.at[dfm.first_valid_index(), ib]
             df.loc[df.Date > year2, 'unc_iBc'] = std3
 
-    # print('end of function',dfm.at[dfm.first_valid_index(), ib],  df.at[df.first_valid_index(), 'iBc'])
     return df['iBc'], df['unc_iBc']
 
 
@@ -794,7 +745,6 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
                                     (df.loc[filt, 'unc_deltat'] ** 2 / df.loc[filt, temp] ** 2) + (
                                                 df.loc[filt, 'unc_deltat_ppi'] ** 2 / df.loc[filt, temp] ** 2)  # Eq. 14
 
-    # df = df.drop(['deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi'], axis=1)
 
     return df.loc[filt, 'Tpump_cor'], df.loc[filt, 'unc_Tpump_cor']
 
@@ -830,7 +780,6 @@ def stoichmetry_conversion(df, pair, sensortype, solutionconcentration, referenc
     :return: r and uncertainity on r which are transfer functions and taken from Table 3 from the guideline
     '''
 
-    # print('in the function', sensortype)
 
     df = df[df[pair] > 0]
 
@@ -916,14 +865,6 @@ def RS_pressurecorrection(dft, height, radiosondetype):
         for i in range(len(RS_alt) - 1):
             # just check that value is in between xvalues
             if (RS_alt[i] <= dft.at[k, 'height_km'] < RS_alt[i + 1]):
-                # x1 = float(RS_alt[i])
-                # x2 = float(RS_alt[i + 1])
-                # y1 = float(RS_cor[i])
-                # y2 = float(RS_cor[i + 1])
-                # unc_y1 = float(RS_cor_err[i])
-                # unc_y2 = float(RS_cor_err[i + 1])
-                # dft.at[k, 'Crs'] = float(y1 + (dft.at[k, 'height_km'] - x1) * (y2 - y1) / (x2 - x1))
-                # dft.at[k, 'unc_Crs'] = float(unc_y1 + (dft.at[k, 'height_km'] - x1) * (unc_y2 - unc_y1) / (x2 - x1))
                 dft.at[k, 'Crs'] = RS_cor[i + 1]
                 dft.at[k, 'unc_Crs'] = RS_cor_err[i + 1]
 
@@ -931,7 +872,6 @@ def RS_pressurecorrection(dft, height, radiosondetype):
             dft.at[k, 'Crs'] = -1.02
             dft.at[k, 'unc_Crs'] = -1.43
 
-        # print('rs80',k, dft.at[k, 'height_km'], dft.at[k, 'Crs'])
 
     return dft['Crs'], dft['unc_Crs']
 
@@ -987,16 +927,7 @@ def o3tocurrent(dft, dfm):
         dft['I'] = dft['O3'] / (
                     4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + \
                    dft['ibg']
-    # try:
-    #     dft['I'] = dft['O3'] / (4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + dft['ibg']
-    # except ValueError:
-    #     print('here one')
-    #     dft.loc[dft.O3 == '4:.090','O3'] = '4.090'
-    #     dft['O3'] = dft['O3'].astype('float')
-    #     dft['I'] = dft['O3'] / (
-    #                 4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + \
-    #                dft['ibg']
-    #     print('bad file')
+   
 
     return dft
 
