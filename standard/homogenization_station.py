@@ -1,8 +1,15 @@
+# import pickle
+# pickle.HIGHEST_PROTOCOL = 5
+import os
+import pickle
+pickle.HIGHEST_PROTOCOL = 5
 import pandas as pd
 import numpy as np
 from re import search
 from datetime import datetime
-pd.set_option('mode.chained_assignment', None)
+# pd.set_option('mode.chained_assignment', None)
+#! /usr/bin/env python3
+
 
 from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
@@ -10,6 +17,7 @@ from functions.homogenization_functions import absorption_efficiency, stoichmetr
 
 from functions.functions_perstation import df_missing_variable, madrid_missing_tpump, df_station, \
     station_inone, station_inbool, station_invar, df_drop
+from functions.functions_woudc_writer import f_write_to_woudc_csv
 
 
 # homogenization code to be used by all stations
@@ -33,6 +41,7 @@ from functions.functions_perstation import df_missing_variable, madrid_missing_t
 ## Pump flow efficiency at low pressures
 # TON not to be applied but to be kept in the database
 # Radiosonde correction (not to be applied)
+# At the end also written to WOUDC format
 
 k = 273.15
 roc_plevel = 10 # pressure value to obtain roc
@@ -40,9 +49,12 @@ roc_plevel = 10 # pressure value to obtain roc
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-station_name = 'scoresbysund'
-main_rscorrection = False  #if you want to apply rs80 correction
+# station_name = 'ny-alesund'
+station_name = 'madrid'
 
+main_rscorrection = False  #if you want to apply rs80 correction
+test_ny = False
+scoresbysund_tpump = False
 file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
 #only needed for madrid (for the moment) to calculate means of the tmpump
 
@@ -50,7 +62,7 @@ file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_no
 ##                                                             ##
 
 filefolder = '/DQA_nors80/'
-file_ext = 'nors80'
+file_ext = 'test_nors80'
 
 if main_rscorrection:
     filefolder = '/DQA_rs80/'
@@ -82,21 +94,26 @@ for (filename) in (allFiles):
     date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     fullname = filename.split('/')[-1].split('.')[0]
 
-    date = datetime.strptime(date_tmp, '%y%m%d')
-    datestr = date.strftime('%Y%m%d')
+    # date_tmp = filename.split('/')[-1].split("_")[1][2:8]
+    # fullname = filename.split('/')[-1].split("_")[1]
+    # if datestr < date_start_hom: continue
 
-    # print(datestr)
-
-    if datestr < date_start_hom: continue
-
-
-    print(filename)
+    # print(filename)
 
     df = pd.read_hdf(filename)
+    try:
+        datestr = str(df.at[df.first_valid_index(),'Date'])
+    except KeyError:
+        datestr = str(filename.split(".hdf")[0][-8:])
+
+    # if datestr < '20021128': continue
+    # if datestr != '20021201':continue
+
+
     dfm = dfmeta[dfmeta.Date == datestr]
     dfm = dfm.reset_index()
     if len(dfm) == 0:
-        print('Check dfm')
+        print('Empty dfm')
         continue
 
     if len(dfm) == 1:
@@ -119,12 +136,15 @@ for (filename) in (allFiles):
 
     if calculate_current:
         try:
-            df = o3tocurrent(df, dfm)
+            df = o3tocurrent(df, dfm) #byault uses ib2, check if another ib is used!
         except (ValueError, KeyError):
             print('BAD File, check FILE')
 
+    # print(list(df))
+
     # input variables for hom.
     df['Tpump'] = df['TboxK']
+
     df['Phip'] = 100 / dfm.at[dfm.first_valid_index(), 'PF']
     df['Eta'] = 1
 
@@ -155,7 +175,6 @@ for (filename) in (allFiles):
     #ROC calculation from the climatological means
     dfm = roc_values(dfm, df, table)
 
-
     # DQA corrections
     #      conversion efficiency        #
     df['alpha_o3'], df['unc_alpha_o3'] = absorption_efficiency(df, 'Pair', dfm.at[0,'SolutionVolume'])
@@ -165,8 +184,8 @@ for (filename) in (allFiles):
 
     #       background correction       #
     if station_name != 'scoresbysund':
-        if dfm.at[0, 'string_bkg_used'] == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', ibg_split)
-        if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', ibg_split)
+        if dfm.at[0, 'string_bkg_used'] == 'ib2': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB2', ibg_split, station_name)
+        if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', ibg_split, station_name)
     if station_name == 'scoresbysund':
         df['iBc'], df['unc_iBc'] = background_correction_3split(df, dfmeta, dfm, 'iB2', '1993', '1995', '2017')
 
@@ -211,7 +230,6 @@ for (filename) in (allFiles):
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
 
     # # check all the variables if they are in accepted value range
-
     if len(df[(df.O3c > -99) & (df.O3c < 0)]) > 0 | (len(df[df['O3c'] > 30]) > 0) :
         print('     BREAK       O3c')
     if (len(df[df['iBc'] > 0.5]) > 0) | (len(df[df.iBc.isnull()])>0):
@@ -222,9 +240,7 @@ for (filename) in (allFiles):
     if descent_data:
         dfn = df[df.Height > 0]
         maxh = dfn.Height.max()
-
         index = dfn[dfn["Height"] == maxh].index[0]
-
         descent_list = dfn[dfn.index > index].index.tolist()
         dfa = dfn.drop(descent_list)
 
@@ -265,7 +281,6 @@ for (filename) in (allFiles):
             dfm['O3ratio_hom'] = 9999
             dfm['O3ratio_raw'] = 9999
 
-
     if df['Pair'].min() > 32:
         dfm['O3Sonde'] = 9999
         dfm['O3SondeTotal'] = 9999
@@ -280,9 +295,6 @@ for (filename) in (allFiles):
         dfm['O3SondeTotal_raw'] = 9999
         dfm['O3ratio_raw'] = 9999
 
-    #
-    # print(dfm.at[0,'O3Sonde'], dfm.at[0,'O3Sonde_hom'], dfm.at[0,'ROC'],dfm.at[0,'O3Sonde'] + dfm.at[0,'ROC']  )
-    # print(dfm.at[0,'O3SondeTotal'], dfm.at[0,'O3SondeTotal_hom'], df['Pair'].min())
 
     md_clist = ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
                 'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'TLab', 'deltat', 'unc_deltat', 'unc_deltat_ppi', 'dEta']
@@ -292,14 +304,6 @@ for (filename) in (allFiles):
         dfm.at[0, md_clist[j]] = df.at[df.first_valid_index(), md_clist[j]]
 
     dfm.to_csv(path + filefolder + datestr + "_o3smetadata_" + file_ext + ".csv")
-    #
-    # df = df.drop(
-    #     ['Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'unc_eta',
-    #      'unc_eta_c', 'dEta'], axis=1)
-
-    # df = df.drop(
-    #     ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
-    #      'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'dEta'], axis=1)
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
     df.to_hdf(path + filefolder + datestr + "_all_hom_" + file_ext + ".hdf", key='df')
@@ -307,21 +311,9 @@ for (filename) in (allFiles):
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
 
-    # print(list(df))
-
     df = df_drop(df, station_name)
-
-    # print(list(df))
-
     # df to be converted to WOUDC format together with the metadata
     df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')
+    f_write_to_woudc_csv(df, dfm, station_name, path)
 
 
-########################################################################################################################
-
-    # if len(df[(df.I > -99) & (df.I < 0)]) > 0 | (len(df[df['I'] > 30]) > 0) | (len(df[df.I.isnull()])>0):
-    #     print('     BREAK       I')
-    # if len(df[(df.Tpump_cor > -99) & (df.Tpump_cor < 0)]) > 0 | (len(df[df['Tpump_cor'] > 330]) > 0) :
-    #     print('     BREAK       Tpump_cor', filename)
-    # if (len(df[df.Tpump_cor.isnull()]) >0) & (df.Pair.min() >=5):
-    #     print('BREAK Tpump 2 ')

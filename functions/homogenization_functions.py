@@ -64,11 +64,16 @@ komhyr_95 = np.array([1, 1, 1.007, 1.018, 1.029, 1.041, 1.066, 1.087, 1.124, 1.2
 john_02 = np.array([1, 1.035, 1.052, 1.072, 1.088, 1.145, 1.200, 1.1260, 1])  # ECC Johnson
 sbrecht_98 = np.array([1, 1.027, 1.075, 1.108, 1.150, 1.280, 1.5, 1.8, 1])  # BM Steinbrecht
 kob_66 = np.array([1, 1.02, 1.04, 1.07, 1.11, 1.25, 1.4, 1.66, 1])  # Kobayashi
-
 # SensorType = 'SPC-6A'
 VecP_ECC6A = [0, 2, 3, 5, 10, 20, 30, 50, 100, 200, 300, 500, 1000, 1100]
+pval_ecc = [1100, 1000, 500, 300, 200, 100, 50, 30, 20, 10, 5, 3, 2, 0.01]
 VecC_ECC6A_25 = [1.16, 1.16, 1.124, 1.087, 1.054, 1.033, 1.024, 1.015, 1.010, 1.007, 1.005, 1.002, 1, 1]
 VecC_ECC6A_30 = [1.171, 1.171, 1.131, 1.092, 1.055, 1.032, 1.022, 1.015, 1.011, 1.008, 1.006, 1.004, 1, 1]
+vec_ecc = [1, 1, 1.004, 1.006, 1.008, 1.011, 1.015, 1.022, 1.032, 1.055, 1.092, 1.131, 1.171, 1.171]
+vec_ecc_unc = [0.001]*len(vec_ecc)
+
+t_pvallog = [np.log10(i) for i in pval_ecc]
+
 
 # SensorType = 'DMT-Z'
 VecP_ECCZ = [0, 3, 5, 7, 10, 15, 20, 30, 50, 70, 100, 150, 200, 1100]
@@ -129,6 +134,7 @@ def roc_values(dff, dfm, tab):
         dff['Datet'] = dff['Datet'].dt.date
         dff['DateTime'] = pd.to_datetime(dff['Datet'], format='%Y-%m-%d')
         dff['ROC'] = 0
+
         for i in range(1, 13):
             dff.loc[dff.DateTime.dt.month == i, 'ROC'] = tab[i].tolist()[0]
 
@@ -142,7 +148,7 @@ def make_1m_upsamle(dff, variable, booldate, datestr):
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
-    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
     series = series.set_index('Date')
     upsampled = series.resample('1M').mean()
 
@@ -158,9 +164,35 @@ def missing_station_values(dff, variable, booldate, datestr):
     :param date:
     :return:
     """
-
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
+    series[variable] = series[variable].astype('float')
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+    # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+
+    print('date series', series['Date'][0:5])
+    series = series.set_index('Date')
+    upsampled = series.resample('1M').mean()
+
+    var_list = [0] * 12
+
+    for i in range(1, 13):
+        j = i - 1
+        var_list[j] = upsampled[upsampled.index.month == i].median()[0]
+
+    return var_list
+
+def missing_station_values_afterdate(dff, variable, booldate, datestr):
+    """
+    function to calculate mean of the missing values to used
+    :param dff:
+    :param variable:
+    :param booldate:
+    :param date:
+    :return:
+    """
+    series = dff[['Date', variable]].copy()
+    if booldate: series = dff.loc[dff.Date > datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
     series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
     series = series.set_index('Date')
@@ -188,14 +220,94 @@ def assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, da
     if bool_u:  dm.loc[dm.Date < date_u, 'ULab'] = \
         dm.loc[dm.Date < date_u, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
 
-    print(date_u)
-    print(ul)
+    # print(date_u)
+    # print(ul)
     if bool_pf:  dm.loc[dm.Date < date_pf, 'PF'] = \
         dm.loc[dm.Date < date_pf, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
 
     # for some wrong values like in the recent files of sodankyla
     dm.loc[dm.TLab > (np.mean(tl) + 2 * np.std(tl)), 'TLab'] = \
         dm.loc[dm.TLab > (np.mean(tl) + 2 * np.std(tl)), 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+
+    return dm
+
+def assign_missing_ptupf_byvalue(dm, bool_p, bool_t, bool_u, bool_pf, m_p, m_t, m_u, m_pf, pl, tl, ul, pfl):
+    dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
+    dm['Date2'] = dm['Date2'].dt.date
+    dm['DateTime2'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
+    # dm['PLab'] = dm['Pground']
+
+    if bool_p:  dm.loc[dm.PLab == m_p, 'PLab'] = \
+        dm.loc[dm.PLab == m_p, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
+    if bool_t:  dm.loc[dm.TLab == m_t, 'TLab'] = \
+        dm.loc[dm.TLab == m_t, 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+    if bool_u:  dm.loc[dm.ULab == m_u, 'ULab'] = \
+        dm.loc[dm.ULab == m_u, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
+
+    if bool_pf:  dm.loc[dm.PF == m_pf, 'PF'] = \
+        dm.loc[dm.PF == m_pf, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
+
+    return dm
+
+
+def assign_missing_ptupf_bynan(dm, bool_p, bool_t, bool_u, bool_pf, pl, tl, ul, pfl):
+    dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
+    dm['Date2'] = dm['Date2'].dt.date
+    dm['DateTime2'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
+    # dm['PLab'] = dm['Pground']
+
+    if bool_p:
+        dm = dm[dm.PLab != 'missing']
+        dm['PLab'] = dm['PLab'].astype('float')
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+        dm.loc[dm['PLab'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[(dm['PLab'] > 1100) | (dm['PLab'] < 850), 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'PLab'] = \
+            dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'PLab'] = \
+            dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
+
+    if bool_t:
+        # dm = dm[dm.TLab < 50]
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+        dm.loc[dm['TLab'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[dm['TLab'] > 50, 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'TLab'] = \
+            dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'TLab'] = \
+            dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
+
+    if bool_u:
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+
+        dm.loc[dm['RHLab'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[dm['RHLab'] > 90, 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'RHLab'] = \
+            dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'RHLab'] = \
+            dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: ul[x - 1])
+
+    if bool_pf:
+        dm['value_is_NaN'] = 0
+        dm['value_is_bad'] = 0
+
+        dm.loc[dm['PF'].isnull(), 'value_is_NaN'] = 1
+        dm.loc[(dm['PF'] > 35) | (dm['PF'] < 20), 'value_is_bad'] = 1
+
+        dm.loc[dm.value_is_bad == 1, 'PF'] = \
+            dm.loc[dm.value_is_bad == 1, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
+        dm.loc[dm.value_is_NaN == 1, 'PF'] = \
+            dm.loc[dm.value_is_NaN == 1, 'DateTime2'].dt.month.apply(lambda x: pfl[x - 1])
+
+    # for some wrong values like in the recent files of sodankyla
+    # dm.loc[dm.TLab > (np.mean(tl) + 2*np.std(tl)), 'TLab'] = \
+    #     dm.loc[dm.TLab > (np.mean(tl) + 2*np.std(tl)), 'DateTime2'].dt.month.apply(lambda x: tl[x - 1])
 
     return dm
 
@@ -261,6 +373,46 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
         (df[dphim]) ** 2 + (unc_cPL) ** 2 + (unc_cPH) ** 2)  # Eq. 21
 
     return df['Phip_ground'], df['unc_Phip_ground']
+
+
+def pf_groundcorrection_noerr(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
+    """
+    O3S-DQA 8.4
+    :param df:
+    :param dfm:  metadata df
+    :param phim:
+    :param unc_phip:
+    :param tlab:
+    :param plab:
+    :param rhlab:
+    :return:
+    """
+
+    if boolrh == True:
+        df['TLab'] = dfm.at[dfm.first_valid_index(), tlab]
+        df['TLab'] = df['TLab'].astype('float')
+        df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab]
+        df['ULab'] = df['ULab'].astype('float')
+        df['PLab'] = dfm.at[dfm.first_valid_index(), plab]
+        df['PLab'] = df['PLab'].astype('float')
+        # df['ULab'] = dfm.at[dfm.first_valid_index(), rhlab].astype('float')
+        # df['PLab'] = dfm.at[dfm.first_valid_index(), plab].astype('float')
+        df['x'] = ((7.5 * df['TLab']) / (df['TLab'] + 237.3)) + 0.7858
+        df['psaturated'] = 10 ** (df['x'])
+        df['cPH'] = (1 - df['ULab'] / 100) * df['psaturated'] / df['PLab']  # Eq. 17
+        df['TLabK'] = df[tlab] + k
+        df['cPL'] = 2 / df['TLabK']  # Eq. 16
+
+    if boolrh == False:
+        df['TLabK'] = df[tlab] + k
+        df['cPL'] = 2 / df['TLabK']  # Eq. 16
+        unc_cPL = 0
+        df['cPH'] = 0
+        unc_cPH = 0
+
+    df['Phip_ground'] = (1 + df['cPL'] - df['cPH']) * df[phim]  # Eq. 15
+
+    return df['Phip_ground']
 
 
 def VecInterpolate_linear(XValues, YValues, unc_YValues, dft, Pair):
@@ -343,6 +495,25 @@ def pumpflow_efficiency(df, pair, pumpcorrectiontag, effmethod):
             # df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_95, komhyr_95_unc,  df, pair)
             df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_95, komhyr_95_unc, df, pair)
 
+        if pumpcorrectiontag == 'test_ny':
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_95, komhyr_95_unc,  df, pair)
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(t_pvallog, vec_ecc, vec_ecc_unc, df, pair)
+
+    if effmethod == 'table_interpolate_nolog':
+
+        if pumpcorrectiontag == 'komhyr_86':
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_86, komhyr_86_unc,  df, pair)
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_86, komhyr_86_unc, df, pair)
+            # df = VecInterpolate_log(pvallog, komhyr_86, komhyr_86_unc,  df, pair)
+
+        if pumpcorrectiontag == 'komhyr_95':
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval, komhyr_95, komhyr_95_unc,  df, pair)
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(pvallog, komhyr_95, komhyr_95_unc, df, pair)
+
+        if pumpcorrectiontag == 'test_ny':
+            df['Cpf'], df['unc_Cpf'] = VecInterpolate_linear(pval_ecc, vec_ecc, vec_ecc_unc,  df, pair)
+            # df['Cpf'], df['unc_Cpf'] = VecInterpolate_log(t_pvallog, vec_ecc, vec_ecc_unc, df, pair)
+
         # if pumpcorrectiontag == 'sodankayl':
         #     df['Cpf'], df['unc_Cpf'] = VecInterpolate(pval_sod, corr_sod, corr_sod_unc,  df, pair, 1)
 
@@ -360,7 +531,7 @@ def return_phipcor(df, phip_grd, unc_phip_grd, cpf, unc_cpf):
     return df['Phip_cor'], df['unc_Phip_cor']
 
 
-def background_correction(df, dfmeta, dfm, ib, year):
+def background_correction(df, dfmeta, dfm, ib, year, station_name):
     """
     O3S-DQA 8.2
     :param df: data df
@@ -432,14 +603,16 @@ def background_correction(df, dfmeta, dfm, ib, year):
             df.loc[df.Date >= year, 'unc_iBc'] = std2
             # print('after 2004', dfm.at[dfm.first_valid_index(), ib])
 
-        if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(), 'Date'] < year):
-            df.loc[df.Date < year, 'iBc'] = mean1
-            df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
-            # print('before 2004 no bkg', mean1)
-        if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(), 'Date'] >= year):
-            df.loc[df.Date >= year, 'iBc'] = mean2
-            df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
-            # print('after 2004 no bkg', mean2)
+        # if station_name == 'lauder':
+        #
+        #     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] < year):
+        #         df.loc[df.Date < year, 'iBc'] = mean1
+        #         df.loc[df.Date < year, 'unc_iBc'] = 2 * std1
+        #         # print('before 2004 no bkg', mean1)
+        #     if (df.at[df.first_valid_index(), 'iBc'] == 0) & (df.at[df.first_valid_index(),'Date'] >= year):
+        #         df.loc[df.Date >= year, 'iBc'] = mean2
+        #         df.loc[df.Date >= year, 'unc_iBc'] = 2 * std2
+        #         # print('after 2004 no bkg', mean2)
 
     # print('end of function',dfm.at[dfm.first_valid_index(), ib],  df.at[df.first_valid_index(), 'iBc'])
     # df.at[df.first_valid_index(), 'ibg'])
@@ -731,6 +904,9 @@ def RS_pressurecorrection(dft, height, radiosondetype):
 
     dft.loc[:, 'Crs'] = 0.0
     dft.loc[:, 'unc_Crs'] = 0.0
+
+    # RS_cor = RS80_cor
+    # RS_cor_err = RS80_cor_err
 
     RS_cor = RS80_cor
     RS_cor_err = RS80_cor_err
