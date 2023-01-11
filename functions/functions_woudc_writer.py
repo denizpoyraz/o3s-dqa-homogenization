@@ -823,6 +823,7 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
         profile[k] = ",".join([str(i) for i in profile[k] if str(i)])
         extcsv.add_data('PROFILE', profile[k], field=data_names)
 
+    if pd.isnull(dfm.at[0, 'SerialECC']): dfm.at[0, 'SerialECC'] = 'xxxx'
     if (dfm.at[0, 'SerialECC'][0:2] == '4a') | (dfm.at[0, 'SerialECC'][0:2] == '4A'):
         dfm.at[0, 'SerialECC'] =  '4A' + dfm.at[0, 'SerialECC'][2:]
         dfm.at[0, 'SensorType'] = 'SPC'

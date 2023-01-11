@@ -20,7 +20,6 @@ from functions.functions_perstation import df_missing_variable, madrid_missing_t
 from functions.functions_woudc_writer import f_write_to_woudc_csv
 
 
-
 # homogenization code to be used by all stations
 ### all corrections recommended by the DQA:
 ## Conversion Efficiency:
@@ -51,7 +50,7 @@ roc_plevel = 10 # pressure value to obtain roc
 ##           TO BE CHANGED By HAND         ##
 
 # station_name = 'ny-alesund'
-station_name = 'ny-aalesund'
+station_name = 'uccle'
 
 main_rscorrection = False  #if you want to apply rs80 correction
 test_ny = False
@@ -98,10 +97,8 @@ for (filename) in (allFiles):
     # date_tmp = filename.split('/')[-1].split("_")[1][2:8]
     # fullname = filename.split('/')[-1].split("_")[1]
     # if datestr < date_start_hom: continue
-       # if datestr < '20190101': continue
 
-    print(filename)
-    # print('date str test', filename.split(".hdf")[0][-8:])
+    # print(filename)
 
     df = pd.read_hdf(filename)
     try:
@@ -109,7 +106,10 @@ for (filename) in (allFiles):
     except KeyError:
         datestr = str(filename.split(".hdf")[0][-8:])
 
-    print(datestr, dfmeta.at[10,'Date'])
+    if datestr < '20021128': continue
+    # if datestr != '20021201':continue
+
+
     dfm = dfmeta[dfmeta.Date == datestr]
     dfm = dfm.reset_index()
     if len(dfm) == 0:
@@ -140,7 +140,7 @@ for (filename) in (allFiles):
         except (ValueError, KeyError):
             print('BAD File, check FILE')
 
-    print(list(df))
+    # print(list(df))
 
     # input variables for hom.
     df['Tpump'] = df['TboxK']
@@ -230,7 +230,6 @@ for (filename) in (allFiles):
     df['dO3'] = np.sqrt(df['dIall'] + df['dEta'] + df['dPhi_cor'] + df['dTpump_cor'])
 
     # # check all the variables if they are in accepted value range
-
     if len(df[(df.O3c > -99) & (df.O3c < 0)]) > 0 | (len(df[df['O3c'] > 30]) > 0) :
         print('     BREAK       O3c')
     if (len(df[df['iBc'] > 0.5]) > 0) | (len(df[df.iBc.isnull()])>0):
@@ -241,9 +240,7 @@ for (filename) in (allFiles):
     if descent_data:
         dfn = df[df.Height > 0]
         maxh = dfn.Height.max()
-
         index = dfn[dfn["Height"] == maxh].index[0]
-
         descent_list = dfn[dfn.index > index].index.tolist()
         dfa = dfn.drop(descent_list)
 
@@ -284,7 +281,6 @@ for (filename) in (allFiles):
             dfm['O3ratio_hom'] = 9999
             dfm['O3ratio_raw'] = 9999
 
-
     if df['Pair'].min() > 32:
         dfm['O3Sonde'] = 9999
         dfm['O3SondeTotal'] = 9999
@@ -299,9 +295,6 @@ for (filename) in (allFiles):
         dfm['O3SondeTotal_raw'] = 9999
         dfm['O3ratio_raw'] = 9999
 
-    #
-    # print(dfm.at[0,'O3Sonde'], dfm.at[0,'O3Sonde_hom'], dfm.at[0,'ROC'],dfm.at[0,'O3Sonde'] + dfm.at[0,'ROC']  )
-    # print(dfm.at[0,'O3SondeTotal'], dfm.at[0,'O3SondeTotal_hom'], df['Pair'].min())
 
     md_clist = ['Phip', 'Eta', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta',
                 'unc_eta_c', 'iB2', 'iBc', 'unc_iBc', 'TLab', 'deltat', 'unc_deltat', 'unc_deltat_ppi', 'dEta']
@@ -312,18 +305,13 @@ for (filename) in (allFiles):
 
     dfm.to_csv(path + filefolder + datestr + "_o3smetadata_" + file_ext + ".csv")
 
-
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
     df.to_hdf(path + filefolder + datestr + "_all_hom_" + file_ext + ".hdf", key='df')
 
     df['Tbox'] = df['Tpump_cor'] - k
     df['O3'] = df['O3c']
 
-
-
     df = df_drop(df, station_name)
-
-
     # df to be converted to WOUDC format together with the metadata
     df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')
     f_write_to_woudc_csv(df, dfm, station_name, path)
