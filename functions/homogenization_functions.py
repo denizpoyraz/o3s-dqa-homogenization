@@ -927,7 +927,7 @@ def o3tocurrent(dft, dfm):
         dft['I'] = dft['O3'] / (
                     4.3085 * 10 ** (-4) * dft['TboxK'] * dfm.at[dfm.first_valid_index(), 'PF'] * dft['Cef'] * cref) + \
                    dft['ibg']
-   
+
 
     return dft
 
