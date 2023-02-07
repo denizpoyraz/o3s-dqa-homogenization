@@ -159,8 +159,8 @@ def missing_station_values(dff, variable, booldate, datestr):
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
-    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
-    # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
 
     print('date series', series['Date'][0:5])
     series = series.set_index('Date')
@@ -358,11 +358,12 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
         df['cPH'] = 0
         unc_cPH = 0
 
+    dfm['humidity_correction'] = (1 + df['cPL'] - df['cPH'])
     df['Phip_ground'] = (1 + df['cPL'] - df['cPH']) * df[phim]  # Eq. 15
     df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt(
         (df[dphim]) ** 2 + (unc_cPL) ** 2 + (unc_cPH) ** 2)  # Eq. 21
 
-    return df['Phip_ground'], df['unc_Phip_ground']
+    return df['Phip_ground'], df['unc_Phip_ground'], dfm['humidity_correction']
 
 
 def pf_groundcorrection_noerr(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):

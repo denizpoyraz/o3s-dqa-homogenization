@@ -60,14 +60,14 @@ def station_inone(st_name):
     if st_name == 'lauder':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
         dfmetaf = pd.read_csv(pathf + 'metadata/Lauder_MetadaAll.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/2019*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
         dfmetaf = organize_lauder(dfmetaf)
 
     if st_name == 'uccle':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
         dfmetaf = pd.read_csv(pathf + 'Raw_upd/All_metadata.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/2*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt')
         dfmetaf = organize_uccle(dfmetaf)
 
@@ -223,7 +223,7 @@ def df_drop(dft, st_name):
          'iB2', 'CorP', 'Pground', 'Pcor', 'Phip', 'Eta', 'dPhip', 'unc_cPH', 'unc_cPL', 'unc_alpha_o3',
          'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor',
          'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
-         'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor',
+         'psaturated', 'cPH', 'TLabK', 'cPL', 'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor',
          'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr',
          'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor'], axis=1)
 
@@ -232,7 +232,7 @@ def df_drop(dft, st_name):
          'iB2','Phip', 'Eta', 'dPhip', 'unc_cPH', 'unc_cPL', 'unc_alpha_o3',
          'alpha_o3', 'stoich', 'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor',
          'unc_Tpump_cor', 'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab','cPH', 'TLabK', 'cPL',
-                        'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor',
+                        'unc_Phip_ground', 'Cpf', 'unc_Cpf', 'Phip_cor',
          'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump', 'O3c_etabkgtpumpphigr',
          'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor', 'dTpump_cor'], axis=1)
 
@@ -242,7 +242,7 @@ def df_drop(dft, st_name):
                         'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
                         'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
                         'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
-                        'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+                        'psaturated', 'cPH', 'TLabK', 'cPL',  'unc_Phip_ground', 'Cpf', 'unc_Cpf',
                         'Phip_cor', 'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
                         'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
                         'dTpump_cor'], axis=1)
@@ -253,7 +253,7 @@ def df_drop(dft, st_name):
                         'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
                         'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
                         'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
-                        'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+                        'psaturated', 'cPH', 'TLabK', 'cPL', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
                         'Phip_cor', 'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
                         'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
                         'dTpump_cor'], axis=1)
@@ -264,7 +264,7 @@ def df_drop(dft, st_name):
                         'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
                         'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
                         'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
-                        'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+                        'psaturated', 'cPH', 'TLabK', 'cPL',  'unc_Phip_ground', 'Cpf', 'unc_Cpf',
                         'Phip_cor', 'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
                         'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
                         'dTpump_cor'], axis=1)

@@ -49,7 +49,7 @@ roc_plevel = 10 # pressure value to obtain roc
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-station_name = 'madrid'
+station_name = 'lauder'
 
 main_rscorrection = False  #if you want to apply rs80 correction
 test_ny = False
@@ -94,7 +94,7 @@ for (filename) in (allFiles):
 
     # if datestr < date_start_hom: continue
 
-    # print(filename)
+    print(filename)
 
     df = pd.read_hdf(filename)
     try:
@@ -184,9 +184,9 @@ for (filename) in (allFiles):
     #      pump flow corrections        #
     # ground correction, humidity correction PTU
     if humidity_correction:
-        df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', True)
+        df['Phip_ground'], df['unc_Phip_ground'],dfm['humidity_correction'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', True)
     if not humidity_correction:
-        df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', False)
+        df['Phip_ground'], df['unc_Phip_ground'], dfm['humidity_correction'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', False)
     # efficiency correction
     pumpflowtable = '999 '
     if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
@@ -286,7 +286,9 @@ for (filename) in (allFiles):
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
     df.to_hdf(path + filefolder + datestr + "_all_hom_" + file_ext + ".hdf", key='df')
 
-    df['Tbox'] = df['Tpump_cor'] - k
+    df['Tbox'] = df['Tpump'] - k
+    df['Tbox_cor'] = df['Tpump_cor'] - k
+
     df['O3'] = df['O3c']
 
     df = df_drop(df, station_name)

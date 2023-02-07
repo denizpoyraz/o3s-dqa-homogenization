@@ -167,6 +167,20 @@ def organize_metadata_woudc(dfm, stationname):
     dfm['version'] = '2.1.3'
     dfm['Name'] = 'ECC'
     dfm['CorrectionCode'] = 6
+    dfm['PumpTempLocation'] = ''
+    dfm['CorrectionWettingFlow'] = dfm['humidity_correction']
+
+    if dfm.at[0, 'string_pump_location'] == 'case1': dfm['PumpTempLocation'] = 'Box'
+    if (dfm.at[0, 'string_pump_location'] == 'case2') | (dfm.at[0, 'string_pump_location'] == 'case3'):
+        dfm['PumpTempLocation'] = 'ExternalPumpTaped'
+    if dfm.at[0, 'string_pump_location'] == 'case4': dfm['PumpTempLocation'] = 'ExternalPumpGlued'
+    if dfm.at[0, 'string_pump_location'] == 'case5': dfm['PumpTempLocation'] = 'InternalPump'
+
+
+    dfm['PFCorrected'] = round(100./dfm['Phip_ground'], 1)
+
+
+
 
     if stationname == 'uccle':
         dfm = station_info(dfm, 'Roeland Van Malderen', 'RMIB', 'STN', '053', 'UCCLE', 'BEL', '6447')
@@ -179,11 +193,20 @@ def organize_metadata_woudc(dfm, stationname):
         dfm['height'] = '100'
         # timestamp
         dfm['test'] = dfm.at[0, 'LaunchTime']
-        if dfm.at[0, 'test'] == 9999: dfm.at[0, 'test'] = 11.30
+        # print("launch Time", dfm.at[0, 'LaunchTime'], type(dfm.at[0, 'LaunchTime']))
+        if dfm.at[0, 'LaunchTime'] == 9999: dfm.at[0, 'test'] = 11.30
         dfm['test'] = dfm['test'].apply(lambda x: pd.to_datetime(str(x), format='%H.%M'))
         dfm['LaunchTime'] = dfm['test'].apply(lambda x: x.strftime('%H:%M:%S'))
+        # print('here', dfm.at[0, 'LaunchTime'])
         dfm['UTCOffset'] = calculate_utcoffset(dfm)
+
+        if dfm.at[0, 'LaunchTime'] == '11:03:00':
+            # print('why not')
+            dfm['LaunchTime'] = '11:30:00'
+            dfm['UTCOffset'] = "00:00:00"
+
         dfm['RadiosondeSerial'] = dfm['mRadioSondeNr']
+
 
         # PREFLIGHT_SUMMARY
         if dfm.at[dfm.first_valid_index(), 'iB0'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = \
@@ -263,8 +286,14 @@ def organize_metadata_woudc(dfm, stationname):
 
         # data generation related
         dfm = station_info(dfm, 'Jose Luis Hernandez', 'AEMET', 'STN', '308', 'Madrid', 'ESP', 'MAD')
-        dfm['Date'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
-        dfm['DateTime'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
+        try:
+            dfm['Date'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
+        except AttributeError:
+            dfm['Date'] = dfm['DateTime2'].dt.strftime('%Y-%m-%d')
+
+        try: dfm['DateTime'] = dfm['DateTime'].dt.strftime('%Y-%m-%d')
+        except AttributeError:dfm['DateTime'] = dfm['DateTime2'].dt.strftime('%Y-%m-%d')
+
 
         dfmw = dfm_woudc[dfm_woudc['TIMESTAMP_Date'] == dfm.loc[0, 'DateTime']]
         dfmw = dfmw.reset_index()
@@ -669,6 +698,7 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
 
     burst_pressure = df.Pair.min()
     dfm['BurstOzonePressure'] = float(burst_pressure)
+    dfm['Phip_ground'] = df.at[df.first_valid_index(),'Phip_ground']
 
     df = organize_df_woudc(df, station_name)
 
@@ -722,8 +752,8 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
     extcsv.add_data('TIMESTAMP', time_summary, time_field)
 
     # PREFLIGHT_SUMMARY
-    ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected'
-    df_names = 'iB0', 'iB1', 'iB2', 'SolutionType', 'SolutionVolume', 'PF', 'TimeResponse', 'ib_corrected'
+    ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected, PumpFlowRateCorrected'
+    df_names = 'iB0', 'iB1', 'iB2', 'SolutionType', 'SolutionVolume', 'PF', 'TimeResponse', 'ib_corrected', 'PFCorrected'
     preflight_summary = make_summary(dfm, df_names)
     extcsv.add_data('PREFLIGHT_SUMMARY', preflight_summary, ps_field)
 
@@ -748,8 +778,8 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
     extcsv.add_data('SAMPLING_METHOD', samp_summary, field=samp_field)
 
     # PUMP_SETTINGS
-    pump_field = 'MotorCurrent,HeadPressure,VacuumPressure'
-    df_names = 'MotorCurrent', 'HeadPressure', 'VacuumPressure'
+    pump_field = 'MotorCurrent,HeadPressure,VacuumPressure,PumpTempLocation'
+    df_names = 'MotorCurrent', 'HeadPressure', 'VacuumPressure', 'PumpTempLocation'
     pump_summary = make_summary(dfm, df_names)
     extcsv.add_data('PUMP_SETTINGS', pump_summary, field=pump_field)
 
@@ -781,14 +811,14 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
 
     # PROFILE
     df_names = ['Time', 'Pair', 'O3', 'T', 'WindSp', 'WindDir', 'LevelCode',
-                'GPHeight', 'U', 'Tbox', 'I', 'PumpMotorCurrent',
+                'GPHeight', 'U', 'Tbox', 'Tbox_cor','I', 'PumpMotorCurrent',
                 'PumpMotorVoltage', 'Lat', 'Lon', 'Height', 'dO3']
     # data_names = ['Duration ,Pressure ,O3PartialPressure ,Temperature ,WindSpeed ,WindDirection ,LevelCode,GPHeight'
     #               ',RelativeHumidity ,SampleTemperature ,SondeCurrent ,PumpMotorCurrent,PumpMotorVoltage ,Latitude '
     #               ',Longitude ,Height,UncO3PartialPressure']
     data_names_tmp = ['Duration', 'Pressure', 'O3PartialPressure', 'Temperature', 'WindSpeed', 'WindDirection',
                       'LevelCode',
-                      'GPHeight', 'RelativeHumidity', 'SampleTemperature', 'SondeCurrent', 'PumpMotorCurrent'
+                      'GPHeight', 'RelativeHumidity', 'SampleTemperature', 'PumpTemperatureCorrected','SondeCurrent', 'PumpMotorCurrent'
         , 'PumpMotorVoltage', 'Latitude', 'Longitude', 'Height', 'UncO3PartialPressure']
 
     n = 0
@@ -809,9 +839,12 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
         profile[k] = ",".join([str(i) for i in profile[k] if str(i)])
         extcsv.add_data('PROFILE', profile[k], field=data_names)
 
+    # print('dfm.at[0, SerialECC]', dfm.at[0, 'SerialECC'])
+    # print('dfm.at[0, SensorType] = ENSCI', dfm.at[0, 'SensorType'])
     if pd.isnull(dfm.at[0, 'SerialECC']): dfm.at[0, 'SerialECC'] = 'xxxx'
+
     if (dfm.at[0, 'SerialECC'][0:2] == '4a') | (dfm.at[0, 'SerialECC'][0:2] == '4A'):
-        dfm.at[0, 'SerialECC'] =  '4A' + dfm.at[0, 'SerialECC'][2:]
+        dfm.at[0, 'SerialECC'] = '4A' + dfm.at[0, 'SerialECC'][2:]
         dfm.at[0, 'SensorType'] = 'SPC'
     if (dfm.at[0, 'SerialECC'][0:2] == '5a') | (dfm.at[0, 'SerialECC'][0:2] == '5A'):
         dfm.at[0, 'SerialECC'] =  '5A' + dfm.at[0, 'SerialECC'][2:]
@@ -819,15 +852,21 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
     if (dfm.at[0, 'SerialECC'][0:2] == '6a') | (dfm.at[0, 'SerialECC'][0:2] == '6A'):
         dfm.at[0, 'SerialECC'] = '6A' + dfm.at[0, 'SerialECC'][2:]
         dfm.at[0, 'SensorType'] = 'SPC'
+
     if (dfm.at[0, 'SerialECC'][0:1] == 'z') | (dfm.at[0, 'SerialECC'][0:1] == 'Z'):
         dfm.at[0, 'SerialECC'] = 'Z' + dfm.at[0, 'SerialECC'][1:]
         dfm.at[0, 'SensorType'] = 'ENSCI'
+
+    if (dfm.at[0, 'SerialECC'][1:2] == 'z') | (dfm.at[0, 'SerialECC'][1:2] == 'Z'):
+        # dfm.at[0, 'SerialECC'] = 'Z' + dfm.at[0, 'SerialECC'][1:]
+        dfm.at[0, 'SensorType'] = 'ENSCI'
+
 
     fileout = str(dfm.at[0, 'Date']) + ".ECC." + str(dfm.at[0, 'SensorType']) + "." + str(
         dfm.at[0, 'SerialECC']) + "." + str(dfm.at[0, 'agency']) + ".csv"
 
     out_name = path + '/WOUDC_nors80/' + fileout
-    print('out_name', out_name)
+    print('OUT NAME ', out_name)
 
     # this is not working anymore, gives error:
     # woudc_extcsv.dump(extcsv, out_name)
