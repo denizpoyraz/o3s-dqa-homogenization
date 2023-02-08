@@ -5,6 +5,9 @@ from re import search
 import glob
 import woudc_extcsv
 
+import warnings
+warnings.filterwarnings("ignore")
+
 K = 273.15
 
 pval = np.array([1000, 100, 50, 30, 20, 10, 7, 5, 3])

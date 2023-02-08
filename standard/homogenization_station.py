@@ -50,7 +50,7 @@ roc_plevel = 10 # pressure value to obtain roc
 ##           TO BE CHANGED By HAND         ##
 
 # station_name = 'ny-alesund'
-station_name = 'uccle'
+station_name = 'sodankyla'
 
 main_rscorrection = False  #if you want to apply rs80 correction
 test_ny = False

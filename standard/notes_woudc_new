@@ -1,0 +1,29 @@
+uccle-> write to woudc at dqa level, code for reading works! ->
+madrid-> code is working!, need to rerun all
+lauder -> code working, need to rerun all
+scoresbysund-> the same
+sodankyla-> the same
+valentia-> the same
+ny-alesund-> the same
+
+
+############################  update with new variables:
+* in main data change sample temperature to uncorrected pump temp. and pumptempcorrected
+* add pump temp location ?
+* Add CorrectionWettingFlow (1-cpl+cph)
+* Add SampleTemperatureType to Flight Summary
+
+uccle-> reprocessing -> done -> transfer kili -> ftp
+
+madrid-> running -> done -> transfer kili -> ftp
+
+lauder -> running -> done -> to kili
+
+scoresbysund -> running -> done -> problemetaic check
+
+sodankyla -> running
+
+
+
+
+
