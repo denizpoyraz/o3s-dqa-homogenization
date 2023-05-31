@@ -1,0 +1,28 @@
+Header value	Filename abbrieviation	Header value	Filename abbrieviation
+BKSONDE	s	AEROSOL	 
+		AEROSOL_BKS	 
+BREWER	r	TOTALCOL	tc
+DOBSON	d	TOTALCOL	tc
+DUSTSONDE	t	AEROSOL	 
+		AEROSOL_OPC	 
+FTIR	f	TOTALCOL	tc
+LIDAR	l	AEROSOL	ae
+		AEROSOL353	a3
+		AEROSOL355	a4
+		OZONE	o3
+		TEMP	te
+		TGAS	tg
+		TGAS2	t2
+		TROPOZONE	to
+		WATERVAPOR	ho
+MWAVE	m	CHLORINE	cl
+		CO	co
+		HNO3	hn
+		N2O	n2
+		OZONE	o3
+		WATERVAPOR	ho
+O3SONDE	b	OZONE	 
+UV/SPECT	u	UV	uv
+UV/VIS	v	NO2	nx
+		OZONE	o3
+		TOTALCOL	tc
