@@ -1,6 +1,3 @@
-# import pickle
-# pickle.HIGHEST_PROTOCOL = 5
-import os
 import pickle
 pickle.HIGHEST_PROTOCOL = 5
 import pandas as pd

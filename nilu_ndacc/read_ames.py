@@ -1,5 +1,6 @@
 import sys   # Imports the sys module
 sys.path.append("/home/poyraden/napB/")
+#napB path could be different!!
 import napB as nappy
 import pandas as pd
 import glob
