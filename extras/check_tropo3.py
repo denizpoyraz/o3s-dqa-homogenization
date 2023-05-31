@@ -7,7 +7,9 @@ from re import search
 from datetime import datetime
 import glob
 
-station_name = 'madrid'
+from calc_trop import tropopause_height, tropopause_height_birner
+
+station_name = 'uccle'
 path = f'/home/poyraden/Analysis/Homogenization_public/Files/{station_name}'
 
 

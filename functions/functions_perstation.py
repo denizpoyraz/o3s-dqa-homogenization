@@ -66,7 +66,7 @@ def station_inone(st_name):
     if st_name == 'lauder':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
         dfmetaf = pd.read_csv(pathf + 'metadata/Lauder_MetadaAll.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/2019*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_lauder_roc.txt')
         dfmetaf = organize_lauder(dfmetaf)
 

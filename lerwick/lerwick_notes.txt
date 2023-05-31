@@ -1,6 +1,15 @@
+***Updated notes 05/2023
+* Metadata available after 2004 values are the same in nilu and woudc
+* Nilu files PF, iB0, iB2, P, T, U Lab available after 2004
+* Nilu data available after 2002
+** WOUDC data ( '1992-02-03', '2016-12-27')
+* ENSCI before  10/09/1997
+so Use WOUDC data until 2002, and nilu for the rest.
+1) Check if WOUDC and nilu data are the same for same dates
 Nilu and WOUDC metadata comparisons:
 
-* In WOUDC datasets, for the  dates [A] PF values from calibrator has been used. Therefore PF values from nilu have been used
+* In WOUDC datasets, for the  dates [A] PF values from calibrator has been used.
+Therefore PF values from nilu have been used
 (anyway it has a karger time-span)
 
 * For background correction use iB2
@@ -8,7 +17,8 @@ Nilu and WOUDC metadata comparisons:
 * no metadata until 2004-02-19, there is also no data between 2003-03-17 and 2004-02-19
 
 
-
+*the first 6A ozone pump was used at Lerwick on 10 Sep 1997
+.  Previous to this date, Vaisala Viz ozonesondes were used.
 
 
 [A] = ['2004-04-07', '2005-01-07', '2005-01-26', '2005-02-16', '2005-08-03', '2005-11-23', '2006-08-23', '2006-11-22',
