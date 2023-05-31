@@ -57,7 +57,7 @@ def Calc_average_profile_pressure(dft, xcolumn):
 
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
-allFiles = sorted(glob.glob(path + "/DQA_rs80/*all_hom_rs80.hdf"))
+allFiles = sorted(glob.glob(path + "/DQA_nors80/*all_hom_nors80.hdf"))
 
 # listall = []
 #
@@ -66,19 +66,19 @@ allFiles = sorted(glob.glob(path + "/DQA_rs80/*all_hom_rs80.hdf"))
 #
 #     listall.append(df)
 #
-# name_out = 'Scoresby_AllData_DQA_rs80'
+name_out = 'Scoresby_AllData_DQA_nors80'
 # dfall = pd.concat(listall, ignore_index=True)
 #
-# dfall.to_csv(path + "/DQA_rs80/" + name_out + ".csv")
-# dfall.to_hdf(path + "/DQA_rs80/" + name_out + ".hdf", key = 'df')
+# dfall.to_csv(path + "/DQA_nors80/" + name_out + ".csv")
+# dfall.to_hdf(path + "/DQA_nors80/" + name_out + ".hdf", key = 'df')
 
 df1 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/Scoresby_AllData_DQA_nors80.hdf')
-df2 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_rs80/Scoresby_AllData_DQA_rs80.hdf')
+# df2 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_rs80/Scoresby_AllData_DQA_rs80.hdf')
 
 
 
-df1 = df1[df1.Date < '2007-01-04' ]
-df2 = df2[df2.Date < '2007-01-04' ]
+# df1 = df1[df1.Date < '2007-01-04' ]
+# df2 = df2[df2.Date < '2007-01-04' ]
 
 # df1 = df1[df1.Date < '2005-06-01' ]
 
@@ -93,10 +93,11 @@ df2 = df2[df2.Date < '2007-01-04' ]
 
 # o3, o3err, y = Calc_average_profile_pressure(df1r, 'O3c')
 # o3c, o3cerr, y = Calc_average_profile_pressure(df2, 'O3c')
+# df1 = df1[df1.Pair > 400 ]
 
 o3, o3err, y = Calc_average_profile_pressure(df1, 'O3')
 o3c, o3cerr, y = Calc_average_profile_pressure(df1, 'O3c')
-o3c2, o3cerr, y = Calc_average_profile_pressure(df2, 'O3c')
+# o3c2, o3cerr, y = Calc_average_profile_pressure(df2, 'O3c')
 
 o3nc, o3ncerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
 
@@ -115,23 +116,24 @@ o3nc, o3ncerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
 
 dfp = pd.DataFrame()
 dfp['o3c'] = o3c
-dfp['o3c2'] = o3c2
+# dfp['o3c2'] = o3c2
 
 dfp['y'] = y
 dfp['o3nc'] = o3nc
 dfp['o3'] = o3
 
+
 # dfp['y'] = y
 intnd =  int((3.9449 * (dfp.o3.shift() + dfp.o3) * np.log(dfp.y.shift() / dfp.y)).sum())
 intc =  int((3.9449 * (dfp.o3c.shift() + dfp.o3c) * np.log(dfp.y.shift() / dfp.y)).sum())
-intc2 =  int((3.9449 * (dfp.o3c2.shift() + dfp.o3c2) * np.log(dfp.y.shift() / dfp.y)).sum())
+# intc2 =  int((3.9449 * (dfp.o3c2.shift() + dfp.o3c2) * np.log(dfp.y.shift() / dfp.y)).sum())
 
 intnc =  int((3.9449 * (dfp.o3nc.shift() + dfp.o3nc) * np.log(dfp.y.shift() / dfp.y)).sum())
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 
-# Plotname = 'AllPeriod_DQA_NDACC_profile'
-Plotname = 'RS80'
+Plotname = 'Trop_AllPeriod_DQA_NDACC_profile'
+# Plotname = 'RS80'
 
 fig, ax = plt.subplots(figsize=(17, 9))
 
@@ -144,10 +146,10 @@ fig, ax = plt.subplots(figsize=(17, 9))
 # ax.plot(o3nc, y,  label = '1998-2006 Raw TO=' + str(int3), marker = 's', markersize = 6)
 
 # ax.plot(o3, y,  label = '1994-2021 WOUDC corrections', marker = 's', markersize = 6)
-ax.plot(o3c, y , label = '1989-2007 DQA corrections TO=' + str(intc), marker = 'd', markersize = 6)
-ax.plot(o3c2, y , label = '1989-2007 DQA and RS80 corrections  TO=' + str(intc2), marker = 'd', markersize = 6)
+ax.plot(o3c, y , label = 'DQA corrections TO=' + str(intc), marker = 'd', markersize = 6)
+# ax.plot(o3c2, y , label = '1989-2007 DQA and RS80 corrections  TO=' + str(intc2), marker = 'd', markersize = 6)
 
-# ax.plot(o3, y,  label = '1989-2021 NDACC corrections TO=' + str(intnd), marker = 's', markersize = 6)
+ax.plot(o3, y,  label = 'NDACC corrections TO=' + str(intnd), marker = 's', markersize = 6)
 
 # ax.plot(o3, y,  label = '1989-2021 NDACC corrections TO=' + str(intnd), marker = 's', markersize = 6)
 # ax.plot(o3nc, y , label = '1994-2021 No Correction', marker = 'd', markersize = 6)

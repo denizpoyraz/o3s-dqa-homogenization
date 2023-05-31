@@ -13,20 +13,26 @@ K = 273.15
 k = 273.15
 
 
-# filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-filepath = '/home/poyraden/Analysis/Homogenization_public/Files/lerwick/nilu/'
-station_name = 'lerwick'
+filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/missing_files/'
+allFiles = sorted(glob.glob(filepath + "*.*"))
 
-allFiles = sorted(glob.glob(filepath + "le*.*"))
+# filepath = '/home/poyraden/Analysis/Homogenization_public/Files/lerwick/nilu/'
+# allFiles = sorted(glob.glob(filepath + "le2209*.*"))
+
+station_name = 'sodankyla'
+
 #
 for filename in (allFiles):
     df = pd.DataFrame()
     dfm = pd.DataFrame()
 
-    print('filename', filename.split("/nilu/")[1].split(".")[0].split("le")[1])
-    date = filename.split("/nilu/")[1].split(".")[0].split("le")[1]
+    print(filename)
+    # print('filename', filename.split("/nilu/")[1].split(".")[0].split("le")[1])
+    # date = filename.split("/nilu/")[1].split(".")[0].split("le")[1]
+    print('filename', filename.split(".")[0].split("/")[-1][2:])
+    date = filename.split(".")[0].split("/")[-1][2:]
     idate = int(date)
-    # print('date', date+"test", type(date))
+    print('date', date+"test", type(date))
 
 
     if idate == 140312:

@@ -60,7 +60,7 @@ for filename in (allFiles):
     dfmo = organize_lerwick(dfm)
     dfmo['DateTime'] = pd.to_datetime(dfm.at[0,'date'], format='%Y%m%d')
 
-    dfl = o3tocurrent(dfd, dfmo, dfmeta)
+    # dfl = o3tocurrent(dfd, dfmo, dfmeta)
 
 
     rawname = name + "_rawcurrent.hdf"

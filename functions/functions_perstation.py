@@ -6,7 +6,7 @@ from datetime import datetime
 from re import search
 from scipy.interpolate import interp1d
 
-from functions.homogenization_functions import  missing_station_values, assign_missing_ptupf, make_1m_upsamle, assign_missing_ptupf_byvalue
+from homogenization_functions import  missing_station_values, assign_missing_ptupf, make_1m_upsamle, assign_missing_ptupf_byvalue
 import glob
 
 K = 273.15
@@ -86,8 +86,12 @@ def station_inone(st_name):
 
     if st_name == 'sodankyla':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-        dfmetaf = pd.read_hdf(pathf + 'Metadata/All_metadata.hdf')
-        allFilesf = sorted(glob.glob(pathf + "/Current/*raw*hdf"))
+        # dfmetaf = pd.read_hdf(pathf + 'Metadata/All_metadata.hdf')
+        dfmetaf = pd.read_csv(pathf + 'Metadata/All_metadata.csv')
+
+        # allFilesf = sorted(glob.glob(pathf + "/Current/*raw*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "/missing_files/organized/*hdf"))
+        # / home / poyraden / Analysis / Homogenization_public / Files / sodankyla / missing_files / organized
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
         dfmetaf = organize_sodankyla(dfmetaf)
 
@@ -104,6 +108,15 @@ def station_inone(st_name):
         allFilesf = sorted(glob.glob(pathf + "CSV/read_out/2019*_out.hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_valentia_roc.txt')
         dfmetaf = organize_valentia(dfmetaf)
+
+    if st_name == 'lerwick':
+        #example of a station where you can use metadata from the available WOUDC files
+        pathf = f'/home/poyraden/Analysis/Homogenization_public/Files/{st_name}/'
+        dfmetaf = pd.read_csv(pathf + 'all_csv_current/Lerwick_Metadata_combined.csv')  #
+        dfmetaw = pd.read_csv(pathf + 'all_csv_current/Lerwick_WOUDC_Metadata.csv')  #
+        allFilesf = sorted(glob.glob(pathf + "all_csv_current/*.csv"))
+        roc_table_filef = (f'/home/poyraden/Analysis/Homogenization_public/Files/sonde_{st_name}_roc.txt')
+        dfmetaf = organize_lerwick(dfmetaf, dfmetaw)
 
     return pathf, allFilesf, roc_table_filef, dfmetaf
 
@@ -159,6 +172,13 @@ def station_inbool(st_name):
         organize_dff = True
         descent_dataf = False
 
+    if st_name == 'lerwick':
+        humidity_correctionf = True
+        df_missing_tpumpf = False
+        calculate_currentf = False
+        organize_dff = True
+        descent_dataf = True
+
 
     return humidity_correctionf, df_missing_tpumpf, calculate_currentf, organize_dff, descent_dataf
 
@@ -212,6 +232,14 @@ def station_invar(st_name):
 
     if st_name == 'valentia':
         date_start_homf = '19940107'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
+        rs80_beginf = ''  # the date where there was a change from nors80
+        rs80_endf = ''
+        # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
+        IBGsplitf = ''  # the date if there is a lower/higher bkg value region
+        sonde_tbcf = 'SPC10'
+
+    if st_name == 'lerwick':
+        date_start_homf = '19920203'  # the date when the homogenization starts, there is a continue statement in the main loop for the dates before this date, "may not be needed always"
         rs80_beginf = ''  # the date where there was a change from nors80
         rs80_endf = ''
         # IBGsplitf = '2008'  # the date if there is a lower/higher bkg value region
@@ -390,6 +418,23 @@ def organize_madrid(dmm):
 
     return dmm
 
+def organize_lerwick(dmm, dmw):
+
+    dmm['Date'] = dmm['Date1']
+    dmm['string_bkg_used'] = 'ib2'
+    dmm['string_pump_location'] = 'case5'
+    # dmm['agency'] =
+    # # DATA_GENERATION
+    # datagen_field = 'Date,Agency,Version,ScientificAuthority'
+    # df_names = 'today', 'agency', 'version', 'stationPI'
+    # extcsv.add_data('DATA_GENERATION', datagen_summary, datagen_field)
+    #
+    # # PLATFORM
+    # platform_field = 'Type,ID,Name,Country,GAW_ID'
+    # df_names = 'type', 'id', 'name', 'country', 'gaw_id'
+    # extcsv.add_data('PLATFORM', platform_summary, platform_field)
+
+    return dmm
 
 
 def organize_valentia(dmm):
@@ -399,14 +444,6 @@ def organize_valentia(dmm):
     dmm['PLab'] = dmm['Pground']
     # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
     print('dmm Date', dmm['Date'])
-    # dmm['Date2'] = dmm['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
-
-    # dmm['Date2'] = dmm['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
-
-    # dmm['Date2'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y-%m-%d'))
-    # dmm['Date2'] = dmm['Date'].dt.strftime('%Y-%m-%d')
-    # dmm['Date'] = dmm['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
-
 
     PFmean = np.nanmean(dmm.PF)
     # print('PFmean', PFmean)
@@ -600,7 +637,7 @@ def organize_sodankyla(dsm):
     dsm['string_bkg_used'] = '999'
     dsm.loc[dsm.BkgUsed == 'Ibg1', 'string_bkg_used'] = 'ib0'
     dsm.loc[dsm.BkgUsed == 'Constant', 'string_bkg_used'] = 'ib2'
-
+    dsm['string_bkg_used'] = 'ib2'
 
     dsm['TotalO3_Col2A'] = dsm['TotalO3_Col2A'].astype('float')
 
@@ -812,6 +849,10 @@ def df_station(dl, datevalue, dml, station):
         dl['TboxK'] = dl['Tpump']
         dl['Height'] = dl['GPHeight']
         dl['O3'] = dl['PO3']
+
+    if station == 'lerwick':
+        dl['iB2'] = dml.at[dml.first_valid_index(), 'iB2']
+        dl['iB0'] = dml.at[dml.first_valid_index(), 'iB0']
 
 
     if station == 'ny-aalesund':

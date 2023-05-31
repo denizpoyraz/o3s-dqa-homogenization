@@ -148,7 +148,9 @@ def make_1m_upsamle(dff, variable, booldate, datestr):
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
-    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+    # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+    series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+
     series = series.set_index('Date')
     upsampled = series.resample('1M').mean()
 
@@ -169,6 +171,7 @@ def missing_station_values(dff, variable, booldate, datestr):
     series[variable] = series[variable].astype('float')
     # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
     series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
+    # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
 
     print('date series', series['Date'][0:5])
     series = series.set_index('Date')
@@ -648,16 +651,25 @@ def background_correction_3split(df, dfmeta, dfm, ib, year0, year1, year2):
         # year = '2005' #sodankyla
         # year = '1998' #lauder
         mean0 = np.nanmean(dfmeta[dfmeta.Date < year0][ib])
+        median0 = np.nanmedian(dfmeta[dfmeta.Date < year0][ib])
+
         std0 = np.nanstd(dfmeta[dfmeta.Date < year0][ib])
         mean1 = np.nanmean(dfmeta[(dfmeta.Date < year1) & (dfmeta.Date > year0)][ib])
+        median1 = np.nanmedian(dfmeta[(dfmeta.Date < year1) & (dfmeta.Date > year0)][ib])
+
         std1 = np.nanstd(dfmeta[(dfmeta.Date < year1) & (dfmeta.Date > year0)][ib])
         mean2 = np.nanmean(dfmeta[(dfmeta.Date >= year1) & (dfmeta.Date < year2)][ib])
+        median2 = np.nanmedian(dfmeta[(dfmeta.Date >= year1) & (dfmeta.Date < year2)][ib])
+
         std2 = np.nanstd(dfmeta[(dfmeta.Date >= year1) & (dfmeta.Date < year2)][ib])
         mean3 = np.nanmean(dfmeta[dfmeta.Date > year2][ib])
+        median3 = np.nanmedian(dfmeta[dfmeta.Date > year2][ib])
+
         std3 = np.nanstd(dfmeta[dfmeta.Date > year2][ib])
         # print('values', mean1, std1, mean2, std2)
 
-        # print(mean0, mean1, mean2, mean3)
+        # print('means', mean0, mean1, mean2, mean3)
+        # print('medians', median0, median1, median2, median3)
 
         if (dfm.at[dfm.first_valid_index(), ib] > mean0 + 2 * std0) & (dfm.at[dfm.first_valid_index(), 'Date'] < year0):
             df.loc[df.Date < year1, 'iBc'] = mean0
@@ -967,7 +979,6 @@ def o3tocurrent(dft, dfm):
     # if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[dfm.first_valid_index(), 'PF'] = 28
     if (dfm.at[dfm.first_valid_index(), 'PF'] > 40) | (dfm.at[dfm.first_valid_index(), 'PF'] < 20): dfm.at[
         dfm.first_valid_index(), 'PF'] = np.nanmean(dfm.PF)
-
     # # by default uses iB2 as background current
     # dft['ibg'] = dfm.at[dfm.first_valid_index(), 'iB2']
     # if it was mentioned that BkgUsed is Ibg1, then iB0 is used
@@ -1010,10 +1021,10 @@ def ComputeCef(dft, dfm):
     sensortype = dfm.at[dfm.first_valid_index(), 'SensorType']
     #
     spctag = (search('SPC', sensortype)) or (search('6A', sensortype)) or (search('5A', sensortype)) or (
-        search('4A', sensortype))
+        search('6a', sensortype))
     if spctag: dft['SensorType'] = 'SPC'
     enscitag = (search('DMT-Z', sensortype)) or (search('Z', sensortype)) or (search('ECC6Z', sensortype)) or (
-        search('_Z', sensortype))
+        search('_Z', sensortype) or (search('z', sensortype)))
     if enscitag: dft['SensorType'] = 'DMT-Z'
 
     try:

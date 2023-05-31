@@ -4,15 +4,16 @@ from io import StringIO
 from woudc_extcsv import load, WOUDCExtCSVReaderError
 import pandas as pd
 import glob
+station_name = 'lerwick'
 
 #example path of where the WOUDC csv files are
 # path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/WOUDC_nors80/'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{station_name}/WOUDC_CSV/'
 
-name_out = 'lauder_alldata'
-name_mout = 'lauder_metadata'
+name_out = f'{station_name}_alldata'
+name_mout = f'{station_name}_metadata'
 efile = open("errorfile.txt", "w")
 
 

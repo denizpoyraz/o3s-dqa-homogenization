@@ -48,7 +48,7 @@ dfm1 = dfm1[dfm1.TO_Brewer > 0]
 
 
 dfm1['ratio'] = dfm1['TO_Brewer']/dfm1['O3SondeTotal']
-dfm1['ratio_raw'] = dfm1['TO_Brewer']/dfm1['O3SondeTotal_raw']
+# dfm1['ratio_raw'] = dfm1['TO_Brewer']/dfm1['O3SondeTotal_raw']
 dfm1['ratio_hom'] = dfm1['TO_Brewer']/dfm1['O3SondeTotal_hom']
 
 dfm1 = dfm1[dfm1.ratio < 2]
@@ -61,7 +61,7 @@ fig, axs = plt.subplots(3, sharex=True, sharey=False, figsize=(17, 9))
 fig.suptitle('Uccle TO and TON values')
 
 axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_hom, label = 'O3Sonde DQA',  marker = "s", linestyle='None', markersize = 4)
-axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_raw, label = 'O3Sonde Raw',  marker = ".", linestyle='None')
+# axs[0].plot(dfm1.DateTime, dfm1.O3Sonde_raw, label = 'O3Sonde Raw',  marker = ".", linestyle='None')
 # axs[0].plot(dfm1.DateTime, dfm1.O3Sonde, label = 'O3Sonde PRESTO',  marker = ".",  linestyle='None')
 
 axs[0].set_ylabel('O3 [DU]')
@@ -76,7 +76,7 @@ axs[1].set_ylabel('O3 [DU]')
 axs[1].legend(loc="upper right")
 
 axs[2].plot(dfm1.DateTime, dfm1.ratio_hom, label = 'TON DQA',  marker = "s", linestyle='None', markersize = 4)
-axs[2].plot(dfm1.DateTime, dfm1.ratio_raw, label = 'TON Raw ',  marker = ".", linestyle='None')
+# axs[2].plot(dfm1.DateTime, dfm1.ratio_raw, label = 'TON Raw ',  marker = ".", linestyle='None')
 # axs[2].plot(dfm1.DateTime, dfm1.ratio, label = 'TON PRESTO',  marker = ".", linestyle='None', markersize = 4)
 
 axs[2].set_ylabel('TON')

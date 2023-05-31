@@ -1,8 +1,8 @@
 # import pickle
 # pickle.HIGHEST_PROTOCOL = 5
 import os
-import pickle
-pickle.HIGHEST_PROTOCOL = 5
+# import pickle
+# pickle.HIGHEST_PROTOCOL = 5
 import pandas as pd
 import numpy as np
 from re import search
@@ -11,13 +11,13 @@ from datetime import datetime
 #! /usr/bin/env python3
 
 
-from functions.homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
+from homogenization_functions import absorption_efficiency, stoichmetry_conversion, conversion_efficiency, \
     background_correction,pumptemp_corr, currenttopo3, pf_groundcorrection, calculate_cph, pumpflow_efficiency, \
     return_phipcor, o3_integrate, roc_values, RS_pressurecorrection, o3tocurrent, background_correction_3split
 
-from functions.functions_perstation import df_missing_variable, madrid_missing_tpump, df_station, \
+from functions_perstation import df_missing_variable, madrid_missing_tpump, df_station, \
     station_inone, station_inbool, station_invar, df_drop
-from functions.functions_woudc_writer import f_write_to_woudc_csv
+from functions_woudc_writer import f_write_to_woudc_csv
 
 
 # homogenization code to be used by all stations
@@ -62,7 +62,7 @@ file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_no
 ##                                                             ##
 
 filefolder = '/DQA_nors80/'
-file_ext = 'test_nors80'
+file_ext = 'nors80'
 
 if main_rscorrection:
     filefolder = '/DQA_rs80/'
@@ -90,26 +90,31 @@ table = pd.read_csv(roc_table_file,  skiprows=1, sep="\s *", names = clms,  head
 
 for (filename) in (allFiles):
     file = open(filename, 'r')
-
-    date_tmp = filename.split('/')[-1].split('.')[0][2:8]
+    print(filename)
+    # date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     fullname = filename.split('/')[-1].split('.')[0]
-
+    date_tmp = fullname
+    # print(date_tmp)
+    # print(fullname)
     # date_tmp = filename.split('/')[-1].split("_")[1][2:8]
     # fullname = filename.split('/')[-1].split("_")[1]
     # if datestr < date_start_hom: continue
 
     # print(filename)
+    if station_name == 'lerwick':
+        df = pd.read_csv(filename)
+    else:
+        df = pd.read_hdf(filename)
 
-    df = pd.read_hdf(filename)
     try:
         datestr = str(df.at[df.first_valid_index(),'Date'])
     except KeyError:
         datestr = str(filename.split(".hdf")[0][-8:])
-
-    if datestr < '20021128': continue
+    print(datestr)
+    # if datestr < '20021128': continue
     # if datestr != '20021201':continue
 
-
+    print(datestr)
     dfm = dfmeta[dfmeta.Date == datestr]
     dfm = dfm.reset_index()
     if len(dfm) == 0:
@@ -188,6 +193,8 @@ for (filename) in (allFiles):
         if dfm.at[0, 'string_bkg_used']  == 'ib0': df['iBc'], df['unc_iBc'] = background_correction(df, dfmeta, dfm, 'iB0', ibg_split, station_name)
     if station_name == 'scoresbysund':
         df['iBc'], df['unc_iBc'] = background_correction_3split(df, dfmeta, dfm, 'iB2', '1993', '1995', '2017')
+    if station_name == 'lerwick':
+        df['iBc'], df['unc_iBc'] = background_correction_3split(df, dfmeta, dfm, 'iB2', '2009', '2013', '2020')
 
     if (df.Pair.min() <5) & (dfm.loc[0,'string_pump_location'] == 'case3'): print('HERE')
     #       pump temperature correction       #

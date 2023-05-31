@@ -6,7 +6,7 @@ from scipy.interpolate import interp1d
 import glob
 from re import search
 from datetime import datetime
-from functions.df_filter import filter_data
+from df_filter import filter_data
 
 # ozone = 'O3_nc' # raw, no correction applied
 # ozone = 'O3c_eta' # etac correction applied
@@ -18,23 +18,23 @@ ozone = 'O3' #woudc
 # ozone = 'PO3_dqar'
 
 
-# name_out = 'SodankylaInterpolated_dqa_nors80_testall'
+name_out = 'SodankylaInterpolated_dqa_nors80_upd'
 # name_out = 'UccleInterpolated_dqa_nors80'
 # name_out = 'LauderInterpolated_dqa_nors80'
 # name_out = 'LauderInterpolated_dqa_nors80'
 # name_out = 'scoresbyInterpolated_dqa_nors80'
 # name_out = 'MadridInterpolated_dqa_nors80'
-name_out = 'NyalesundInterpolated_dqa_nors80_new'
+# name_out = 'NyalesundInterpolated_dqa_nors80_new'
 # name_out = 'Valentia_nors80'
 
 
 
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/'
+path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/'
+# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/DQA_nors80/'
 
 

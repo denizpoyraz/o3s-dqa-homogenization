@@ -480,6 +480,41 @@ def organize_metadata_woudc(dfm, stationname):
         if dfm.at[dfm.first_valid_index(), 'iB2'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm[
             'BackgroundCorrection'] = "constant_climatologicalmean_ib2"
 
+    if stationname == 'lerwick':
+
+        dfm = station_info(dfm, 'Norrie Lyall', 'UKMO', 'STN', '043', 'Lerwick', 'GBR', 'SIS')
+        dfm['latitude'] = '60.14'
+        dfm['longitude'] = '-1.19'
+
+        if dfm.at[0,'Date'] < 20040219:
+            dfm.at[0, 'LaunchTime'] = '11:30:00'
+        #calculation of lunchtime
+        ltime = dfm.at[0,'LaunchTime']
+        one = np.mod(ltime, int(ltime))
+        minutes = one * 60
+        two = np.mod(minutes, int(minutes))
+        second = int(two * 60)
+
+        dfm.at[0, 'LaunchTime'] = str(int(ltime)) + ':' + str(int(minutes)) + ':' + str(second)
+        print('dfm.at[0, LaunchTime]', dfm.at[0, 'LaunchTime'])
+
+        if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = \
+            dfm.at[dfm.first_valid_index(), 'iB2']
+        if dfm.at[dfm.first_valid_index(), 'iB2'] != dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = \
+            dfm.at[dfm.first_valid_index(), 'iBc']
+        dfm['SolutionType'] = '1.0%KIFullBuffer'
+
+        dfm['SolutionVolume'] = 3.0
+        dfm['PF'] = 100 / dfm['Phip']
+        dfm['RadiosondeManufacturer'] = 'Vaisala'
+        dfm['InterfaceManufacturer'] = 'Vaisala'
+
+        dfm['CorrectionCode'] = 6
+        dfm['BackgroundCorrection'] = "constant_ib2"
+
+
+
+
     if stationname == 'scoresbysund':
 
         dfm = station_info(dfm, 'Brnlund M.', 'DMI', 'STN', '406', 'Scoresbysund', 'GRL', 'SCB')
