@@ -1,5 +1,5 @@
 ## How to process Lauder files:
-Files are provided by the stations PI. 
+Files are provided by the station PI. 
 #### Step 1:
 Read the files (.dat) by code read_lauder_files.py
 The output of this code is 2 files per each date, 1 file that has the data and 2nd file has the metadata.
@@ -15,5 +15,6 @@ https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/2c79e99275ff5fdf39108
 dfmetaf: the merged metadata files of the all time-series. For period 1986-08-03 to 2021-06-22 it is under lauder/files/
 allFilesf: the location of data files which are output of Step1
 roc_table_filef: this is under lauder/files/
+
 With these input you can run standard/homogenization_station.py just need to change line 49 station_name to 'lauder'
-The output of Step 3 will be homogenized files that are written in WOUDC format.
+The output will be homogenized files that are written in WOUDC format.
