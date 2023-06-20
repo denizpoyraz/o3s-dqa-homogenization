@@ -169,6 +169,7 @@ def missing_station_values(dff, variable, booldate, datestr):
     series = dff[['Date', variable]].copy()
     if booldate: series = dff.loc[dff.Date < datestr, ['Date', variable]]
     series[variable] = series[variable].astype('float')
+    #you may need to change format of the Date, some stations differ, sorry a bit not well organized in that sense
     # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
     series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y%m%d'))
     # series['Date'] = series['Date'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
@@ -211,11 +212,15 @@ def missing_station_values_afterdate(dff, variable, booldate, datestr):
 
 
 def assign_missing_ptupf(dm, bool_p, bool_t, bool_u, bool_pf, date_p, date_t, date_u, date_pf, pl, tl, ul, pfl):
-    dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
+    # dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y-%m-%d')
+    dm['Date'] = dm['Date'].astype(int)
+    dm['Date2'] = pd.to_datetime(dm['Date'], format='%Y%m%d')
+
     dm['Date2'] = dm['Date2'].dt.date
     dm['DateTime2'] = pd.to_datetime(dm['Date2'], format='%Y-%m-%d')
+    # print(dm[['Date','Date2']])
     # dm['PLab'] = dm['Pground']
-
+    # print('test',dm.loc[0, 'DateTime2'], date_p, dm.loc[dm.Date < date_p, 'DateTime2'].dt.month)
     if bool_p:  dm.loc[dm.Date < date_p, 'PLab'] = \
         dm.loc[dm.Date < date_p, 'DateTime2'].dt.month.apply(lambda x: pl[x - 1])
     if bool_t:  dm.loc[dm.Date < date_t, 'TLab'] = \
@@ -364,6 +369,7 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
         df['cPL'] = 2 / df['TLabK']  # Eq. 16
         unc_cPL = df.at[df.first_valid_index(), 'unc_cPL']
 
+
     if boolrh == False:
         df['TLabK'] = df[tlab] + k
         df['cPL'] = 2 / df['TLabK']  # Eq. 16
@@ -371,11 +377,13 @@ def pf_groundcorrection(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
         df['cPH'] = 0
         unc_cPH = 0
 
+    dfm['humidity_correction'] = (1 + df['cPL'] - df['cPH'])
     df['Phip_ground'] = (1 + df['cPL'] - df['cPH']) * df[phim]  # Eq. 15
     df['unc_Phip_ground'] = df['Phip_ground'] * np.sqrt(
         (df[dphim]) ** 2 + (unc_cPL) ** 2 + (unc_cPH) ** 2)  # Eq. 21
+    dfm['Phip_ground'] = df['Phip_ground']
 
-    return df['Phip_ground'], df['unc_Phip_ground']
+    return df['Phip_ground'], df['unc_Phip_ground'], dfm['humidity_correction']
 
 
 def pf_groundcorrection_noerr(df, dfm, phim, dphim, tlab, plab, rhlab, boolrh):
@@ -767,6 +775,8 @@ def pumptemp_corr(df, boxlocation, temp, unc_temp, pair):
     '''
     df['Tpump_cor'] = 0
     df['unc_Tpump_cor'] = 0
+    df['deltat'] = 0
+    df['unc_deltat'] = 0
 
     if (boxlocation == 'Box') | (boxlocation == 'case1'):  # case I in O3S-DQA guide
         df.loc[(df[pair] >= 40), 'deltat'] = 7.43 - 0.393 * np.log10(df.loc[(df[pair] >= 40), pair])

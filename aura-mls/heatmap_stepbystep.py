@@ -32,9 +32,10 @@ def plot_rdif(dft, ptitlet):
     ax = sns.heatmap(t, vmin=min, vmax=max, cmap="vlag", cbar_kws={'label': heatmap_label}, xticklabels=xfreq)
     # ax = sns.heatmap(t, vmin=min, vmax=max , cmap="vlag", cbar_kws={'label': heatmap_label})
 
-    labels = [1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-     2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
-     2016, 2017, 2018, 2019, 2020, 2021, 2022]
+    labels = [1986, 1987, 1988, 1989, 1990, 1991, 1992, 1993, 1994, 1995, 1996,
+            1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007,
+            2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018,
+            2019, 2020, 2021]
     # labels = [1991, 1992, 1993, 1994, 1995, 1996, 1997, 1998, 1999,
     #         2000, 2001, 2002, 2003, 2004, 2005, 2006, 2007, 2008, 2009, 2010,
     #         2011, 2012, 2013, 2014, 2015, 2016, 2017, 2018, 2019, 2020]
@@ -57,72 +58,24 @@ def plot_rdif(dft, ptitlet):
 
     plt.show()
 
+stations = 'lauder'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{stations}/DQA_nors80/Binned/'
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/Binned/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/Binned/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Binned/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/Binned/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Binned/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/Binned/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/DQA_nors80/Binned/'
-
-# station = 'Uccle'
-station ='Sodankyla'
-# df1 = pd.read_csv(path + 'scoresbyInterpolated_dqa_nors80.csv')
-# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_rs80/'
-#                   'Binned/scoresbyInterpolated_dqa_rs80.csv')
-# df1 = pd.read_csv(path + 'new_MadridInterpolated_dqa_nors80.csv')#test1
-
-#
-# df1 = pd.read_csv(path + 'UccleInterpolated_dqa_nors80.csv')
-# # UccleInterpolated_dqa_rs80
-# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_rs80/'
-#                   'Binned/UccleInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_new.csv')#test1
-
-# komhry file
-# df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_lastv_all_ndc2.csv')
-#vaisala file
-# df1 = pd.read_csv(path + 'NyalesundInterpolated_dqa_nors80_lastvr.csv')
-
-df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_nors80_upd.csv')
-# df1 = pd.read_csv(path + 'Valentia_nors80.csv')
+station = 'Lauder'
+df1 = pd.read_csv(path + f'{station}Interpolated_dqa_nors80.csv')
 
 
 
-# UccleInterpolated_dqa_rs80
-# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_rs80/'
-#                   'Binned/NyalesundInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv(path + 'MadridInterpolated_dqa_rs80.csv')
-# df2 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/'
-#                   'Binned/MadridInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_rs80/Binned/new_MadridInterpolated_dqa_rs80.csv')
-
-# df1 = pd.read_csv(path + 'SodankylaInterpolated_dqa_rs80.csv')
-# df1 = pd.read_csv(path + 'new_LauderInterpolated_dqa_rs80.csv')
-
-# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
-# df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y-%m-%d')
-
-# df2['DateTime'] = pd.to_datetime(df2['Date'], format='%Y%m%d')
-df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
-
-# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d') #sodankyla
+# df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
+df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y-%m-%d')
 
 df1['date'] = df1['DateTime'].apply(lambda x: x.date())
-# df2['date'] = df2['DateTime'].apply(lambda x: x.date())
 
 df1 = df1[df1.PreLevel > 10]
-# df2 = df2[df2.PreLevel > 7]
 
 # df1 = df1[df1.Date > 19910101]
-# df2 = df2[df2.Date > '2008-01-01']
 
 df1['PreLevel'] = df1['PreLevel'].astype(int)
-# df2['PreLevel'] = df2['PreLevel'].astype(int)
 
 Plotname = 'DQA_vs_NDACC_alltimerange'
 heatmap_label = 'Homogenized - Non-Homogenized / Non-Homogenized (%)'
@@ -135,25 +88,7 @@ df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.
 plot_rdif(df1, ptitle)
 
 
-# Plotname = 'RS80_vs_noRS80'
-# heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
-# ptitle = 'Effect of RS80 Radiosonde Correction'
-# # #
-# min = -5
-# max = 5
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
-# plot_rdif(df1, ptitle)
-#######################
-##########################
-############################
-# Plotname = 'RS80_vs_noRS80'
-# heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
-# ptitle = 'Effect of RS80 Radiosonde Correction'
-# # #
-# min = -5
-# max = 5
-# df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
-# plot_rdif(df1, ptitle)
+
 
 # (2 - 1) / 1
 Plotname = 'Eta_vs_Raw_alltimerange'
@@ -212,7 +147,9 @@ max = 10
 df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_nc)) / np.asarray(df1.PO3_UcIntLin_nc)
 plot_rdif(df1, ptitle)
 
+## end of main code ############
 
+####not used##########################################################
 # #
 # Plotname = 'DQA_vs_WOUDC_alltimerange'
 # heatmap_label = 'DQA - WOUDC / WOUDC  (%)'
@@ -227,6 +164,26 @@ plot_rdif(df1, ptitle)
 # max = 3
 
 #########################################################
+
+# Plotname = 'RS80_vs_noRS80'
+# heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
+# ptitle = 'Effect of RS80 Radiosonde Correction'
+# # #
+# min = -5
+# max = 5
+# df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
+# plot_rdif(df1, ptitle)
+#######################
+##########################
+############################
+# Plotname = 'RS80_vs_noRS80'
+# heatmap_label = 'RS80 - NoRS80 / NoRS80  (%)'
+# ptitle = 'Effect of RS80 Radiosonde Correction'
+# # #
+# min = -5
+# max = 5
+# df1['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin_dqa) - np.asarray(df1.PO3_UcIntLin_dqa)) / np.asarray(df1.PO3_UcIntLin_dqa)
+# plot_rdif(df1, ptitle)
 
 # t = df1.pivot_table(index='PreLevel', columns='DateTime', values='RDif_UcIntLin', fill_value = 0, dropna = True)
 # # t = df1.pivot_table(index='PreLevel', columns='date2', values='RDif_UcIntLin', fill_value = 0, dropna = False)

@@ -43,14 +43,13 @@ from functions_woudc_writer import f_write_to_woudc_csv
 # Radiosonde correction (not to be applied)
 # At the end also written to WOUDC format
 
-k = 273.15
+kelvin = 273.15
 roc_plevel = 10 # pressure value to obtain roc
 
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-# station_name = 'ny-alesund'
-station_name = 'lauder'
+station_name = 'lerwick'
 
 main_rscorrection = False  #if you want to apply rs80 correction
 test_ny = False
@@ -110,11 +109,10 @@ for (filename) in (allFiles):
         datestr = str(df.at[df.first_valid_index(),'Date'])
     except KeyError:
         datestr = str(filename.split(".hdf")[0][-8:])
-    print(datestr)
     # if datestr < '20021128': continue
-    # if datestr != '20021201':continue
 
     print(datestr)
+    datestr = int(datestr)
     dfm = dfmeta[dfmeta.Date == datestr]
     dfm = dfm.reset_index()
     if len(dfm) == 0:
@@ -165,7 +163,7 @@ for (filename) in (allFiles):
     # # Electronic o3 sonde interface  was replaced with the transfer from RS80 to RS92  in 24 Nov 2005.
     rsmodel = ''
     bool_rscorrection = ''
-
+    datestr = str(datestr)
     if datestr < rs80_end and datestr >= rs80_begin:
         bool_rscorrection = True
     # if datestr > rs80_end:
@@ -202,14 +200,20 @@ for (filename) in (allFiles):
     #      pump flow corrections        #
     # ground correction, humidity correction PTU
     if humidity_correction:
-        df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', True)
+        df['Phip_ground'], df['unc_Phip_ground'], dfm['humidity_correction'] = \
+            pf_groundcorrection(df, dfm, 'Phip','dPhip', 'TLab','PLab', 'ULab', True)
     if not humidity_correction:
-        df['Phip_ground'], df['unc_Phip_ground'] = pf_groundcorrection(df, dfm, 'Phip', 'dPhip', 'TLab', 'PLab', 'ULab', False)
+        df['Phip_ground'], df['unc_Phip_ground'], dfm['humidity_correction'] = \
+            pf_groundcorrection(df, dfm, 'Phip','dPhip', 'TLab','PLab', 'ULab',False)
     # efficiency correction
     pumpflowtable = '999 '
-    if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
-    if dfm.at[0, 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
-
+    if station_name == 'lerwick':
+        if (dfm.at[0, 'SensorType'] == '5A') | (dfm.at[0, 'SensorType'] == '6A') | (dfm.at[0, 'SensorType'] == '5a') |\
+                (dfm.at[0, 'SensorType'] == '6a'):pumpflowtable = 'komhyr_86'
+        if (dfm.at[0, 'SensorType'] == 'z') | (dfm.at[0, 'SensorType'] == 'Z') :pumpflowtable = 'komhyr_95'
+    else:
+        if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
+        if dfm.at[0, 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
     df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
 
@@ -313,14 +317,16 @@ for (filename) in (allFiles):
     dfm.to_csv(path + filefolder + datestr + "_o3smetadata_" + file_ext + ".csv")
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
-    df.to_hdf(path + filefolder + datestr + "_all_hom_" + file_ext + ".hdf", key='df')
+    # df.to_hdf(path + filefolder + datestr + "_all_hom_" + file_ext + ".hdf", key='df')
+    df.to_csv(path + filefolder + datestr + "_all_hom_" + file_ext + ".csv")
 
-    df['Tbox'] = df['Tpump_cor'] - k
+    df['Tbox'] = df['Tpump_cor'] - kelvin
     df['O3'] = df['O3c']
 
     df = df_drop(df, station_name)
     # df to be converted to WOUDC format together with the metadata
-    df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')
+    # df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')
+    df.to_csv(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".csv")
     f_write_to_woudc_csv(df, dfm, station_name, path)
 
 

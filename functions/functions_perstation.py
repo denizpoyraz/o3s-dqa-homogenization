@@ -88,7 +88,6 @@ def station_inone(st_name):
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
         # dfmetaf = pd.read_hdf(pathf + 'Metadata/All_metadata.hdf')
         dfmetaf = pd.read_csv(pathf + 'Metadata/All_metadata.csv')
-
         # allFilesf = sorted(glob.glob(pathf + "/Current/*raw*hdf"))
         allFilesf = sorted(glob.glob(pathf + "/missing_files/organized/*hdf"))
         # / home / poyraden / Analysis / Homogenization_public / Files / sodankyla / missing_files / organized
@@ -112,8 +111,8 @@ def station_inone(st_name):
     if st_name == 'lerwick':
         #example of a station where you can use metadata from the available WOUDC files
         pathf = f'/home/poyraden/Analysis/Homogenization_public/Files/{st_name}/'
-        dfmetaf = pd.read_csv(pathf + 'all_csv_current/Lerwick_Metadata_combined.csv')  #
-        dfmetaw = pd.read_csv(pathf + 'all_csv_current/Lerwick_WOUDC_Metadata.csv')  #
+        dfmetaf = pd.read_csv(pathf + 'all_csv_current/metadata/Lerwick_Metadata_combined.csv')  #
+        dfmetaw = pd.read_csv(pathf + 'all_csv_current/metadata/Lerwick_WOUDC_Metadata.csv')  #
         allFilesf = sorted(glob.glob(pathf + "all_csv_current/*.csv"))
         roc_table_filef = (f'/home/poyraden/Analysis/Homogenization_public/Files/sonde_{st_name}_roc.txt')
         dfmetaf = organize_lerwick(dfmetaf, dfmetaw)
@@ -304,6 +303,17 @@ def df_drop(dft, st_name):
                         'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
                         'dTpump_cor'], axis=1)
 
+    if st_name == 'lerwick':
+        dft = dft.drop(['TboxK',  'SensorType', 'SolutionVolume', 'Cef', 'ibg',
+                        'iB2', 'Tpump', 'Phip', 'Eta',
+                        'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
+                        'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
+                        'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
+                        'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+                        'Phip_cor', 'unc_Phip_cor', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
+                        'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'O3c', 'dI', 'dIall', 'dEta', 'dPhi_cor',
+                        'dTpump_cor'], axis=1)
+
 
     return dft
 
@@ -420,19 +430,13 @@ def organize_madrid(dmm):
 
 def organize_lerwick(dmm, dmw):
 
-    dmm['Date'] = dmm['Date1']
+    # dmm['Date'] = dmm['Date1']
     dmm['string_bkg_used'] = 'ib2'
-    dmm['string_pump_location'] = 'case5'
-    # dmm['agency'] =
-    # # DATA_GENERATION
-    # datagen_field = 'Date,Agency,Version,ScientificAuthority'
-    # df_names = 'today', 'agency', 'version', 'stationPI'
-    # extcsv.add_data('DATA_GENERATION', datagen_summary, datagen_field)
-    #
-    # # PLATFORM
-    # platform_field = 'Type,ID,Name,Country,GAW_ID'
-    # df_names = 'type', 'id', 'name', 'country', 'gaw_id'
-    # extcsv.add_data('PLATFORM', platform_summary, platform_field)
+    dmm['SolutionConcentration'] = 10
+    dmm = dmm[dmm.ULab < 99]
+    dmm.loc[(dmm.SensorType == '5A') | (dmm.SensorType == '5a'), 'string_pump_location'] = 'case3'
+    dmm.loc[(dmm.SensorType == '6A') | (dmm.SensorType == '6a'), 'string_pump_location'] = 'case5'
+    dmm.loc[(dmm.SensorType == 'Z') | (dmm.SensorType == 'z'), 'string_pump_location'] = 'case5'
 
     return dmm
 

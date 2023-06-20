@@ -132,7 +132,7 @@ def organize_df_woudc(df, sname):
              'alpha_o3', 'stoich',
              'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'unc_Tpump_cor',
              'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
-             'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
+             'psaturated', 'cPH', 'TLabK', 'cPL', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
              'Phip_cor', 'unc_Phip_cor', 'O3', 'O3cor', 'O3_nc', 'O3c_eta', 'O3c_etabkg', 'O3c_etabkgtpump',
              'O3c_etabkgtpumpphigr', 'O3c_etabkgtpumpphigref', 'dI', 'dIall', 'dEta', 'dPhi_cor',
              'dTpump_cor'
@@ -162,6 +162,16 @@ def organize_df_woudc(df, sname):
         df['U'] = df['RelativeHumidity']
         df = df.drop(['LevelCode'], axis=1)
 
+    if sname == 'lerwick':
+        # df_names = ['Time', 'Pair', 'O3', 'T', 'WindSp', 'WindDir', 'LevelCode',
+        #             'GPHeight', 'U', 'Tbox', 'I', 'PumpMotorCurrent',
+        #             'PumpMotorVoltage', 'Lat', 'Lon', 'Height', 'dO3']
+        df['Time'] = df['Duration']
+        df['T'] = df['Temperature']
+        df['U'] = df['RelativeHumidity']
+        df['WindSp'] = df['WindSpeed']
+        df['WindDir'] = df['WindDirection']
+
 
     if sname == 'sodankyla':
         df['WindSp'] = df['WindSpeed']
@@ -175,6 +185,15 @@ def organize_metadata_woudc(dfm, stationname):
     dfm['version'] = '2.1.3'
     dfm['Name'] = 'ECC'
     dfm['CorrectionCode'] = 6
+    dfm['PumpTempLocation'] = ''
+    dfm['CorrectionWettingFlow'] = dfm['humidity_correction']
+    dfm['PFCorrected'] = round(100./dfm['Phip_ground'], 1)
+
+    if dfm.at[0, 'string_pump_location'] == 'case1': dfm['PumpTempLocation'] = 'Box'
+    if (dfm.at[0, 'string_pump_location'] == 'case2') | (dfm.at[0, 'string_pump_location'] == 'case3'):
+        dfm['PumpTempLocation'] = 'ExternalPumpTaped'
+    if dfm.at[0, 'string_pump_location'] == 'case4': dfm['PumpTempLocation'] = 'ExternalPumpGlued'
+    if dfm.at[0, 'string_pump_location'] == 'case5': dfm['PumpTempLocation'] = 'InternalPump'
 
     if stationname == 'uccle':
         dfm = station_info(dfm, 'Roeland Van Malderen', 'RMIB', 'STN', '053', 'UCCLE', 'BEL', '6447')
@@ -482,21 +501,24 @@ def organize_metadata_woudc(dfm, stationname):
 
     if stationname == 'lerwick':
 
-        dfm = station_info(dfm, 'Norrie Lyall', 'UKMO', 'STN', '043', 'Lerwick', 'GBR', 'SIS')
-        dfm['latitude'] = '60.14'
-        dfm['longitude'] = '-1.19'
-
-        if dfm.at[0,'Date'] < 20040219:
+        if dfm.at[0,'Date'] < '20021202':
             dfm.at[0, 'LaunchTime'] = '11:30:00'
-        #calculation of lunchtime
-        ltime = dfm.at[0,'LaunchTime']
-        one = np.mod(ltime, int(ltime))
-        minutes = one * 60
-        two = np.mod(minutes, int(minutes))
-        second = int(two * 60)
 
-        dfm.at[0, 'LaunchTime'] = str(int(ltime)) + ':' + str(int(minutes)) + ':' + str(second)
-        print('dfm.at[0, LaunchTime]', dfm.at[0, 'LaunchTime'])
+        if dfm.at[0,'Date'] >= '20161227':
+            dfm = station_info(dfm, 'Norrie Lyall', 'UKMO', 'STN', '043', 'Lerwick', 'GBR', 'SIS')
+            dfm['latitude'] = '60.14'
+            dfm['longitude'] = '-1.19'
+        dfm['gaw_id'] = 'SIS'
+        # if dfm.at[0,'Date'] > '20040219':
+        #     #calculation of lunchtime
+        #     ltime = dfm.at[0,'LaunchTime']
+        #     one = np.mod(ltime, int(ltime))
+        #     minutes = one * 60
+        #     two = np.mod(minutes, int(minutes))
+        #     second = int(two * 60)
+        #
+        #     dfm.at[0, 'LaunchTime'] = str(int(ltime)) + ':' + str(int(minutes)) + ':' + str(second)
+        #     print('dfm.at[0, LaunchTime]', dfm.at[0, 'LaunchTime'])
 
         if dfm.at[dfm.first_valid_index(), 'iB2'] == dfm.at[dfm.first_valid_index(), 'iBc']: dfm['ib_corrected'] = \
             dfm.at[dfm.first_valid_index(), 'iB2']
@@ -511,6 +533,9 @@ def organize_metadata_woudc(dfm, stationname):
 
         dfm['CorrectionCode'] = 6
         dfm['BackgroundCorrection'] = "constant_ib2"
+        dfm['DateTime'] = pd.to_datetime(dfm['Date'], format='%Y%m%d')
+        dfm.at[0,'DateTime'] = dfm.at[0,'DateTime'] .date()
+        dfm['UTCOffset'] = "00:00:00"
 
 
 
@@ -773,8 +798,8 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
     extcsv.add_data('TIMESTAMP', time_summary, time_field)
 
     # PREFLIGHT_SUMMARY
-    ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected'
-    df_names = 'iB0', 'iB1', 'iB2', 'SolutionType', 'SolutionVolume', 'PF', 'TimeResponse', 'ib_corrected'
+    ps_field = 'ib0, ib1, ib2, SolutionType, SolutionVolume, PumpFlowRate, OzoneSondeResponseTime, ibCorrected, PumpFlowRateCorrected'
+    df_names = 'iB0', 'iB1', 'iB2', 'SolutionType', 'SolutionVolume', 'PF', 'TimeResponse', 'ib_corrected', 'PFCorrected'
     preflight_summary = make_summary(dfm, df_names)
     extcsv.add_data('PREFLIGHT_SUMMARY', preflight_summary, ps_field)
 
@@ -799,8 +824,8 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
     extcsv.add_data('SAMPLING_METHOD', samp_summary, field=samp_field)
 
     # PUMP_SETTINGS
-    pump_field = 'MotorCurrent,HeadPressure,VacuumPressure'
-    df_names = 'MotorCurrent', 'HeadPressure', 'VacuumPressure'
+    pump_field = 'MotorCurrent,HeadPressure,VacuumPressure,PumpTempLocation'
+    df_names = 'MotorCurrent', 'HeadPressure', 'VacuumPressure', 'PumpTempLocation'
     pump_summary = make_summary(dfm, df_names)
     extcsv.add_data('PUMP_SETTINGS', pump_summary, field=pump_field)
 

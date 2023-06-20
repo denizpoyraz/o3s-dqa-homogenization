@@ -28,6 +28,7 @@ print(pfmean, ib2mean)
 wfiles = sorted(glob.glob(filepath + "/WOUDC_CSV/read_out/*_out.csv"))
 nfiles = sorted(glob.glob(filepath + "/nilu/read_out/*.csv"))
 
+#read woudc files
 for filename in (wfiles):
     name = filename.split(".")[-2].split("/")[-1][0:8]
     fname = filename.split(".")[-2].split("/")[-1]
@@ -48,6 +49,7 @@ for filename in (wfiles):
     df['O3'] = df['O3PartialPressure']
     dfl = o3tocurrent(df, dfm, dfm_main)
     print(list(dfl))
+    dfl.to_csv(f'{filepath}/read_in_csv/{fname}.csv')
 
     #now organize the maning of df and do the same for nilu files
     # and write them all in one df and save as metadata and current df files.
