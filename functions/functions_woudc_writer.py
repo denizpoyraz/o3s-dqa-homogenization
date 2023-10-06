@@ -281,9 +281,12 @@ def organize_metadata_woudc(dfm, stationname):
     if stationname == 'madrid':
         # some of the metadata is read by madrid non-homogenized woudc files, and the other from processed
         # metafiles
+        # dfm_woudc = pd.read_csv(
+        #     '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/Madrid_WOUDC_Metadata.csv')
         dfm_woudc = pd.read_csv(
-            '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/out/Madrid_WOUDC_Metadata.csv')
+            '/home/poyraden/Analysis/Homogenization_public/Files/madrid/WOUDC/madrid_metadata_till2022.csv')
 
+        dfm_woudc = dfm_woudc.drop_duplicates('TIMESTAMP_Date')
         dfm['Date'] = pd.to_datetime(dfm['DateTime'], format='%Y-%m-%d')
         dfm['Datenf'] = dfm['Date'].apply(lambda x: x.strftime('%Y%m%d'))
         dfm['Datenf'] = dfm['Datenf'].astype('int')
@@ -899,7 +902,9 @@ def f_write_to_woudc_csv(df, dfm, station_name, path):
     if (dfm.at[0, 'SerialECC'][0:1] == 'z') | (dfm.at[0, 'SerialECC'][0:1] == 'Z'):
         dfm.at[0, 'SerialECC'] = 'Z' + dfm.at[0, 'SerialECC'][1:]
         dfm.at[0, 'SensorType'] = 'ENSCI'
+    dfm["Date"] = pd.to_datetime(dfm["Date"]).dt.strftime("%Y%m%d")
 
+    print('in woudc writer function', dfm.at[0, 'Date'])
     fileout = str(dfm.at[0, 'Date']) + ".ECC." + str(dfm.at[0, 'SensorType']) + "." + str(
         dfm.at[0, 'SerialECC']) + "." + str(dfm.at[0, 'agency']) + ".csv"
 

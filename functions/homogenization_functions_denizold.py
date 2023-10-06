@@ -625,3 +625,34 @@ def VecInterpolate(XValues, YValues, dft, LOG):
                 dft.at[k, 'Cef'] = y1 + (dft.at[k, 'Pair'] - x1) * (y2 - y1) / (x2 - x1)
 
     return dft['Cef']
+
+
+
+def smooth_gaussian(time, ozcur, twindow, sigma):
+    n1 = 0
+    n2 = len(ozcur)
+    smooth = [0] * n2
+
+    for ir in range(0, n2):
+        timeir = time[ir]
+        id1 = np.argmin(abs(time - (timeir - twindow)))
+        id2 = np.argmin(abs(time - (timeir + twindow)))
+        # print('id1, id2')
+        # print(id1, id2)
+        ir1 = max(id1, n1)
+        ir2 = min(id2, n2 - 1)
+        # print('ir1, ir2')
+        # print(ir1, ir2)
+        expcoeffsum = 0
+        factor = 0
+        hlp = 0
+        i = ir1
+        while i <= ir2:
+            hlp = np.exp(-((time[i]) - (timeir))**2  / (2 * (sigma ** 2)))
+            expcoeff = hlp * ozcur[i]
+            expcoeffsum = expcoeffsum + expcoeff
+            factor = factor + hlp
+            i = i + 1
+        smooth[ir] = 1 / factor * expcoeffsum
+
+    return smooth

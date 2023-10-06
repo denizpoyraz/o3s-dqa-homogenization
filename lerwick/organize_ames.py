@@ -28,8 +28,11 @@ for filename in (allFiles):
     name = filename.split(".")[-2].split("/")[-1][0:8]
     fname = filename.split(".")[-2].split("/")[-1]
     print(name, fname)
-    if (search("md", fname)) or (search("metadata", fname)): continue
 
+    if (search("md", fname)) or (search("metadata", fname)): continue
+    if int(name) < 20040220:continue
+
+    if fname == '20220105':continue
 
     metafile = filepath + 'read_out/' + name + "_metadata.csv"
 
@@ -37,9 +40,15 @@ for filename in (allFiles):
     dfm = pd.read_csv(metafile)
     # print(list(dfd))
 
-    dfd['DateTime'] = pd.to_datetime(dfm.at[0,'date'], format='%Y%m%d')
+    try:dfd['DateTime'] = pd.to_datetime(dfm.at[0,'date'], format='%Y%m%d')
+    except KeyError:
+        dfm.at[0, 'date'] = int(fname)
+        dfd['DateTime'] = pd.to_datetime(dfm.at[0, 'date'], format='%Y%m%d')
 
-    dfd['O3'] = dfd['Ozone partial pressure']
+
+    try:dfd['O3'] = dfd['Ozone partial pressure']
+    except KeyError:dfd['O3'] = dfd['PO3']
+
     # input variables for hom.
     dfd['Tpump'] = dfd['Temperature inside styrofoam box'].astype(float) + k
     dfd['Eta'] = 1
@@ -60,25 +69,25 @@ for filename in (allFiles):
     dfmo = organize_lerwick(dfm)
     dfmo['DateTime'] = pd.to_datetime(dfm.at[0,'date'], format='%Y%m%d')
 
-    # dfl = o3tocurrent(dfd, dfmo, dfmeta)
+    dfl = o3tocurrent(dfd, dfmo, dfmeta)
 
 
     rawname = name + "_rawcurrent.hdf"
     metaname = name + "_metadata.csv"
 
-    # dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
+    dfl = dfl.drop(['SensorType', 'SolutionVolume', 'Cef', 'ibg'], axis=1)
 
 
-    # dfl.to_hdf(filepath + '/Current/' + rawname, key = 'df')
+    dfl.to_hdf(filepath + '/Current/' + rawname, key = 'df')
     dfmo.to_csv(filepath + '/Metadata/' + metaname)
 
-    list_mdata.append(dfmo)
-
-
-dff = pd.concat(list_mdata, ignore_index=True)
-csvall = filepath + "Metadata/All_metadata_nilu.csv"
+#     list_mdata.append(dfmo)
 #
-dff.to_csv(csvall)
+#
+# dff = pd.concat(list_mdata, ignore_index=True)
+# csvall = filepath + "Metadata/All_metadata_nilu.csv"
+# #
+# dff.to_csv(csvall)
 
     # if (msize != 23) & (msize != 58) & (msize != 63) & (msize != 55):
     #     print('check md', msize, filename)

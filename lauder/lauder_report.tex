@@ -118,7 +118,7 @@ For the pressure value of the laboratory a fixed value 970.2 hPa is used.
 
 
 \section{O3S corrections}
-\label{sec:v04}
+\label{sec:v05}
 
 
 The recommended and applied O3S-DQA corrections are summarized below.
@@ -159,7 +159,7 @@ are denoted by 'DQA' in the rest of the manuscript.
 
                 \begin{figure}
         \centering
-\includegraphics[width=1.3\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/Eta_vs_Raw_alltimerange.png}
+\includegraphics[width=1.3\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/Eta_vs_Raw_alltimerange.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Conversion efficiency correction}
             \label{fig:eta}
@@ -179,7 +179,7 @@ of the iB2 values, 2 different period is considered. As it can be seen in Fig~\r
 %
                 \begin{figure}
         \centering
-\includegraphics[width=1.3\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/EtaBkg_vs_Eta_alltimerange.png}
+\includegraphics[width=1.3\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/EtaBkg_vs_Eta_alltimerange.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Background current correction}
             \label{fig:bkg}
@@ -198,7 +198,7 @@ of the iB2 values, 2 different period is considered. As it can be seen in Fig~\r
 %
                     \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/EtaBkgTpump_vs_EtaBkg_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/EtaBkgTpump_vs_EtaBkg_alltimerange.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Pump temperature correction }
             \label{fig:tpump}
@@ -210,7 +210,7 @@ of the iB2 values, 2 different period is considered. As it can be seen in Fig~\r
 %
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/EtaBkgTpumpPhigr_vs_EtaBkgTpump_alltimerange.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Pump flow rate correction applied}
             \label{fig:pf_ptu}
@@ -223,7 +223,7 @@ and polynomial fit with an error of less than $0.03\%$. The effect of this corre
 
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/EtaBkgTpumpPhigrPhiEff_vs_EtaBkgTpumpPhigr_alltimerange.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Pump flow rate correction applied}
             \label{fig:pf_eff}
@@ -247,7 +247,7 @@ WOUDC O3S values is shown in Fig~\ref{fig:fig_dqa_ndacc}.
 
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/DQA_vs_Raw_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/DQA_vs_Raw_alltimerange.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Effect of all DQA corrections}
             \label{fig:dqa_all}
@@ -255,53 +255,20 @@ WOUDC O3S values is shown in Fig~\ref{fig:fig_dqa_ndacc}.
 %
                         \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/DQA_vs_NDACC_alltimerange.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/DQA_vs_NDACC_alltimerange.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Comparison of DQA and NIWA O3S values}
             \label{fig:fig_dqa_ndacc}
     \end{figure}
 %%
 %
-%    \section{Effect DQA corrections to ozone profiles }
+%  
+
+
 %
-%    In order to see the effect of DQA corrections, explained in Sec.\ref{sec:v04}, on the ozone profiles the ozone profiles have been
-%explored with and without DQA corrections. The pump temperature location correction is checked for the 2 different periods, before and after 1998, when there was a change
-%in the pump temperature location.
-%    All the plots are summarized between Fig.\ref{fig:pl_before} to Fig.\ref{fig:op_all}.
+
 %
-%
-%                                \begin{figure}
-%        \centering
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/Plots/Before_1998_effectPTC.png}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Pump temperature location correction between 1994-1998}
-%            \label{fig:pl_before}
-%    \end{figure}
-%
-%                                    \begin{figure}
-%        \centering
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/Plots/After_1998_effectPTC.png}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Pump temperature location correction between 1998-2021}
-%            \label{fig:pl_after}
-%    \end{figure}
-%                                    \begin{figure}
-%
-%
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/Plots/AllPeriod_WOUDC_DQA_Raw.png}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Effect of all DQA corrections with respect to correction applied ozone profiles and comparison to WOUDC}
-%            \label{fig:op_all}
-%    \end{figure}
-%
-%
-%%                                                \begin{figure}
-%%        \centering
-%%\includegraphics[width=1.2\textwidth]{../../Files/lauder/Plots/DQA_WOUDC.png}
-%%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%%    \caption{Comparison of WOUDC and DQA ozone profiles}
-%%            \label{fig:op_dqawoudc}
-%%    \end{figure}
+
 %
 \section{Total Ozone Normalization before and after homogenization.}
 
@@ -341,34 +308,27 @@ climatological means, are added. The corresponding plots are shown in Fig.\ref{f
 %%            \label{fig:ton3}
 %%    \end{figure}
 %
-\section{Comparison plots to AURA MLS v04}
+\section{Comparison plots to AURA MLS v05}
 
-    The homogenized and non-homogenized Lauder data is compared with AURA-MLS data using v04. The not-corrected,
+    The homogenized and non-homogenized Lauder data is compared with AURA-MLS data using v05. The not-corrected,
     DQA homogenized and NIWA O3S data sets are compared and shown in figures between
-\ref{fig:rawv04} and \ref{fig:niwav04}.
+\ref{fig:dqav05} and \ref{fig:niwav05}.
 
-                                \begin{figure}
-        \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_v04_nors80_new.png}
-%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{No correction O3S Lauder vs AURA MLS v04 }
-            \label{fig:rawv04}
-    \end{figure}
 
                             \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/DQA_vs_MLS_v04_nors80_new.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/DQA_vs_MLS_v05.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{DQA Lauder O3S vs AURA MLS v04 }
-            \label{fig:dqav04}
+    \caption{DQA Lauder O3S vs AURA MLS v05 }
+            \label{fig:dqav05}
     \end{figure}
 
                                 \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/NIWA_vs_MLS_v04_nors80_new.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/Original_vs_MLS_v05.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-    \caption{ NIWA Lauder O3S vs AURA MLS v04  }
-            \label{fig:niwav04}
+    \caption{ NIWA Lauder O3S vs AURA MLS v05  }
+            \label{fig:niwav05}
     \end{figure}
 
 %
@@ -387,7 +347,7 @@ and the comparison of DQA-homogenized Lauder data with RS80 correction are shown
 
                                     \begin{figure}
         \centering
-\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots_new/RS80_vs_noRS80.png}
+\includegraphics[width=1.2\textwidth]{../../Files/lauder/DQA_nors80/Binned/Plots/RS80_vs_noRS80.png}
 %        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
     \caption{Effect of  RS80 correction}
             \label{fig:heatmap_rs80}
@@ -422,118 +382,3 @@ and the comparison of DQA-homogenized Lauder data with RS80 correction are shown
 
 
 
-%One fit function: 2 parameters are fitted Y$_{10}$ and Y$_{20}$\\
-%\\
-%    \textrm{Upward region: } $ t > t_{up}  $ and $  t < t_{down}$
-%\begin{equation}    \label{onefit_up}
-%    I(t) = Y_{10}  (1 - e^{-(t-t_{up})/ \tau_{fast}})+ Y_{20}  (1 - e^{-(t-t_{up}) / \tau_{slow}})\\
-%\end{equation}
-%        \textrm{Downward region: } $ t > t_{down} $
-%\begin{equation}  \label{onefit_down}
-%    I(t) = Y_{10}  e^{-(t-t_{down}) / \tau_{fast}}) +
-%Y_{20} (1 - e^{-(t_{down}-t_{up}) / \tau_{slow}}) e^{-(t - t_{down}) / \tau_{slow}}\\
-%\end{equation}
-
-%    \begin{figure}
-%\includegraphics[width=0.5\textwidth]{../Plots/Interactive/Normalization.pdf}
-%\includegraphics[width=0.5\textwidth]{../Plots/Interactive/Normalization_zoom.pdf}\\
-% \label{fig_normecc_2}
-%        \caption{The normalized ECC signal, method explained in Sec.3}
-%\end{figure}
-
-
-%    \begin{figure}
-%
-%    \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_r1.pdf} \\
-%
-%    \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_log.pdf} \\
-%   \includegraphics[width=0.9\textwidth]{../Plots/Interactive/All_r2.pdf}
-%    \caption{}
-%\label{fig_conv}
-%\end{figure}
-
-%
-%
-%\section{O3S corrections and the corresponding comparison plots to AURA MLS  v04}
-%\label{sec:v04}
-%
-%        Here in Fig~\ref{fig:raw_madrid} we can see the raw madrid data-set starting from, the beginning of the AURA MLS, 2004.
-%
-%    \begin{figure}
-%        \centering
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Raw Uccle-MLS comparison}
-%            \label{fig:raw_madrid}
-%    \end{figure}
-%
-%    Background correction applied Uccle data is shown in Fig~\ref{fig:bkg_madrid}. If station $I_B$ exceeds $I_{B,\text{Mean}}\pm2\sigma_{IB}$ then $I_B$
-%should be replaced by the more representative climatological value of $I_{B,\text{Mean}}$, however with
-%larger uncertainty of $2\sigma_{IB}$. As it can be seen in  Fig~\ref{fig:bkg_madrid}, the Uccle background values in MLS time period do not fall into  $I_{B,\text{Mean}}\pm2\sigma_{IB}$
-%    values that this correction does not have an effect.
-%
-%        \begin{figure}
-%        \centering
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/Bkg_vs_MLS}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Background correction applied, Uccle-MLS comparison}
-%            \label{fig:bkg_madrid}
-%    \end{figure}
-%
-%
-%Pump flow (PF) rate ground correction is applied to the Uccle data only for the piston temperature, using Eq.15 and Eq.16 from the O3S-DQA Guidelines version 2. For Eq.15 $C_{PH}$ is taken
-%    0, since no humidification correction is needed. The PFefficiency correction at low pressures are applied according to Eq.22 and Tab.6 from the O3S-DQA Guidelines version 2.
-%    Since Uccle launches ENSCI sondes, Komhyr 1995 correction factors are applied. These corrections applied to Uccle data is shown in Fig~\ref{fig:phip_madrid}.
-%
-%            \begin{figure}
-%        \centering
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/Phip_vs_MLS}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Pump flow corrections applied, Uccle-MLS comparison}
-%            \label{fig:phip_madrid}
-%    \end{figure}
-%
-%    Truest pump temperature correction is applied according to Eq.13 of the O3S-Guidelines. $\Delta T_{PPI}$ is calculated using Eq. 13 and $\Delta T_C = 0$ since the location of the
-%    pump thermisitor is inside the pump base (case V). The truest pump temperature applied to Uccle data is shown in Fig~\ref{fig:tpump_madrid}.
-%
-%                \begin{figure}
-%        \centering
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/Tpump_vs_MLS}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{Truest pump temperature corrections applied, Uccle-MLS comparison}
-%            \label{fig:tpump_madrid}
-%    \end{figure}
-%
-%    All the corrections explained above: background; PF rate and truest pump temperature, applied to Uccle data is shown Fig~\ref{fig:o3s_madrid}.
-%
-%                    \begin{figure}
-%        \centering
-%\includegraphics[width=1.2\textwidth]{../../Files/lauder/MLS/Plots/O3S_vs_MLS}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{O3S corrections applied, Uccle-MLS comparison}
-%            \label{fig:o3s_madrid}
-%    \end{figure}
-%
-%    The effect of the corrections starting from the raw Uccle data, PF rate and PF rate together with truest pump temperature (all o3s corrections),  can be seen in Fig~\ref{fig:step_madrid}.
-%
-%                    \begin{figure}
-%        \centering
-%\includegraphics[width=0.8\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%        \includegraphics[width=0.8\textwidth]{../../Files/lauder/MLS/Plots/Phip_vs_MLS_zoom.pdf}
-%        \includegraphics[width=0.8\textwidth]{../../Files/lauder/MLS/Plots/Tpump_vs_MLS_zoom.pdf}
-%        \includegraphics[width=0.8\textwidth]{../../Files/lauder/MLS/Plots/O3S_vs_MLS_zoom.pdf}
-%%        \includegraphics[width=0.9\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \caption{O3S corrections applied, raw-phip-tpump-o3s, Uccle-MLS comparison}
-%            \label{fig:step_madrid}
-%    \end{figure}
-%
-
-
-
-
-%    \begin{figure}
-%        \centering
-%\includegraphics[width=1.5\textwidth]{../../Files/lauder/MLS/Plots/Raw_vs_MLS_zoom.pdf}
-%    \label{raw_madrid_zoom}
-%    \caption{Raw Uccle-MLS comparison in pressure levels less than 57 hPa }
-%\end{figure}

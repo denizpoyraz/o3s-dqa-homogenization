@@ -12,48 +12,33 @@ from functions.df_filter import filter_data
 # write the Sodankyla data to a df that matches with MLS
 
 problem = open("DQA_ProblematicFiles.txt", "a")
+# sname = 'ny-aalesund'
+# scname='Ny-Alesund'
+# sname = 'sodankyla'
+# scname='Sodankyla'
+# sname = 'scoresby'
+# scname='Scoresbysund'
+# sname = 'lerwick'
+# scname='Lerwick'
+sname = 'uccle'
+scname = 'Uccle'
+# sname = 'madrid'
+# scname = 'Madrid'
+# sname = 'lauder'
+# scname = 'Lauder'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{sname}/'
 
 
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
 
+# ozone = 'O3'
+# name_out = f'MLS_{scname}Interpolated_nors80_v05_original'
 
-# ozone = 'O3_nc' # raw, no correction applied
-# ozone = 'O3c_eta' # etac correction applied
-# ozone = 'O3c_etabkg' # eta bkg correction applied
-# ozone = 'O3c_etabkgtpump' # only phip correction applied
-# ozone = 'O3c_etabkgtpumpphigr' # only tpump applied
-# ozone = 'O3c_bkgphip'
-ozone = 'O3'
-# ozone = 'PO3_dqar'
-
-# name_out = 'MLS_SodankylaInterpolated_raw_rs80_v04'
-# name_out = 'MLS_LauderInterpolated_previousversion_rs80_v04'
-# name_out = 'MLS_MadridInterpolated_rs80_v04_dqa'
-# name_out = 'MLS_LauderInterpolated_rs80_v04_niwa'
-# name_out = 'MLS_LauderInterpolated_rs80_v04_dqa'
-name_out = 'MLS_NyalesundInterpolated_nors80_v04_ames'
-# name_out = 'MLS_NyalesundInterpolated_nors80_v04_dqa'
-
-# name_out = 'MLS_ScoresbyInterpolated_rs80_v04_dqa_plusp201606'
-# name_out = 'MLS_UccleInterpolated_rs80_v04_dqa'
-# name_out = 'MLS_UccleInterpolated_rs80_v04_dqa'
-# name_out = 'MLS_ValentiaInterpolated_nors80_v04_woudc'
-# name_out = 'MLS_ValentiaInterpolated_nors80_v04_woudc'
-
+ozone = 'O3c'
+name_out = f'MLS_{scname}Interpolated_nors80_v05_dqa'
 
 # mls data frame to read
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedMadrid_DQA_v04.csv')
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedSodankyla_DQA_v04.csv')
-dfm = pd.read_csv(path + 'AURA_MLSData_MatchedNYalesund_DQA_v04.csv')
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedScoresby_DQA_v04.csv')
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedUccle_DQA_v04.csv')
-# dfm = pd.read_csv(path + 'AURA_MLSData_MatchedValentia_DQA_v04.csv')
+dfm = pd.read_csv(path + f'MLS/AURA_MLSData_Matched{scname}_DQA_v05.csv')
+
 
 
 
@@ -61,32 +46,39 @@ dfm = pd.read_csv(path + 'AURA_MLSData_MatchedNYalesund_DQA_v04.csv')
 date_list = dfm.drop_duplicates(['Date']).Date.tolist()
 print(len(date_list), date_list)
 
-# list_data = []
 listall_data = []
 
-# file_test = matcheddates[300:800]
+# date_list = [20070131]
 
 for date in date_list:
-    # print(date, type(date))
-    if (date == 20190605) | (date == 20191010) | (date == 20200902) | (date == 20210414): continue
-    # if date == 20190605:
-    #     continue
-    if date < 20160601:
-        try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
+    print(date)
+    if (date == 20210315) | (date == 20210318) | (date == 20210322) | \
+            (date == 20200307) | (date == 20200226) | (date == 20190925) | (date == 20050222): continue
+    if (date == 20190605) | (date == 20191010) | (date == 20200902):
+        continue
+    # print(str(date)[0:4]+'-'+str(date)[4:6]+'-'+str(date)[6:8])
+    dates = str(date)[0:4]+'-'+str(date)[4:6]+'-'+str(date)[6:8]
+    # if date < 20200909:continue
+
+    ## ny alesund specific
+    # if date < 20050212:continue
+    # if date <= 20200909:
+    #     try:df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
+    #     except FileNotFoundError:df = pd.read_csv(path + "DQA_nors80/" + str(date) + "_all_hom_upd_nors80.csv")
+    # if date > 20200909:
+    #     df = pd.read_csv(path + "DQA_nors80/" + str(date) + "_all_hom_upd_nors80.csv")
+    #     df['Date'] = date
+    try:
+        # df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
+        df = pd.read_csv(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.csv")
+
+    except FileNotFoundError:
+        try:
+            df = pd.read_csv(path + "DQA_nors80/" + str(date) + "_all_hom_upd_nors80.csv")
         except FileNotFoundError:
-            print('FileNotFoundError', date)
+            print('File not found', date)
             continue
 
-    if date > 20160601:
-        print(date)
-        # print()
-        # try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_final_nors80_tpumpmm_v2.hdf")
-        try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_nors80.hdf")
-
-
-        except FileNotFoundError:
-            print('FileNotFoundError', date)
-            continue
 
     # df = filter_data(df)
     if len(df) < 10:
@@ -95,7 +87,6 @@ for date in date_list:
 
     # df['Height'] = df['Alt']
 
-    print(date)
 
     # if date == 20190605:continue
 
@@ -105,7 +96,8 @@ for date in date_list:
     maxh = dfn.Height.max()
 
     if len(dfn) < 10:
-        print('height problem', date)
+
+        print('Problematic files', date)
         continue
 
     index = dfn[dfn["Height"] == maxh].index[0]
@@ -136,8 +128,8 @@ for date in date_list:
     xuccle = np.array(xuccle)
     yuccle = np.array(yuccle)
     if ((len(xuccle) < 15) | (len(xuccle) == 0)):
-        # print('Problem here ? ', header_date)/
-        problem.write(str(df.at[df.first_valid_index(), 'Date']) + '\n')
+        print('Problem here ? ', date)
+        # problem.write(str(df.at[df.first_valid_index(), 'Date']) + '\n')
         continue
 
     # indu = np.where(xuccle < 0)[0]
@@ -153,17 +145,11 @@ for date in date_list:
     if (max(yuccle) < max(ymain)): continue
     # if(min(yuccle) > min(ymain)):continue
 
-    # 5 different linear interpolations
     fl = interp1d(yuccle, xuccle)
-    # fn = interp1d(yuccle, xuccle, kind='nearest')
-    # fp = interp1d(yuccle, xuccle, kind='previous')
-    # fne = interp1d(yuccle, xuccle, kind='next')
+
 
     ## try except part
     xinter_linear = [0] * len(ymain);
-    # xinter_nearest = [0] * len(ymain)
-    # xinter_previous = [0] * len(ymain)
-    # xinter_next = [0] * len(ymain)
 
     for ix in range(len(ymain)):
         try:
@@ -177,8 +163,11 @@ for date in date_list:
             # print(ymain[ir], xinter_linear[ir])
             xinter_linear[ir] = np.nan
 
+    try:df['Date'] = df['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
+    except KeyError:
+        df['Date'] = date
+        df['Date'] = df['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
 
-    df['Date'] = df['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
     df['Date'] = df["Date"].dt.strftime('%Y%m%d')
 
     header_date = df.at[df.first_valid_index(), 'Date']
@@ -237,13 +226,31 @@ for date in date_list:
     listall_data.append(dfl)
 
 # Merging all the data files to df
-
-# df = pd.concat(list_data, ignore_index=True)
 dfall = pd.concat(listall_data, ignore_index=True)
-
 dfall.to_csv(path + "MLS/" + name_out + ".csv")
-dfall.to_hdf(path + "MLS/" + name_out + ".h5", key = 'df')
 
 
-
-
+# if date < 20220103:
+#     # try: df = pd.read_hdf(path + "DQA_nors80/" + dates + "_all_hom_nors80.hdf")
+#
+#     # try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom*nors80.hdf")
+#     try: df = pd.read_csv(path + "DQA_nors80/" + str(date) + "_all_hom*nors80.csv")
+#
+#     except FileNotFoundError:
+#         print('FileNotFoundError', date)
+#         continue
+#
+# if date >= 20220103:
+#     print(date)
+#     # print()
+#     # try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom_final_nors80_tpumpmm_v2.hdf")
+#     # try: df = pd.read_hdf(path + "DQA_nors80/" + str(date) + "_all_hom*nors80.hdf")
+#     # try: df = pd.read_csv(path + "DQA_nors80/" + str(date) + "_all_hom_upd_nors80.csv")
+#     try: df = pd.read_csv(path + "DQA_nors80/" + dates + "_all_hom_upd_nors80.csv")
+#
+#
+#     except FileNotFoundError:
+#         print('FileNotFoundError', date)
+#         continue
+# if date < 20200307:continue
+# df = pd.read_csv(path + "DQA_nors80/" + str(date) + "_all_hom*nors80.csv")

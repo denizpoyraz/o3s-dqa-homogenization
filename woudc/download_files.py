@@ -6,13 +6,12 @@ import pandas as pd
 ## this code takes a csv file that has the urls of the each data day, and downloads the corresponding url csv file
 ## First one needs to download data-file url list from https://woudc.org/data/explore.php?lang=en
 
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/lerwick/'
+station_name = 'valentia'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{station_name}/'
 
-# df = pd.read_csv(path + 'woudc-DataURLFileList_valentia.csv', low_memory=False)
-df = pd.read_csv(path + 'woudc-DataURLFileList_lerwick.csv', low_memory=False)
+df = pd.read_csv(path + 'woudc-DataURLFileList_valentia_2022.csv', low_memory=False)
+# df = pd.read_csv(path + 'woudc-DataURLFileList_2022_2023.csv', low_memory=False)
 
-station_name = 'lerwick'
 size = len(df)
 
 print(len(df))
@@ -48,7 +47,7 @@ for i in range(size):
     req = requests.get(url)
     url_content = req.content
 
-    csv_file = open(path + 'WOUDC_CSV/' + name, 'wb')
+    csv_file = open(path + 'CSV/' + name, 'wb')
     csv_file.write(url_content)
     csv_file.close()
 

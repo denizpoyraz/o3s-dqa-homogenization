@@ -7,11 +7,11 @@ from homogenization_functions import o3tocurrent
 
 kelvin = 273.15
 
-
-
-filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/missing_files/read_out/'
+# filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/missing_files/read_out/'
+filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/nilu/read_out/'
 fileout = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/missing_files/organized/'
-allFiles = sorted(glob.glob(filepath + "*.csv"))
+
+allFiles = sorted(glob.glob(filepath + "20201210*.csv"))
 mFiles = sorted(glob.glob(filepath + "metadata/*.csv"))
 
 dlist = ['Pair', 'Time', 'Height', 'TboxK', 'TboxC', 'WindDirection', 'WindSpeed',
@@ -36,8 +36,10 @@ for (fname, mname) in zip(allFiles, mFiles):
     dfm = pd.DataFrame(columns=mlist)
 
 
-    df['Pair'] = dft['Pair']
-    df['Time'] = dft['Time after launch']
+    # df['Pair'] = dft['Pair']
+    df['Pair'] = dft['Pressure at observation']
+    df['Time'] = dft['Time']
+    # df['Time'] = dft['Time after launch']
     df['Height'] = dft['Geopotential height']
     df['TboxC'] = dft[ 'Temperature inside styrofoam box']
     df['TboxK'] = df['TboxC'] + kelvin
@@ -115,7 +117,9 @@ for (fname, mname) in zip(allFiles, mFiles):
             dfm['RadiosondeSerial'] = dfmt[c]
 
 
+    if datet == '20210826':dfm['SerialECC'] = '6A36437'
     print(datet, dfm.at[dfm.first_valid_index(), 'SerialECC'])
+
     if (dfm.at[dfm.first_valid_index(), 'SerialECC'][0] == "4"): dfm.at[0, 'SensorType'] = 'SPC'
     if (dfm.at[dfm.first_valid_index(), 'SerialECC'][0] == "5"): dfm.at[0, 'SensorType'] = 'SPC'
     if (dfm.at[dfm.first_valid_index(), 'SerialECC'][0] == "6"): dfm.at[0, 'SensorType'] = 'SPC'

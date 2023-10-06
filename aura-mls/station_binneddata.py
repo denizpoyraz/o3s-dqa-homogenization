@@ -8,37 +8,25 @@ from re import search
 from datetime import datetime
 from df_filter import filter_data
 
-# ozone = 'O3_nc' # raw, no correction applied
-# ozone = 'O3c_eta' # etac correction applied
-# ozone = 'O3c_etabkg' # eta bkg correction applied
-# ozone = 'O3c_etabkgtpump' # only phip correction applied
-# ozone = 'O3c_etabkgtpumpphigr' # only tpump applied
-# ozone = 'O3c_bkgphip'
-ozone = 'O3' #woudc
-# ozone = 'PO3_dqar'
+#{sodankyla, lauder, uccle, madrid, ny-aalesund, scoresby, valentia, lerwick}
 
+ozone = 'O3' #original
 
-name_out = 'SodankylaInterpolated_dqa_nors80_upd'
-# name_out = 'UccleInterpolated_dqa_nors80'
-# name_out = 'LauderInterpolated_dqa_nors80'
-# name_out = 'LauderInterpolated_dqa_nors80'
-# name_out = 'scoresbyInterpolated_dqa_nors80'
-# name_out = 'MadridInterpolated_dqa_nors80'
-# name_out = 'NyalesundInterpolated_dqa_nors80_new'
-# name_out = 'Valentia_nors80'
+# sname = 'ny-aalesund'
+# sbname = 'Ny-Aalesund'
+# sname = 'uccle'
+# sbname = 'Uccle'
+sname = 'sodankyla'
+sbname = 'Sodankyla'
+name_out = f'{sbname}Interpolated_dqa_nors80_till2022'
 
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{sname}/DQA_nors80/'
 
-
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/DQA_nors80/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/DQA_nors80/'
-
-
-allFiles = sorted(glob.glob(path + "*all_hom_nors80.hdf"))
+# bool_csv = False
+# if bool_csv:
+#     allFiles = sorted(glob.glob(path + "*all_hom_nors80.csv"))
+# else: allFiles = sorted(glob.glob(path + "*all_hom_nors80.hdf"))
+allFiles = sorted(glob.glob(path + "*all_hom*nors80.*"))
 print('len of files', len(allFiles))
 
 # list_data = []
@@ -49,12 +37,28 @@ listall_data = []
 for (filename) in (allFiles):
     file = open(filename, 'r')
 
-    if filename == '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/DQA_nors80/20000404_all_hom_lastvr_nors80.hdf':
+    if filename == f'/home/poyraden/Analysis/Homogenization_public/Files/{sname}/DQA_nors80/20000404_all_hom_lastvr_nors80.hdf':
         continue
+    # if not bool_csv:
+    #     df = pd.read_hdf(filename)
+    # else:df = pd.read_csv(filename)
 
-    df = pd.read_hdf(filename)
+    if search('csv', filename):df = pd.read_csv(filename)
+    if search('hdf', filename):df = pd.read_hdf(filename)
+    if search('test', filename):continue
+    # if search('hdf', filename):continue
+    # df = pd.read_csv(filename)
+
+    print(filename)
+
+
     # df['date'] = df['Date'].dt.strftime("%Y%m%d")
-    df['date'] = df['Date']
+    try:df['date'] = df['Date']
+    except KeyError:
+        date = filename.split('DQA_nors80/')[1][0:8]
+        df['date'] = date
+        df['Date'] = df['date']
+
     # df['date'] = df['DateTime'].dt.strftime("%Y%m%d")
 
     datestr = df.at[df.first_valid_index(), 'date']
@@ -70,7 +74,6 @@ for (filename) in (allFiles):
     # if datestr > '20120101': continue
     # if datestr < '20180101': continue
 
-    print(filename)
 
 
     # date_tmp = filename.split('/')[-1].split('.')[0][2:8]
@@ -91,11 +94,9 @@ for (filename) in (allFiles):
     # if datestr >= '20210421':continue
     # if datestr > '20061231': continue # no bkg values
 
-    # print(filename)
-
-
-    # print(filename)
-    df = pd.read_hdf(filename)
+    # if not bool_csv:
+    #     df = pd.read_hdf(filename)
+    # else:df = pd.read_csv(filename)
 
     # print(list(df))
     # #lauder
@@ -296,7 +297,7 @@ for (filename) in (allFiles):
 
 # df = pd.concat(list_data, ignore_index=True)
 dfall = pd.concat(listall_data, ignore_index=True)
-#
+dfall.drop_duplicates(['Date','PreLevel'])
 dfall.to_csv(path + "/Binned/" + name_out + ".csv")
 dfall.to_hdf(path + "/Binned/" + name_out + ".h5", key = 'df')
 

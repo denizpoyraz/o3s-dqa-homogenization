@@ -12,8 +12,8 @@ import woudc_extcsv
 path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/WOUDC_nors80/'
 
-name_out = 'valentia_alldata'
-name_mout = 'valentia_metadata'
+name_out = 'valentia_alldata_till2022'
+name_mout = 'valentia_metadata_till2022'
 efile = open("errorfile.txt", "w")
 
 
@@ -118,10 +118,10 @@ for filename in allFiles:
 
 dfall = pd.concat(list_data, ignore_index=True)
 dfmall = pd.concat(list_mdata, ignore_index=True)
-#
-# dfall.to_csv(path + "/DQM/" + name_out + ".csv")
-dfall.to_hdf(path + "/DQM/" + name_out + ".h5", key='df')
-dfmall.to_hdf(path + "/DQM/" + name_mout + ".h5", key='df')
+# #
+dfall.to_csv(path + "/DQM/" + name_out + ".csv")
+# dfall.to_hdf(path + "/DQM/" + name_out + ".h5", key='df')
+# dfmall.to_hdf(path + "/DQM/" + name_mout + ".h5", key='df')
 dfmall.to_csv(path + "/DQM/" + name_mout + ".csv")
 
 efile.close()

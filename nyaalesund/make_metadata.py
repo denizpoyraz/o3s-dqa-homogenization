@@ -21,7 +21,7 @@ dfp['LabRH'] = dfp['LabRH'].astype(float)
 dfp.loc[dfp.LabRH < 1, 'LabRH'] = dfp.loc[dfp.LabRH < 1, 'LabRH'] * 100
 
 #ames md
-dfa = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/Metadata/All_metadata.csv')
+dfa = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/Metadata/All_metadata_upd.csv')
 #error md
 dfe = pd.read_excel('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/Nyaalesund_Metadata_ib_discrepancy.xlsx')
 
@@ -148,5 +148,5 @@ dfa = calculate_cph(dfa)
 dfa.loc[:,'unc_cPH'] = dfa['cPH'].std()
 dfa.loc[:,'unc_cPL'] = dfa['cPL'].std()
 
-dfa.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/NY_metadata_corrected.csv')
+dfa.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/NY_metadata_corrected_all.csv')
 # dfa.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/NY_metadata_corrected_test.csv')

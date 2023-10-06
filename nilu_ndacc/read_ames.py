@@ -4,6 +4,7 @@ import napB as nappy
 import pandas as pd
 import glob
 
+from organize_ames import organize_df_nya,organize_df_scoresby
 efile = open("ames_errorfile.txt", "w")
 
 
@@ -11,15 +12,15 @@ efile = open("ames_errorfile.txt", "w")
 
 K = 273.15
 k = 273.15
+station_name = 'ny-aalesund'
 
+#
+filepath = f'/home/poyraden/Analysis/Homogenization_public/Files/{station_name}/CSV/2022_missing/'
+allFiles = sorted(glob.glob(filepath + "*ny*.b*"))
 
-filepath = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/missing_files/'
-allFiles = sorted(glob.glob(filepath + "*.*"))
+# filepath = f'/home/poyraden/Analysis/Homogenization_public/Files/{station_name}/nilu/'
+# allFiles = sorted(glob.glob(filepath + "Sc201210*.p*"))
 
-# filepath = '/home/poyraden/Analysis/Homogenization_public/Files/lerwick/nilu/'
-# allFiles = sorted(glob.glob(filepath + "le2209*.*"))
-
-station_name = 'sodankyla'
 
 #
 for filename in (allFiles):
@@ -79,7 +80,8 @@ for filename in (allFiles):
         datac[v] = varname
         df[datac[v]] = X.V[v][0]
 
-    df['Pair'] = X.X[0][1]
+    # df['Pair'] = X.X[0][1]
+    df['Time'] = X.X[0][1]
 
     mdatac = [''] * len(X.A)
 
@@ -89,9 +91,16 @@ for filename in (allFiles):
         value = X.A[j][0]
         dfm.at[0, mdatac[j]] = value
 
+    if int(fname) >= 20220101:
+        df['Pair'] = df['Time']
+
     dout = filepath + "read_out/" + fname + ".csv"
     mout = filepath + "read_out/" + fname + "_metadata.csv"
 
+    dff, dfmf = organize_df_nya(df,dfm)
+    # dff, dfmf = organize_df_scoresby(df,dfm)
+    # dff.to_csv(dout)
+    # dfmf.to_csv(mout)
     df.to_csv(dout)
     dfm.to_csv(mout)
 

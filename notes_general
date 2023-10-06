@@ -1,0 +1,71 @@
+
+Data update at least until end of 2022 for the paper
+
+Lauder: check richards files
+
+Lerwick: contacted station PI
+
+Madrid: downloading latest files from WOUDC -> downloaded-> metadata is available in recent WOUDC files,
+but first asked to station PI for an updated excel file. If they can provide me I will use that file, otherwise convert the woudc ones myself
+    * data proccessing-> done, check heatmaps
+    *heatmaps are fine-> good
+    * dates :1996-01
+
+Ny-Aalesund: new files from nilu, dqa hom. done -> but reading ames file using nappy and adding those files to the main metada
+was not made in a good way. If you have the time, fix merging all the data-sets.
+    * making binned data to check heatmaps
+    *check heatmaps: ->seems all fine
+    * data missing between 22/04 and 23/01
+    * dates :1992-01
+
+
+Scoresbysund: 2022 downloaded from nilu
+    *check conversion to po3 to current for dates after 2015/12/24
+    it seems conversion correction from ensci1010 to spc1010 is already applied-> this was already known.
+       convert po3 to current using old ames/nilu reader and organize and calculate current
+       *new heatmaps are checked all seem fine
+       * dates :1991-11
+
+
+Sodankyla: 2022 downloaded
+    * running the homogenization code
+    * heatmaps are fine
+           * dates :1991-11
+
+     #####problem with the data, saw starnge values 20070131, check other dates!!!
+
+
+Uccle: copied from server to local pc, do the processing
+    * update and check heatmaps-> all done
+    *mls data is done
+
+Valentia:
+    *2022 downloaded, homogenization done
+    * heatmaps, check-> done look fine
+
+** all files apart from lerwick and lauder transfreed to ftp hegiftom
+
+**** Things to do for the paper:
+1) updating the time series-> done
+2) Comparing to MLS-> almost
+3) Trying LOTUS regression, checking the effect of different proxies-> started
+4) maybe checking total ozone values with th ones got from Ryan from satellites
+
+
+Extras:
+* New LOTUS is installed
+* Check predictors, uccle code and making monthly means etc...
+
+For trend analysis:
+* first calculate km means
+* then monthly means
+* start with uccle
+* all done -> next step is to deasasonolize the data and test LOTUS MLR
+* but you have to update predictor, but first use the current predictors in new lotus mlr model
+
+check Lerwicj PTU values and humidity correction values
+also check the latter for other stations> fixed
+-> next time make lerwick heatmaps and mls comparisons
+
+#################################  22 September
+Lerwick km meanly, deasonalize

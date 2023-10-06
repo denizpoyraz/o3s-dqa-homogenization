@@ -21,10 +21,14 @@ fw = open(path_to_file, 'w')
 # dfmeta = pd.read_csv(filepath + "Metadata/All_metadata_ndacc_ib2.csv" )
 
 ##read datafiles
-allFiles = sorted(glob.glob(filepath + "CSV/*181213*.csv"))
+allFiles = sorted(glob.glob(filepath + "CSV/*.csv"))
 columnStr1 = ['Pair', 'Time', 'Alt', 'Temp', 'RH','TPump', 'O3', 'WindDir','WindSp']
 columnStr2 = ['Time', 'Pair', 'Alt', 'Temp', 'RH', 'O3','WindDir','WindSp', 'GPSAlt','Lon', 'Lat', 'TPump', 'I',
              'VoltBattery', 'PumpI']
+columnStr3 = ['Pair', 'Alt', 'Temp', 'RH', 'O3','WindDir','WindSp', 'GPSAlt','Lon', 'Lat', 'TPump', 'I',
+             'VoltBattery', 'PumpI','Time']
+columnStr32 = ['Pair', 'Alt', 'Temp', 'RH', 'O3','WindDir','WindSp', 'GPSAlt','Lon', 'Lat', 'TPump', 'I',
+             'VoltBattery', 'PumpI','Time','Time2']
 # print(allFiles)
 
 dfmeta = pd.read_csv(filepath + 'NY_metadata_corrected.csv')
@@ -43,9 +47,9 @@ for filename in (allFiles):
     if (search("md", fname)) or (search("metadata", fname)): continue
     # if (fname == 'so980827') | (fname == 'so990708'): continue #one problematic file in sodankyal
     # print('filename', filename)
-
-    metafile = filepath + 'CSV/' + fname + "_md.csv"
-
+    if (fname[0:2] == 'ny') | (fname[0:2] == 'na'):metafile = filepath + 'CSV/' + fname + "_md.csv"
+    if (fname[0:2] != 'ny') & (fname[0:2] != 'na'):metafile = filepath + 'CSV/' + fname + "_metadata.csv"
+    print('metafile', metafile)
     # extract the date from file name
     date = datetime.strptime(name, '%y%m%d')
     datef = date.strftime('%Y%m%d')
@@ -53,16 +57,6 @@ for filename in (allFiles):
     # print('datef', datef, type(datef))
     if int(datef) == 20010927: continue
 
-    # if int(datef) > 20000103: continue
-
-    # if int(datef) < 19980101: continue
-
-
-    # if int(datef) < 20170313: continue
-
-    # if int(datef) > 20160201: continue
-
-    #000103
 
 
     if int(datef) <= 20170313:
@@ -77,6 +71,19 @@ for filename in (allFiles):
         # print('why not', datef)
         dfd = pd.read_csv(filename, names = columnStr2, header = None, engine="python")
         dfd = dfd[1:]
+
+
+    if (int(datef) > 20201231) & (int(datef) < 20220101):
+        # print('why not', datef)
+        dfd = pd.read_csv(filename, names = columnStr3, header = None, engine="python")
+        dfd = dfd[1:]
+
+
+    if (int(datef) > 20220424) & (int(datef) < 20230101):
+        # print('why not', datef)
+        dfd = pd.read_csv(filename, names = columnStr32, header = None, engine="python")
+        dfd = dfd[1:]
+
 
 
 
@@ -101,20 +108,22 @@ for filename in (allFiles):
             dfd['WindDir'] = 9999
             dfd['WindSp'] = 9999
 
-
     if (len(dfd) < 100): continue
     if len(dfd.columns) < 8: continue
 
     # read the metadata file
-    try:
-        dfm_tmp = pd.read_csv(metafile, index_col=0, names=['Parameter', 'Value'])
-        if (len(dfm_tmp)) < 15:
-            print('skip this dataset')
-            continue
-    except FileNotFoundError:
-        continue
+    if (fname[0:2] == 'ny') | (fname[0:2] == 'na'):
+        try:
+            dfm_tmp = pd.read_csv(metafile, index_col=0, names=['Parameter', 'Value'])
 
-    dfm_tmp = dfm_tmp.T
+            if (len(dfm_tmp)) < 15:
+                print('skip this dataset')
+                continue
+        except FileNotFoundError:
+            continue
+    if (fname[0:2] != 'ny') & (fname[0:2] != 'na'): dfm_tmp = pd.read_csv(metafile)
+
+    if (fname[0:2] == 'ny') | (fname[0:2] == 'na'): dfm_tmp = dfm_tmp.T
 
     dfl = pd.DataFrame()
     dfm = pd.DataFrame()
@@ -122,14 +131,10 @@ for filename in (allFiles):
     # using the data and metadata make a new dataframe from them
     dfl, dfm = organize_df_nya(dfd, dfm_tmp, datef)
     dfm['Date'] = datef
-    # print(dfm.at[dfm.first_valid_index(), 'SensorType'])
-    #
-    # print('dfl', list(dfl))
-    # print('dfm', list(dfm))
+
 
     if (len(dfl) < 100): continue
 
-    # print(fname)
 
 
     # for some files that the value were written wrong
@@ -165,7 +170,7 @@ for filename in (allFiles):
     if len(dfl)< 100: continue
     # convert the partial pressure to current
     # print('out function one', list(dfmeta))
-    dfl, dfm = o3tocurrent_nya(dfl, dfm, dfmeta)
+    # dfl, dfm = o3tocurrent_nya(dfl, dfm, dfmeta)
 
     # set the date
 
@@ -181,13 +186,13 @@ for filename in (allFiles):
 
 
     ###check some values
-    if len(dfl[dfl['ibg'] > 0.8]) > 0:
-        fw.write(datef + ' check ibg')
-        fw.write('\n')
-    if (len(dfl[dfl.Ical > 30])):
-        print(datef +  ' check I')
-        fw.write(datef + ' check I')
-        fw.write('\n')
+    # if len(dfl[dfl['ibg'] > 0.8]) > 0:
+    #     fw.write(datef + ' check ibg')
+    #     fw.write('\n')
+    # if (len(dfl[dfl.Ical > 30])):
+    #     print(datef +  ' check I')
+    #     fw.write(datef + ' check I')
+    #     fw.write('\n')
     if (len(dfl[dfl.O3 > 30])):
         fw.write(datef + '  check O3')
         fw.write('\n')
@@ -196,14 +201,11 @@ for filename in (allFiles):
     dfl.to_hdf(filepath + 'Current/final_' + rawname, key = 'df')
     dfm.to_csv(filepath + 'Metadata/final_' + metaname)
 
-    print('end', filepath + 'Current/')
+    # print('end', filepath + 'Current/')
     list_metadata.append(dfm)
 
 # save all the metada in one file, either in hdf format or csv format
-# dff = pd.concat(list_metadata, ignore_index=True)
-# hdfall = filepath + "Metadata/All_metadata.hdf"
-# csvall = filepath + "Metadata/All_metadata.csv"
-# #
-# dff.to_hdf(hdfall, key = 'df')
-# dff.to_csv(csvall)
+dff = pd.concat(list_metadata, ignore_index=True)
+csvall = filepath + "Metadata/All_metadata_upd.csv"
+dff.to_csv(csvall)
 

@@ -11,13 +11,16 @@ k = 273.15
 
 path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
 
-allFiles = sorted(glob.glob(path + 'Current/*rawcurrent.hdf'))
+# allFiles = sorted(glob.glob(path + 'Current/*rawcurrent.hdf'))
+allFiles = sorted(glob.glob(path + 'Metadata/n*csv'))
 
 
 metadata = []
 
 for (filename) in (allFiles):
-    df = pd.read_hdf(filename)
+    # df = pd.read_hdf(filename)
+    df = pd.read_csv(filename)
+
     df = df.reset_index()
 
 
@@ -25,8 +28,8 @@ for (filename) in (allFiles):
 
     print(filename )
 
-
-    if (df.loc[1,'Date'] >= '20070104') :
+    # print(type(df.at[df.first_valid_index(),'Date']))
+    if (df.loc[0,'Date'] >= 20070104) :
         df['RadiosondeModel'] = 9999
         df['iB1'] = 9999
         df['RadiosondeSerial'] =9999
@@ -37,13 +40,13 @@ for (filename) in (allFiles):
 #
     metadata.append(dft)
 #
-name_out = 'Scoresby_MetadaAll'
+name_out = 'Scoresby_MetadaAll_till2022'
 dfall = pd.concat(metadata, ignore_index=True)
 
 dfall.to_csv('/home/poyraden/Analysis/Homogenization_public/Files/scoresby/metadata/' + name_out + ".csv")
 
-dfmeta = pd.read_csv(path + 'metadata/Scoresby_MetadaAll.csv')
-
+# dfmeta = pd.read_csv(path + 'metadata/Scoresby_MetadaAll.csv')
+#
 #now check if the current is calculated correctly assuming Vaisala software is used for current o partial pressure
 # calculation-> checked in jupyter it is correct
 

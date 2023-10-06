@@ -111,7 +111,8 @@ def organize_df(df1, df2):
             pump_temp = list1[i]
             df_out['TboxK'] = df1[pump_temp].astype('float') + K
             df_out['TboxC'] = df1[pump_temp].astype('float')
-
+            # df_out['TboxK'] = df1[pump_temp].astype('float')
+            # df_out['TboxC'] = df1[pump_temp].astype('float')-K
         if (search('Time', list1[i])) and (search('after', list1[i])):
             time = list1[i]
             df_out['Time'] = df1[time]
@@ -131,6 +132,18 @@ def organize_df(df1, df2):
         if (search('ressure ', list1[i])) and (search('observation', list1[i])):
             pair = list1[i]
             df_out['Pair'] = df1[pair].astype('float')
+
+        if (search('raw', list1[i])) and (search('current', list1[i])):
+            pair = list1[i]
+            df_out['I'] = df1[pair].astype('float')
+
+        if (search('Battery', list1[i])) and (search('voltage', list1[i])):
+            pair = list1[i]
+            df_out['BatteryVoltage'] = df1[pair].astype('float')
+
+        if (search('Pump', list1[i])) and (search('current', list1[i])):
+            pair = list1[i]
+            df_out['PumpCurrent'] = df1[pair].astype('float')
 
     list2 = list(df2)
     for j in range(len(list2)):
@@ -347,19 +360,19 @@ def organize_df(df1, df2):
         df_out['O3'] = df1['Ozone partial pressure (mPa)'].astype('float')
     except KeyError:
         df_out['O3'] = df1['PO3'].astype('float')
-
-    try:
-        df_out['T'] = df1['Temperature (C)'].astype('float')
-    except KeyError:
-        df1['Temp'].astype('float')
-
-    try:
-        df_out['U'] = df1['Relative humidity (%)'].astype('float')
-    except KeyError:
-        df_out['U'] = df1['RH'].astype('float')
+    #
+    # try:
+    #     df_out['T'] = df1['Temperature (C)'].astype('float')
+    # except KeyError:
+    #     df1['Temp'].astype('float')
+    #
+    # try:
+    #     df_out['U'] = df1['Relative humidity (%)'].astype('float')
+    # except KeyError:
+    #     df_out['U'] = df1['RH'].astype('float')
 
     #     dfm_out['LaunchTime'] = dfm_out['LaunchTime'].astype('str')
-    # except KeyError:
+    # # except KeyError:
     #     df_out['O3'] = df1['PO3'].astype('float')
     #     df_out['T'] = df1['Temp'].astype('float')
     #     df_out['U'] = df1['RH'].astype('float')
@@ -370,7 +383,7 @@ def organize_df(df1, df2):
     #     df_out['GPSAlt'] = df1['GPSAlt'].astype('float')
 
 
-        dfm_out['LaunchTime'] = dfm_out['LaunchTime'].astype('str')
+        # dfm_out['LaunchTime'] = dfm_out['LaunchTime'].astype('str')
 
     # if ( dfm_out.at[0, 'buffer'] == '1.00') & (dfm_out.at[0, 'kbr'] == '1.00'):
     #     dfm_out.at[0, 'SolutionConcentration'] = 10
@@ -427,18 +440,7 @@ def organize_df_nya(df1, df2,dates):
         # df_out[(df_out.TboxC < K)]['TboxC'] = df_out[(df_out.TboxC < K)]['TboxC']
         df_out.loc[(df_out.TboxC > 50) & (df_out.TboxC < 999), 'TboxC'] = df_out.loc[(df_out.TboxC > K) & (df_out.TboxC < 999),
                                                                          'TboxC'] - K
-        # for i in range(len(list1)):
 
-            # if (search('TPump', list1[i])):
-            #     pump_temp = list1[i]
-            #     df1 = df1[df1.pump_temp != 999.9]
-            #     print('temp', df1.at[df1.first_valid_index(),pump_temp])
-            #     if (df1[df1[pump_temp] < K]):
-            #         df_out['TboxK'] = df1[pump_temp].astype('float') + K
-            #         df_out['TboxC'] = df1[pump_temp].astype('float')
-            #     if (df1.at[df1.first_valid_index(),pump_temp] > K) and (df1.at[df1.first_valid_index(),pump_temp] < 999):
-            #         df_out['TboxK'] = df1[pump_temp].astype('float')
-            #         df_out['TboxC'] = df1[pump_temp].astype('float') - K
 
         list2 = list(df2)
         for j in range(len(list2)):
@@ -530,16 +532,7 @@ def organize_df_nya(df1, df2,dates):
 
 
     if dates >= '20170313':
-        # for i in range(len(list1)):
-        #
-        #     if (search('TPump', list1[i])):
-        #         pump_temp = list1[i]
-        #         if (df1.at[10,pump_temp] < K):
-        #             df_out['TboxK'] = df1[pump_temp].astype('float') + K
-        #             df_out['TboxC'] = df1[pump_temp].astype('float')
-        #         if (df1.at[10,pump_temp] > K):
-        #             df_out['TboxK'] = df1[pump_temp].astype('float')
-        #             df_out['TboxC'] = df1[pump_temp].astype('float') - K
+
         df_out['TboxC'] = df_out['TPump']
         df_out['TboxK'] = df_out['TPump']
 

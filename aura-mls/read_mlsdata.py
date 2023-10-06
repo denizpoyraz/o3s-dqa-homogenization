@@ -13,36 +13,43 @@ from math import log
 
 # First Code of MLS analysis
 # read the MLS data and write it to a csv file
+# sname = 'sodankyla'
+# scname='Sodankyla'
+# sname = 'scoresby'
+# scname='Scoresbysund'
+# sname = 'ny-aalesund'
+# scname='Ny-Alesund'
+# sname = 'valentia'
+# scname='Valentia'
+sname = 'uccle'
+scname='Uccle'
+# sname = 'lerwick'
+# scname='Lerwick'
+# sname = 'madrid'
+# scname='Madrid'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{sname}/'
+# fname = f'aura_mls_l2gpovp_o3_v05_ny-alesund.txt'
+fname = f'aura_mls_l2gpovp_o3_v05_{sname}.txt'
 
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
-
-# #nyalesund
-# lats = 78.930
-# lons = 11.880
-#nyalesund
-lats = 51.93
-lons = -10.25
-# dfmeta = pd.read_csv(path + 'NY_metadata_corrected.csv')
-# dfmeta = pd.read_csv(path + '/Metadata/All_metadata.csv')
-# dfmeta = pd.read_csv(path + '/Madrid_Metadata.csv')
-# dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')
-# dfmeta = pd.read_csv(path + 'NY_metadata_corrected.csv')
-dfmeta = pd.read_csv(path + 'joined_Metadata.csv')
 # dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')
+# dfmeta = pd.read_csv(path + 'Raw_upd/All_metadata_till2023.csv')
+# dfmeta = pd.read_csv(path + 'all_csv_current/metadata/Lerwick_Metadata_combined_final.csv')  #lerwick
+# dfmeta = pd.read_csv(path + 'joined_Metadata_till2022.csv')  #valentia
+# dfmeta = pd.read_csv(path + 'metadata/Lauder_MetadaAll.csv')  #
+# dfmeta = pd.read_csv(path + 'NY_metadata_corrected_all.csv')#ny alesund
+# dfmetaf = pd.read_hdf(pathf + 'Metadata/All_metadata.hdf')
+# dfmeta = pd.read_csv(path + 'metadata/Scoresby_MetadaAll_till2022.csv')#Scoresby
+# dfmeta = pd.read_csv(path + 'Metadata/All_metadata_till2022.csv')#sodankyla
+# dfmeta = pd.read_csv(path + 'Madrid_Metadata.csv')#madrid
+dfmeta = pd.read_csv(path + 'Raw_upd/All_metadata_till2023.csv')#uccle
 
-
-
-dfmeta['DateTime'] = dfmeta['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
-# dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
-dfmeta['Date'] = dfmeta["DateTime"].dt.strftime('%Y%m%d')
-
-# dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
-# dfmeta['Date'] = dfmeta['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
+# dfmeta['DateTime'] = dfmeta['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
+dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: pd.to_datetime(str(x), format='%Y-%m-%d'))
+# dfmeta['Date'] = dfmeta["DateTime"].dt.strftime('%Y%m%d')
+dfmeta = dfmeta[dfmeta.DateTime.isnull()==False]
+dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d %H:%M:%S'))
+# dfmeta['Date'] = dfmeta['DateTime'].apply(lambda x: datetime.strptime(str(x), '%Y-%m-%d'))
+dfmeta['Date'] = dfmeta['Date'].apply(lambda x: datetime.strftime(x, '%Y%m%d'))
 # dfmeta = dfm = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/Raw_upd/All_metadata.csv')
 # dfmeta = dfmeta.drop([869,925])
 # dfmeta = dfmeta.reset_index()
@@ -50,21 +57,10 @@ dfmeta['Date'] = dfmeta["DateTime"].dt.strftime('%Y%m%d')
 # print(dfmeta.Datenf.min(), dfmeta.Datenf.max())
 
 
-# name = 'AURA_MLSData_MatchedUccle_DQA_v05'
-# name = 'AURA_MLSData_MatchedMadrid_DQA_v05'
-# name = 'AURA_MLSData_MatchedLauder_DQA_v05'
-# name = 'AURA_MLSData_MatchedScoresby_DQA_v05'
-# name = 'AURA_MLSData_MatchedNYalesund_DQA_v05'
-name = 'AURA_MLSData_MatchedValentia_DQA_v04'
+name = f'AURA_MLSData_Matched{scname}_DQA_v05'
 
-# fname = 'aura_mls_l2gpovp_o3_v05_uccle.txt'
-# fname = 'aura_mls_l2gpovp_o3_v05_lauder.txt'
-# fname = 'aura_mls_l2gpovp_o3_v05_madrid.barajas.txt'
-# fname = 'aura_mls_l2gpovp_o3_v05_scoresbysund.txt'
-# fname = 'aura_mls_l2gpovp_o3_v05_ny.alesund.txt'
-fname = 'aura_mls_l2gpovp_o3_v04_valentia.txt'
 
-file = open(path + fname, "r")
+file = open('/home/poyraden/Analysis/Homogenization_public/Files/mls_v05/' + fname, "r")
 file.readline()
 file.readline()
 Ref = file.readline().split(':')[1]
@@ -100,8 +96,8 @@ df['timetmp1'] = pd.to_timedelta(df["sec"], unit='s')
 df['timetmp2'] = df['timetmp1'].astype('timedelta64[s]')
 df['Time1'] = pd.to_datetime(df['timetmp2'])
 df['Time2'] = [x.time() for x in df['Time1']]
-df['DifLat'] = abs(lats - df['Lat'])
-df['DifLon'] = abs(lons - df['Lon'])
+# df['DifLat'] = abs(lats - df['Lat'])
+# df['DifLon'] = abs(lons - df['Lon'])
 df['Time'] = pd.to_timedelta(df["sec"], unit='s')
 
 # df['Timenf'] = df['Time'].apply(lambda x: time.x())
@@ -169,5 +165,5 @@ for im in range(len(dates_match)):
 # #
 dffinal = pd.concat(list_data, ignore_index=True)
 
-dffinal.to_csv(path +  name + ".csv")
-dffinal.to_hdf(path + name + ".h5", key='df', mode='w')
+dffinal.to_csv(path + 'MLS/' + name + ".csv")
+# dffinal.to_hdf(path + name + ".h5", key='df', mode='w')

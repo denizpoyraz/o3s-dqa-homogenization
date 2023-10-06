@@ -31,21 +31,24 @@ def plot_rdif(dft, ptitlet):
 
     ax = sns.heatmap(t, vmin=min, vmax=max, cmap="vlag", cbar_kws={'label': heatmap_label}, xticklabels=xfreq)
     # ax = sns.heatmap(t, vmin=min, vmax=max , cmap="vlag", cbar_kws={'label': heatmap_label})
+    ax.figure.axes[-1].yaxis.label.set_size(14)
 
-    # labels = [1994, 1995, 1996, 1997, 1998, 1999, 2000, 2001, 2002, 2003, 2004,
-    #  2005, 2006, 2007, 2008, 2009, 2010, 2011, 2012, 2013, 2014, 2015,
-    #  2016, 2017, 2018, 2019, 2020, 2021, 2022]
-    ax.set_xticklabels(labels, rotation=0)
-    # ax.set_xticklabels([1992, 1993, 1994, 1995, 1996, 1997, 1998], rotation=0)
+    labels = ['',2005, '', '', '', '', 2010, '', '', '',
+              '', 2015, '', '', '', '', 2020, '','']
+    # try:
+    ax.set_xticklabels(labels, rotation=0, fontsize=14)
+    plt.xticks(rotation=0)
+    plt.yticks(fontsize=14, rotation = 0)
+    ax.set_yticklabels(['', 10, '', '', '', 21, '', 31, '', '', 56, '',
+                        '', 100, '', '', '', 215])
+    # 8.25404, 10.0, 12.1153, 14.678, 17.7828, 21.5443, \
+    # 26.1016, 31.6228, 38.3119, 46.4159, 56.2341, 68.1292, 82.5404, 100.0, 121.153, 146.78, 177.828, 215.443
 
+    ax.set_ylabel('Pressure [hPa]', rotation=90, fontsize = 14)
 
-    plt.yticks(fontsize=6)
-    # ax.set_yticklabels(ytick_labels, rotation = 0)
-    plt.xticks(rotation=90)
-    # plt.xticks(fontsize=4)
     plt.xlabel(" ")
 
-    plt.title(ptitlet)
+    plt.title(ptitlet, fontsize = 18)
     #
     plt.savefig(path + 'Plots/' + Plotname + '.png')
     plt.savefig(path + 'Plots/' + Plotname + '.eps')
@@ -53,36 +56,28 @@ def plot_rdif(dft, ptitlet):
 
     plt.show()
 
-
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/MLS/'
-# df1 = pd.read_csv(path + 'MLS_SodankylaInterpolated_dqaprevious_nors80_v04.csv')
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/lauder/MLS/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/MLS/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/MLS/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/MLS/'
-path = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/MLS/'
-# path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/MLS/'
-
-# .csv
-# df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_dqa.csv')
-df1 = pd.read_csv(path + 'MLS_NyalesundInterpolated_nors80_v04_ames.csv')
-
-# df1 = pd.read_csv(path + 'MLS_LauderInterpolated_nors80_v04_dqa.csv')
-# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_dqa.csv')
-
-# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_ndacc.csv')
-# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_nors80_v04_dqa.csv')
-# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa_tpumpafter2016.csv')
-# df1 = pd.read_csv(path + 'MLS_ScoresbyInterpolated_rs80_v04_dqa.csv')
-
-# df1 = pd.read_csv(path + 'MLS_ValentiaInterpolated_nors80_v04_dqa.csv')
-# df1 = pd.read_csv(path + 'MLS_ValentiaInterpolated_nors80_v04_woudc.csv')
+#{sodankyla, lauder, uccle, madrid, ny-aalesund, scoresby, valentia, lerwick}
+# sname = 'sodankyla'
+# scname='Sodankyla'
+# sname = 'ny-aalesund'
+# scname='Ny-Alesund'
+# sname = 'scoresby'
+# scname='Scoresbysund'
+# sname = 'madrid'
+# scname='Madrid'
+sname = 'lerwick'
+scname='Lerwick'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{sname}/MLS/'
 
 
+# df1 = pd.read_csv(path + f'MLS_{scname}Interpolated_nors80_v05_dqa.csv')
+# Plotname = 'DQA_vs_MLS_v05'
+# ptitle = f'{scname} Homogenized - MLS (v05)'
 
-# df1 = pd.read_csv(path + 'MLS_UccleInterpolated_nors80_v04_dqa.csv')
+df1 = pd.read_csv(path + f'MLS_{scname}Interpolated_nors80_v05_original.csv')
+Plotname = 'Original_vs_MLS_v05'
+ptitle = f'{scname} Non-Homogenized - MLS (v05)'
 
-# df1 = pd.read_csv(path + 'MLS_MadridInterpolated_nors80_v04_dqa.csv')
 
 df1 = df1[df1.PreLevel < 216]
 df1 = df1[df1.PreLevel >= 8]
@@ -90,58 +85,12 @@ df1 = df1[df1.PreLevel >= 8]
 df1 = df1[df1.PO3_UcIntLin < 99]
 df1 = df1[df1.PO3_MLS < 99]
 
-
-# Plotname = 'Raw_vs_MLS_v04_nors80'
-# Plotname = 'PRESTO_vs_MLS_v04_nors80'
-# Plotname = 'Raw_vs_MLS_v04_nors80'
-
-# Plotname = 'WOUDC_vs_MLS_v04_nors80'
-
-# Plotname = 'DQA_vs_MLS_v04_after2016'
-# Plotname = 'NDACC_vs_MLS_v04_nors80'
-# Plotname = 'NIWA_vs_MLS_v04_nors80'
-# Plotname = 'DQA_vs_MLS_v04_nors80_new'
-# Plotname = 'Raw_vs_MLS_v04_nors80_new'
-# Plotname = 'DQA_vs_MLS_v04_nors80_new'
-
-# plot_title = 'Madrid DQA (RS80) - MLS (v04) comparison'
-# plot_title = 'Uccle DQA (RS80) - MLS (v04) comparison'
-
-# plot_title = 'Madrid WOUDC - MLS (v04) comparison'
-
-# plot_title = 'Lauder (tpump) - MLS comparison'
-# plot_title = 'Lauder O3S-Previous Version - MLS (v04) comparison'
-# plot_title = 'Sodankyla O3S-NDACC - MLS (v04) comparison'
-# plot_title = 'Lauder O3S-Raw - MLS (v04) comparison'
-# plot_title = 'Lauder DQA (RS80) - MLS (v04) comparison'
-# plot_title = 'Lauder DQA - MLS (v04) comparison'
-# plot_title = 'NyAlesund DQA (RS80) - MLS (v04) comparison'
-# plot_title = 'NyAlesund NDACC - MLS (v04) comparison'
-
-# plot_title = 'Scoresbysund DQA (tpump after 2016 corr.) - MLS (v04) comparison'
-
-# plot_title = 'Uccle DQA - MLS (v04) comparison'
-# plot_title = 'Uccle PRESTO - MLS (v04) comparison'
-# plot_title = 'Uccle Raw - MLS (v04) comparison'
-
-# plot_title = 'Scoresbysund NDACC - MLS (v04) comparison'
-
-# plot_title = 'Lauder NIWA - MLS (v04) comparison'
-
-# plot_title = 'Sodankyla O3S-DQA - MLS (v04) comparison'
-# plot_title = 'Sodankyla Raw (no correction) - MLS (v04) comparison'
-
-# plot_title = 'Sodankyla O3S-DQA (previous version) - MLS (v04) comparison'
-
-# df1 = df1[df1.PreLevel < 57]
-# df1 = df1[df1.PreLevel >= 8]
-
-
-
 df1 = df1[df1.PreLevel >= 8]
 
 df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df1.PO3_MLS)) / np.asarray(df1.PO3_UcIntLin)
-# df2['RDif_UcIntLin'] = 100 * (np.asarray(df2.PO3_UcIntLin) - np.asarray(df2.PO3_MLS)) / np.asarray(df2.PO3_UcIntLin)
+
+
+df1 = df1[df1.Date < 20230101]
 
 df1['DateTime'] = df1['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y%m%d'))
 # df1['DateTime'] = pd.to_datetime(df1['Date'], format='%Y%m%d')
@@ -149,16 +98,12 @@ df1['DateTime'] = df1['Date'].apply(lambda x: pd.to_datetime(str(x), format='%Y%
 df1['Date'] = df1['DateTime'].apply(lambda x: x.date())
 df1['PreLevel'] = df1['PreLevel'].astype(int)
 
-Plotname = 'NDACC_vs_MLS_v04'
-# Plotname = 'DQA_vs_MLS_v04'
 
 heatmap_label = 'ECC - MLS / ECC (%)'
-# ptitle = 'Effect of Conversion Efficiency Correction'
-ptitle = 'Nyalesund NDACC - MLS (v04) comparison'
-# ptitle = 'Valentia WOUDC - MLS (v04) comparison'
 
 min = -10
 max = 10
+
 df1['RDif_UcIntLin'] = 100 * (np.asarray(df1.PO3_UcIntLin) - np.asarray(df1.PO3_MLS)) / np.asarray(df1.PO3_UcIntLin)
 plot_rdif(df1, ptitle)
 

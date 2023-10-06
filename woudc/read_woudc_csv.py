@@ -4,16 +4,18 @@ from io import StringIO
 from woudc_extcsv import load, WOUDCExtCSVReaderError
 import pandas as pd
 import glob
-station_name = 'lerwick'
+from re import search
+
+station_name = 'madrid'
 
 #example path of where the WOUDC csv files are
 # path = '/home/poyraden/Analysis/Homogenization_Analysis/Files/Nilu/Sodankyl/version2/DQA/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/CSV/'
 # path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/CSV/'
-path = f'/home/poyraden/Analysis/Homogenization_public/Files/{station_name}/WOUDC_CSV/'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{station_name}/WOUDC/'
 
-name_out = f'{station_name}_alldata'
-name_mout = f'{station_name}_metadata'
+name_out = f'{station_name}_alldata_till2022'
+name_mout = f'{station_name}_metadata_till2022'
 efile = open("errorfile.txt", "w")
 
 
@@ -31,6 +33,7 @@ fi = 0
 
 for filename in allFiles:
     print(filename)
+    if (search('metadata ', filename)):continue
     tmp = filename.split('.')[0][-8:]
     if tmp == 'MD010613': continue
     # try except is applied for the cases when there is formatting error: WOUDCExtCSVReaderError
@@ -102,7 +105,7 @@ for filename in allFiles:
     fi = fi + 1
 
     #
-    # dfprofile_uncertainity = StringIO(profile_uncertainity)
+    # dfprofilcde_uncertainity = StringIO(profile_uncertainity)
     # df_uncer = pd.read_csv(dfprofile_uncertainity)
     # list_udata.append(df_uncer)
 
@@ -112,10 +115,10 @@ for filename in allFiles:
 dfall = pd.concat(list_data, ignore_index=True)
 dfmall = pd.concat(list_mdata, ignore_index=True)
 #
-# dfall.to_csv(path + "/DQM/" + name_out + ".csv")
-dfall.to_hdf(path + "/DQM/" + name_out + ".h5", key='df')
-dfmall.to_hdf(path + "/DQM/" + name_mout + ".h5", key='df')
-dfmall.to_csv(path + "/DQM/" + name_mout + ".csv")
+dfall.to_csv(path + name_out + ".csv")
+# dfall.to_hdf(path + "/DQM/" + name_out + ".h5", key='df')
+# dfmall.to_hdf(path + "/DQM/" + name_mout + ".h5", key='df')
+dfmall.to_csv(path + name_mout + ".csv")
 
 efile.close()
 

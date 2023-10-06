@@ -59,7 +59,7 @@ def station_inone(st_name):
     if st_name == 'madrid':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
         dfmetaf = pd.read_csv(pathf + 'Madrid_Metadata.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/out/*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/out/MD22*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_madrid_roc.txt')
         dfmetaf = organize_madrid(dfmetaf)
 
@@ -72,48 +72,52 @@ def station_inone(st_name):
 
     if st_name == 'uccle':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/uccle/'
-        dfmetaf = pd.read_csv(pathf + 'Raw_upd/All_metadata.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/2*hdf"))
+        dfmetaf = pd.read_csv(pathf + 'Raw_upd/All_metadata_till2023.csv')
+        allFilesf = sorted(glob.glob(pathf + "/Raw_upd/202*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_uccle_roc.txt')
         dfmetaf = organize_uccle(dfmetaf)
 
     if st_name == 'scoresbysund':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/scoresby/'
-        dfmetaf = pd.read_csv(pathf + 'metadata/Scoresby_MetadaAll.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Current/*hdf"))
+        # dfmetaf = pd.read_csv(pathf + 'metadata/Scoresby_MetadaAll.csv')
+        dfmetaf = pd.read_csv(pathf + 'metadata/Scoresby_MetadaAll_till2022.csv')
+        allFilesf = sorted(glob.glob(pathf + "/Current/n_Sc2*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_scoresbysund_roc.txt')
         dfmetaf = organize_scoresby(dfmetaf)
 
     if st_name == 'sodankyla':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/sodankyla/'
         # dfmetaf = pd.read_hdf(pathf + 'Metadata/All_metadata.hdf')
-        dfmetaf = pd.read_csv(pathf + 'Metadata/All_metadata.csv')
-        # allFilesf = sorted(glob.glob(pathf + "/Current/*raw*hdf"))
-        allFilesf = sorted(glob.glob(pathf + "/missing_files/organized/*hdf"))
+        dfmetaf = pd.read_csv(pathf + 'Metadata/All_metadata_till2022.csv')
+        allFilesf = sorted(glob.glob(pathf + "Current/*hdf"))
+        # allFilesf = sorted(glob.glob(pathf + "/missing_files/organized/*hdf"))
         # / home / poyraden / Analysis / Homogenization_public / Files / sodankyla / missing_files / organized
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_sodankyla_roc.txt')
         dfmetaf = organize_sodankyla(dfmetaf)
 
     if st_name == 'ny-aalesund':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/ny-aalesund/'
-        dfmetaf = pd.read_csv(pathf + 'NY_metadata_corrected.csv')
-        allFilesf = sorted(glob.glob(pathf + "/Current/final*raw*hdf"))
+        # dfmetaf = pd.read_csv(pathf + 'NY_metadata_corrected_upd.csv')
+        dfmetaf = pd.read_csv(pathf + 'NY_metadata_corrected_all.csv')
+        allFilesf = sorted(glob.glob(pathf + "/Current/final_2021*raw*hdf"))
+        # allFilesf = sorted(glob.glob(pathf + "/CSV/new/read_out/*csv"))
+
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_nyalesund_roc.txt')
         dfmetaf = organize_nyalesund(dfmetaf)
 
     if st_name == 'valentia':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
-        dfmetaf = pd.read_csv(pathf + 'joined_Metadata.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/read_out/2019*_out.hdf"))
+        dfmetaf = pd.read_csv(pathf + 'joined_Metadata_till2022.csv')  #
+        allFilesf = sorted(glob.glob(pathf + "CSV/read_out/2022*_out.hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_valentia_roc.txt')
         dfmetaf = organize_valentia(dfmetaf)
 
     if st_name == 'lerwick':
         #example of a station where you can use metadata from the available WOUDC files
         pathf = f'/home/poyraden/Analysis/Homogenization_public/Files/{st_name}/'
-        dfmetaf = pd.read_csv(pathf + 'all_csv_current/metadata/Lerwick_Metadata_combined.csv')  #
+        dfmetaf = pd.read_csv(pathf + 'all_csv_current/metadata/Lerwick_Metadata_combined_final.csv')  #
         dfmetaw = pd.read_csv(pathf + 'all_csv_current/metadata/Lerwick_WOUDC_Metadata.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "all_csv_current/*.csv"))
+        allFilesf = sorted(glob.glob(pathf + "all_csv_current/20040324*.csv"))
         roc_table_filef = (f'/home/poyraden/Analysis/Homogenization_public/Files/sonde_{st_name}_roc.txt')
         dfmetaf = organize_lerwick(dfmetaf, dfmetaw)
 
@@ -153,7 +157,7 @@ def station_inbool(st_name):
     if st_name == 'sodankyla':
         humidity_correctionf = True
         df_missing_tpumpf = False
-        calculate_currentf = False
+        calculate_currentf = True
         organize_dff = True
         descent_dataf = False
 
@@ -272,7 +276,7 @@ def df_drop(dft, st_name):
 
     if st_name == 'sodankyla':
         dft = dft.drop(['TboxK', 'TboxC', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
-                        'iB2', 'iB0', 'Tpump', 'Phip', 'Eta',
+                        'iB2',  'Tpump', 'Phip', 'Eta',
                         'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
                         'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
                         'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
@@ -293,9 +297,8 @@ def df_drop(dft, st_name):
                         'dTpump_cor'], axis=1)
 
     if st_name == 'ny-aalesund':
-        dft = dft.drop(['TboxK', 'TboxC', 'SensorType', 'SolutionVolume', 'Cef', 'ibg',
-                        'iB2', 'Tpump', 'Phip', 'Eta',
-                        'dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump', 'unc_alpha_o3', 'alpha_o3', 'stoich',
+        dft = dft.drop(['TboxK',  'iB2', 'Tpump', 'Phip', 'Eta','dPhip', 'unc_cPH', 'unc_cPL', 'unc_Tpump',
+                        'unc_alpha_o3', 'alpha_o3', 'stoich',
                         'unc_stoich', 'eta_c', 'unc_eta', 'unc_eta_c', 'iBc', 'unc_iBc', 'Tpump_cor', 'unc_Tpump_cor',
                         'deltat', 'unc_deltat', 'deltat_ppi', 'unc_deltat_ppi', 'TLab', 'ULab', 'PLab', 'x',
                         'psaturated', 'cPH', 'TLabK', 'cPL', 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf',
@@ -320,12 +323,12 @@ def df_drop(dft, st_name):
 
 def organize_uccle(dum):
 
-    dum = dum[dum.Date != '9999.0']
+    # dum = dum[dum.Date != '9999.0']
 
     dum['string_bkg_used'] = 'ib0'
 
-    dum.loc[dum.Datenf.isnull() == 1,'DateTime'] = dum.loc[dum.Datenf.isnull() == 1,'Date']
-
+    # dum.loc[dum.Datenf.isnull(),'DateTime'] = dum.loc[dum.Datenf.isnull() == 1,'Date']
+    dum = dum[dum.Datenf.isnull() == 0]
 
 
     dum['Date'] = pd.to_datetime(dum['DateTime'], format='%Y-%m-%d %H:%M:%S')
@@ -435,8 +438,11 @@ def organize_lerwick(dmm, dmw):
     dmm['SolutionConcentration'] = 10
     dmm = dmm[dmm.ULab < 99]
     dmm.loc[(dmm.SensorType == '5A') | (dmm.SensorType == '5a'), 'string_pump_location'] = 'case3'
-    dmm.loc[(dmm.SensorType == '6A') | (dmm.SensorType == '6a'), 'string_pump_location'] = 'case5'
-    dmm.loc[(dmm.SensorType == 'Z') | (dmm.SensorType == 'z'), 'string_pump_location'] = 'case5'
+    dmm.loc[(dmm.SensorType == '6A') | (dmm.SensorType == '6a') | (dmm.SensorType == 'SPC'), 'string_pump_location'] = 'case5'
+    dmm.loc[(dmm.SensorType == 'Z') | (dmm.SensorType == 'z') | (dmm.SensorType == '2Z') , 'string_pump_location'] = 'case5'
+
+    dmm.loc[(dmm.SensorType == '5A') | (dmm.SensorType == '5a')| (dmm.SensorType == '6a')| (dmm.SensorType == '6A'), 'SensorType'] = 'SPC'
+    dmm.loc[(dmm.SensorType == 'Z') | (dmm.SensorType == 'z')|  (dmm.SensorType == '2Z'), 'SensorType'] = 'DMT-Z'
 
     return dmm
 
@@ -602,8 +608,8 @@ def organize_sodankyla(dsm):
 
     dsm['Date'] = dsm['Date'].astype(str)
 
-    dsm = dsm[dsm.iB2 < 9]
-    dsm = dsm[dsm.iB0 < 9]
+    # dsm = dsm[dsm.iB2 < 9]
+    # dsm = dsm[dsm.iB0 < 9]
 
     dsm['PLab'] = dsm['Pground']
 
@@ -707,6 +713,7 @@ def organize_nyalesund(dfn):
     dfn['SolutionVolume'] = 3
     dfn['string_bkg_used'] = 'ib2'
     dfn['SolutionConcentration'] = 10
+    dfn.loc[dfn.Date >= '20190101','SensorType'] = 'SPC'
 
     print('list dfmeta', list(dfn))
 
@@ -855,22 +862,29 @@ def df_station(dl, datevalue, dml, station):
         dl['O3'] = dl['PO3']
 
     if station == 'lerwick':
+        # print(list(dl))
+        # print(list(dml))
+        # print(dml)
         dl['iB2'] = dml.at[dml.first_valid_index(), 'iB2']
         dl['iB0'] = dml.at[dml.first_valid_index(), 'iB0']
 
 
     if station == 'ny-aalesund':
-
+        print('datevalue', datevalue)
         if datevalue > '20170309':
             dml['string_pump_location'] = 'case5'
+        if datevalue < '20190101':dl = dl[dl['O3'] < 99]
+        # if datevalue >= '20190101':
+        #     dl['O3'] = dl['PO3']
+        #     dl= dl[dl['O3'] < 99]
 
-        dl = dl[dl['O3'] < 99]
-        dl['Height'] = dl['Alt']
+        try:
+            dl['Height'] = dl['Alt']
+        except KeyError: dl['Height'] = dl['Height']
         # dl = dl[dl['Tbox'] < 999]
         dml['string_pump_location'] = 'case5'
-
+        dl['iB2'] = dml.at[dml.first_valid_index(), 'iB2']
         # print('sonde serial', dml.at[dml.first_valid_index(),'SondeSerial'])
-
         if datevalue <= '20170313':
 
             if (search('5a',dml.at[dml.first_valid_index(),'SondeSerial'])) or (search('5A',dml.at[dml.first_valid_index(),'SondeSerial'])):
@@ -880,6 +894,9 @@ def df_station(dl, datevalue, dml, station):
                 dml['string_pump_location'] = 'case5'
 
             dl['I'] = dl['Ical']
+
+        # if (datevalue > '20201231') & (datevalue < '20220101'):
+        #     dl[['Pair','Time']] = dl[['Time','Pair']]
 
 
     return return_string, dl

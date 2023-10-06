@@ -16,7 +16,7 @@ print(columnStr)
 
 columnMeta = ['mDate', 'mRadioSondeNr', 'PF', 'iB0', 'iB1', 'CorrectionFactor', 'SerialECC', 'InterfaceNr','DateTime','Datenf']
 
-dfmeta = pd.read_csv("/home/poyraden/Analysis/Homogenization_public/Files/uccle/ECCprop.txt", sep = r"\t" , engine="python",skiprows=1, names=columnMeta)
+dfmeta = pd.read_csv("/home/poyraden/Analysis/Homogenization_public/Files/uccle/ECCprop_202307.txt", sep = r"\t" , engine="python",skiprows=1, names=columnMeta)
 # dfmeta['DateTime'] = dfmeta['mDate'].apply(lambda x: pd.to_datetime(str(x), format='%Y%m%d%H'))
 dfmeta['DateTime'] = pd.to_datetime(dfmeta['mDate'], format='%Y%m%d%H')
 dfmeta['Datenf'] = dfmeta['DateTime'].apply(lambda x: x.strftime('%Y%m%d'))
@@ -132,7 +132,7 @@ for filename in allFiles:
 
 dff = pd.concat(list_data, ignore_index=True)
 # hdfall = path + "All_metadata.hdf"
-csvall = path + "/Raw_upd/All_metadata.csv"
+csvall = path + "/Raw_upd/All_metadata_till2023.csv"
 
 # dff.to_hdf(hdfall, key = 'df')
 dff.to_csv(csvall)

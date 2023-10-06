@@ -1,7 +1,6 @@
 import pandas as pd
 import numpy as np
 import matplotlib.pyplot as plt
-import seaborn as sns
 import datetime
 import glob
 
@@ -23,13 +22,7 @@ def Calc_average_profile_pressure(dft, xcolumn):
 
     Xgrid = [-9999.0] * n
     Xsigma = [-9999.0] * n
-    #
-    # Xgrid = [[-9999.0] * n for i in range(nd)]
-    # Xsigma = [[-9999.0] * n for i in range(nd)]
 
-
-# for j in range(nd):
-#     dft.PFcor = dft[xcolumn]
 
     for i in range(n):
         dftmp1 = pd.DataFrame()
@@ -56,25 +49,22 @@ def Calc_average_profile_pressure(dft, xcolumn):
 
 
 # dfm = pd.read_csv('/home/poyraden/Analysis/Homogenization_public/Files/uccle/DQA_nors80/Valentia_Metada_DQA_nors80.csv')
+sname = 'valentia'
+scname='Valentia'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{sname}/'
+name_out = f'{scname}_AllData_DQA_nors80'
 
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
-allFiles = sorted(glob.glob(path + "DQA_nors80/*all_hom_nors80.hdf"))
-#
-listall = []
-
+# allFiles = sorted(glob.glob(path + "DQA_nors80/*all_hom_nors80.hdf"))
+# listall = []
 # for (filename) in (allFiles):
 #     df = pd.read_hdf(filename)
-#
 #     listall.append(df)
 #
-# name_out = 'Valentia_AllData_DQA_nors80'
 # dfall = pd.concat(listall, ignore_index=True)
-#
-# dfall.to_hdf(path + "DQA_nors80/" + name_out + ".hdf", key = 'df')
+# dfall.to_csv(path + "DQA_nors80/" + name_out + ".csv")
 
-df = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/valentia/DQA_nors80/Valentia_AllData_DQA_nors80.hdf')
-# df2 = pd.read_hdf('/home/poyraden/Analysis/Homogenization_public/Files/valentia/DQA/Valentia_AllData_DQA_nors80.hdf')
+df = pd.read_csv(f'/home/poyraden/Analysis/Homogenization_public/Files/valentia/DQA_nors80/{scname}_AllData_DQA_nors80.csv')
 
 
 
@@ -93,25 +83,25 @@ df1['o3'] = o3
 df1['o3nc'] = o3nc
 # df1['y'] = y
 
-int1 =  int((3.9449 * (df1.o3c.shift() + df1.o3c) * np.log(df1.y.shift() / df1.y)).sum())
-int2 =  int((3.9449 * (df1.o3.shift() + df1.o3) * np.log(df1.y.shift() / df1.y)).sum())
-int3 =  int((3.9449 * (df1.o3nc.shift() + df1.o3nc) * np.log(df1.y.shift() / df1.y)).sum())
-
-print('before 1998',     int1)
-print('after 1998',     int2)
-print('after 1998',     int3)
+# int1 =  int((3.9449 * (df1.o3c.shift() + df1.o3c) * np.log(df1.y.shift() / df1.y)).sum())
+# int2 =  int((3.9449 * (df1.o3.shift() + df1.o3) * np.log(df1.y.shift() / df1.y)).sum())
+# int3 =  int((3.9449 * (df1.o3nc.shift() + df1.o3nc) * np.log(df1.y.shift() / df1.y)).sum())
+#
+# print('before 1998',     int1)
+# print('after 1998',     int2)
+# print('after 1998',     int3)
 
 # o3nc, o3ncerr, y = Calc_average_profile_pressure(df1, 'O3_nc')
 
-path = '/home/poyraden/Analysis/Homogenization_public/Files/valentia/'
+path = f'/home/poyraden/Analysis/Homogenization_public/Files/{sname}/'
 
 Plotname = 'hom_vs_woudc'
 # Plotname = 'RS80'
 
 fig, ax = plt.subplots(figsize=(17, 9))
 
-ax.plot(o3c, y,  label = ' DQA ' + 'TO=' + str(int1), marker = 's', markersize = 6)
-ax.plot(o3, y,  label = 'WOUDC ' + 'TO=' + str(int2), marker = 'o', markersize = 6)
+ax.plot(o3c, y,  label = ' Homogenized ', marker = 's', markersize = 6)
+ax.plot(o3, y,  label = 'Non-Homogenized', marker = 'o', markersize = 6)
 # ax.plot(o3nc, y,  label = ' Raw ' + 'TO=' + str(int3), marker = 's', markersize = 6)
 
 # ax.plot(o3c, y,  label = ' DQA ' + 'TO=' + str(int1), marker = 's', markersize = 6, linestyle='None')

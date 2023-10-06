@@ -49,13 +49,16 @@ roc_plevel = 10 # pressure value to obtain roc
 ##                                         ##
 ##           TO BE CHANGED By HAND         ##
 
-station_name = 'lerwick'
+station_name = 'uccle'
 
 main_rscorrection = False  #if you want to apply rs80 correction
 test_ny = False
 scoresbysund_tpump = False
-file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
+# file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.hdf"
+file_dfmain = "/home/poyraden/Analysis/Homogenization_public/Files/madrid/DQA_nors80/Madrid_AllData_woudc.csv"
+
 #only needed for madrid (for the moment) to calculate means of the tmpump
+
 
 ##           end of the parts  TO BE CHANGED By HAND           ##
 ##                                                             ##
@@ -71,9 +74,9 @@ path, allFiles, roc_table_file, dfmeta = station_inone(station_name)
 humidity_correction, df_missing_tpump, calculate_current, organize_df, descent_data = station_inbool(station_name)
 date_start_hom, ibg_split, sonde_tbc, rs80_begin, rs80_end = station_invar(station_name)
 
-
 if df_missing_tpump:
-    dfmain = pd.read_hdf(file_dfmain)
+    # dfmain = pd.read_hdf(file_dfmain)
+    dfmain = pd.read_csv(file_dfmain)
     dfmean = madrid_missing_tpump(dfmain)
 
 if humidity_correction:
@@ -89,21 +92,24 @@ table = pd.read_csv(roc_table_file,  skiprows=1, sep="\s *", names = clms,  head
 
 for (filename) in (allFiles):
     file = open(filename, 'r')
+    if (search("md", filename)) or (search("metadata", filename)): continue
+
     print(filename)
     # date_tmp = filename.split('/')[-1].split('.')[0][2:8]
     fullname = filename.split('/')[-1].split('.')[0]
     date_tmp = fullname
-    # print(date_tmp)
     # print(fullname)
     # date_tmp = filename.split('/')[-1].split("_")[1][2:8]
     # fullname = filename.split('/')[-1].split("_")[1]
     # if datestr < date_start_hom: continue
-
-    # print(filename)
     if station_name == 'lerwick':
         df = pd.read_csv(filename)
-    else:
-        df = pd.read_hdf(filename)
+    # if (station_name == 'ny-aalesund') & (int(date_tmp) >= 20190101):
+    #     df = pd.read_csv(filename)
+    # else:
+    #     df = pd.read_hdf(filename)
+    df = pd.read_hdf(filename)
+    # df = pd.read_csv(filename)
 
     try:
         datestr = str(df.at[df.first_valid_index(),'Date'])
@@ -111,28 +117,39 @@ for (filename) in (allFiles):
         datestr = str(filename.split(".hdf")[0][-8:])
     # if datestr < '20021128': continue
 
-    print(datestr)
-    datestr = int(datestr)
+    # date_tmp = str(df.at[df.first_valid_index(), 'Dateint'])
+    date_tmp = int(datestr)
+    print(datestr,type(datestr), date_tmp, type(date_tmp))
+
+
     dfm = dfmeta[dfmeta.Date == datestr]
+    # dfm = dfmeta[dfmeta.Date == date_tmp]
+
+
+    # datestr = int(datestr)
     dfm = dfm.reset_index()
     if len(dfm) == 0:
         print('Empty dfm')
         continue
 
-    if len(dfm) == 1:
-        dfm = dfmeta[dfmeta.Date == datestr][0:1]
-    if (len(dfm) == 2) and search("2nd", fullname):
-        dfm = dfmeta[dfmeta.Date == datestr][1:2]
-    if(len(dfm) > 0) and not search("2nd", fullname):
-        dfm = dfmeta[dfmeta.Date == datestr][0:1]
-    dfm = dfm.reset_index()
+    date_tmp = datestr
 
+    if len(dfm) == 1:
+        dfm = dfmeta[dfmeta.Date == date_tmp][0:1]
+    if (len(dfm) == 2) and search("2nd", fullname):
+        dfm = dfmeta[dfmeta.Date == date_tmp][1:2]
+    if(len(dfm) > 0) and not search("2nd", fullname):
+        dfm = dfmeta[dfmeta.Date == date_tmp][0:1]
+    dfm = dfm.reset_index()
+    date_str = str(date_tmp)
     if organize_df:
-        date_bool, df = df_station(df,datestr, dfm, station_name)
+        date_bool, df = df_station(df,date_str, dfm, station_name)
         if date_bool == 'stop':
             print('BAD File')
             continue
     if len(df) < 100: continue
+
+
 
     if df_missing_tpump:
         df = df_missing_variable(df, dfmean)
@@ -207,13 +224,13 @@ for (filename) in (allFiles):
             pf_groundcorrection(df, dfm, 'Phip','dPhip', 'TLab','PLab', 'ULab',False)
     # efficiency correction
     pumpflowtable = '999 '
-    if station_name == 'lerwick':
-        if (dfm.at[0, 'SensorType'] == '5A') | (dfm.at[0, 'SensorType'] == '6A') | (dfm.at[0, 'SensorType'] == '5a') |\
-                (dfm.at[0, 'SensorType'] == '6a'):pumpflowtable = 'komhyr_86'
-        if (dfm.at[0, 'SensorType'] == 'z') | (dfm.at[0, 'SensorType'] == 'Z') :pumpflowtable = 'komhyr_95'
-    else:
-        if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
-        if dfm.at[0, 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
+    # if station_name == 'lerwick':
+    #     if (dfm.at[0, 'SensorType'] == '5A') | (dfm.at[0, 'SensorType'] == '6A') | (dfm.at[0, 'SensorType'] == '5a') |\
+    #             (dfm.at[0, 'SensorType'] == '6a'):pumpflowtable = 'komhyr_86'
+    #     if (dfm.at[0, 'SensorType'] == 'z') | (dfm.at[0, 'SensorType'] == 'Z') :pumpflowtable = 'komhyr_95'
+    # else:
+    if dfm.at[0, 'SensorType'] == 'SPC': pumpflowtable = 'komhyr_86'
+    if dfm.at[0, 'SensorType'] == 'DMT-Z': pumpflowtable = 'komhyr_95'
     df['Cpf'], df['unc_Cpf'] = pumpflow_efficiency(df, 'Pair', pumpflowtable, 'table_interpolate')
     df['Phip_cor'], df['unc_Phip_cor'] = return_phipcor(df, 'Phip_ground', 'unc_Phip_ground', 'Cpf', 'unc_Cpf')
 
@@ -314,11 +331,11 @@ for (filename) in (allFiles):
     for j in range(len(md_clist)):
         dfm.at[0, md_clist[j]] = df.at[df.first_valid_index(), md_clist[j]]
 
-    dfm.to_csv(path + filefolder + datestr + "_o3smetadata_" + file_ext + ".csv")
+    dfm.to_csv(path + filefolder + date_tmp + "_o3smetadata_" + file_ext + ".csv")
 
     # data file that has data and uncertainties that depend on Pair or Height or Temperature
     # df.to_hdf(path + filefolder + datestr + "_all_hom_" + file_ext + ".hdf", key='df')
-    df.to_csv(path + filefolder + datestr + "_all_hom_" + file_ext + ".csv")
+    df.to_csv(path + filefolder + date_tmp + "_all_hom_upd_" + file_ext + ".csv")
 
     df['Tbox'] = df['Tpump_cor'] - kelvin
     df['O3'] = df['O3c']
@@ -326,7 +343,7 @@ for (filename) in (allFiles):
     df = df_drop(df, station_name)
     # df to be converted to WOUDC format together with the metadata
     # df.to_hdf(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".hdf", key='df')
-    df.to_csv(path + filefolder + datestr + "_o3sdqa_" + file_ext + ".csv")
+    df.to_csv(path + filefolder + date_tmp + "_o3sdqa_upd_" + file_ext + ".csv")
     f_write_to_woudc_csv(df, dfm, station_name, path)
 
 
