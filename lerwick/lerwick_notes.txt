@@ -18,7 +18,7 @@ Therefore PF values from nilu have been used
 
 
 *the first 6A ozone pump was used at Lerwick on 10 Sep 1997
-.  Previous to this date, Vaisala Viz ozonesondes were used.
+.  Previous to this date,SPC were used.
 
 
 [A] = ['2004-04-07', '2005-01-07', '2005-01-26', '2005-02-16', '2005-08-03', '2005-11-23', '2006-08-23', '2006-11-22',

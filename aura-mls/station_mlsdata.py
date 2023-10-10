@@ -9,7 +9,7 @@ from functions.df_filter import filter_data
 
 
 # 3rd code of MLS analysis
-# write the Sodankyla data to a df that matches with MLS
+# write the station data to a df that matches with MLS
 
 problem = open("DQA_ProblematicFiles.txt", "a")
 # sname = 'ny-aalesund'

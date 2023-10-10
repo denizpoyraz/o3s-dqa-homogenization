@@ -7,10 +7,6 @@ import glob
 import math
 from math import log
 
-### Bug found in distance, up to now all the mls data was made w.r.t. Uccle coordinates.
-## Need to make MLS data and all related plots from scratch!!!
-## 06/07/2022
-
 # First Code of MLS analysis
 # read the MLS data and write it to a csv file
 # sname = 'sodankyla'
@@ -96,8 +92,6 @@ df['timetmp1'] = pd.to_timedelta(df["sec"], unit='s')
 df['timetmp2'] = df['timetmp1'].astype('timedelta64[s]')
 df['Time1'] = pd.to_datetime(df['timetmp2'])
 df['Time2'] = [x.time() for x in df['Time1']]
-# df['DifLat'] = abs(lats - df['Lat'])
-# df['DifLon'] = abs(lons - df['Lon'])
 df['Time'] = pd.to_timedelta(df["sec"], unit='s')
 
 # df['Timenf'] = df['Time'].apply(lambda x: time.x())

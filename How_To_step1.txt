@@ -1,0 +1,126 @@
+The not so easy part of the homogenization, at least with this package of codes is
+to read the data-files from the servers, nilu,ndacc,woudc.
+
+Reading ames files:
+    Version A)
+    Historically there this code:
+    https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/nilu_ndacc/convert_ozonedata.py
+    You can see how to use this code on the header of the code.
+    This reads the ames files, but the format still needs to be adjusted. For this you need to use:
+    nilu_ndacc/read_nilucsv.py
+    This code will rename the variables and if needed will convert o3 to current, you use the output ot this code for homogenization
+
+    Version B)
+    Here I use the nappy code, the version Bavo mpdified.
+    To read the ames files:
+    use nilu_ndacc/read_ames.py, this will directly give you the files that can be homogenized.
+    Normally this code should work for all ames files, but at the beginning I was using version A.
+
+    In general in most of the codes you need to change station_name in the code, and some times there might be some other
+    changes needed, for example
+    https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/nilu_ndacc/read_ames.py#L100-L101
+    you will see
+    dff, dfmf = organize_df_scoresby(df,dfm) is commented, because I use different functions for nyalesund and scoresby, so these
+    kind of changes exist in most of the files, so if you see a commented line, it is mostly there on purpose.
+
+Also you may need to be careful with date time object, as stations have different formats, this also needs to be changed in
+the code with commenting and uncommenting some lines.
+Of course it would be best to tune the date time objects from the beginning, this was something I wanted to do but never had the chance.
+
+Homogenization:
+    This part will be rather easy:
+    you need to run /standard/homogenization_station.py
+    you only need to change https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/standard/homogenization_station.py#L52
+    The in put station name should be as mentioned in these lines:
+    https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/functions/functions_perstation.py#L57-L125
+
+    This code will give you 3 out files
+    1) all variables used calculated  available
+    https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/standard/homogenization_station.py#L337
+    I use these data for heatmaps and any check related with using corrected and un-corrected data
+    2)https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/standard/homogenization_station.py#L346
+    This only the o3dqa related variables, actually this really does not need to be saved, in the next line this df is used to write to woudc csv files.
+    I will not copy "_o3sdqa_" + file_ext + ".hdf" * files to the server to save time. (it goes quite slow at the moment)
+    Final line of the code write the woudc csv formatted files.
+
+
+Station specific folders:
+    Lauder: there is a README file here, to read and process, these were privately provided files that I had to write a special code to read them
+    metadata_timeseries.py: this is to make metadata plots, you only need to change the variable name iB0, PLab etcc. Please attention to
+    cuts applied, sometimes I use < 999, sometimes >0 to eliminate wrong/bad values but this depends on the variable. Different filtering needed
+    for iBo or TLab
+    there is also a code ton_plots this is pdated for all stations under: standard/ton_plots.py
+    There is also a latex file under each station to generate the reports
+
+    Lerwick: this was also not a standard station. You need to read files from woudc and also ames format.
+    codes to organize/read files:
+        organize_ames: to organize ames output files
+        read_woudc_csv: to read in woudc files
+        calculate current: as name suggests you do this for woudc and ames file outputs
+        make_df_lerwick: organize data metadata from woudc, ames and assigns mean values to missing metadata-> output
+        of this code can be used for homogenization
+
+    Madrid:
+        woudc/download_files.py :
+            this code takes a csv file that has the urls of the each data day, and downloads the corresponding url csv file
+            First one needs to download data-file url list from https://woudc.org/data/explore.php?lang=en
+        woudc/read_woudc_csv.py : reads the woudc csv files
+        Madrid_MetaData.py: organizes the metadata, reads in excel file provided by the station
+        homoegnization code uses output of woudc/read_woudc_csv.py and Madrid_MetaData.py
+
+
+    Ny-Alesund:
+        read_nilucsv_nya.py: to read ames code output. Lots of changes in the format of the code, output of this code can be used for
+        homogenization
+        nyaalesund_metadata.py: read the excel file provided by the station
+        discrepancy_md.py: i think this code was only to figure out discrepancy among the metadata
+        make_metadata.py: gives the metadata to be used for homogenization
+
+    Scoresbysund:
+        organize_scoresbysund.py: output metadata for homogenization
+        read in the output of ames reader for homogenization
+        some codes related with pump temperature
+        check_pump_temp_2.py: gives the pump. temp. plots from the rmi last seminar
+
+    Sodankyla:
+        homogenization input: output of ames files
+        organize_missing_files.py -> for files that have been provided later
+        make_allmetadata.py: does what naming says
+
+    Uccle:
+        read_uccle.py: reads raw uccle current files-> output used as input to homogenization
+        (I will not copy raw uccle files as there are already at the server)
+
+
+    Valentia:
+        read_woudc_csv.py: to read woudc files
+        for metedata uses nilue files, output of ames reader
+        organize_valentia.py: organizes metadata
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

@@ -1,0 +1,48 @@
+How to process, validate homogenized files
+
+aura-mls:
+    read_mlsdata.py: takes mls data and station metadata and makes station specific mls data
+    station_mlsdata.py:
+        output is station data interpolated to mls grid
+        for 2 cases
+        # ozone = 'O3'
+        # name_out = f'MLS_{scname}Interpolated_nors80_v05_original'
+        and
+        ozone = 'O3c'
+        name_out = f'MLS_{scname}Interpolated_nors80_v05_dqa'
+        needs to be run 2 times for O3 (not corrected, oroginal server data) and for O3c
+        which is homogenized data
+    mls_heatmap.py:
+        plots heatmaps of RDif of O3 and O3c, as previous code needs to be run 2 times seperately for O3 and O3c
+        # df1 = pd.read_csv(path + f'MLS_{scname}Interpolated_nors80_v05_dqa.csv')
+        # Plotname = 'DQA_vs_MLS_v05'
+        # ptitle = f'{scname} Homogenized - MLS (v05)'
+            and
+        df1 = pd.read_csv(path + f'MLS_{scname}Interpolated_nors80_v05_original.csv')
+        Plotname = 'Original_vs_MLS_v05'
+        ptitle = f'{scname} Non-Homogenized - MLS (v05)'
+        Code prints out the x labels on the console, it needs to be adjusted in the plotting function:
+        https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/aura-mls/mls_heatmap.py#L36
+        it may start from 2005 for example
+
+    station_binneddata: makes a dataframe of all Homogenization corrections step by step.
+        This data is used to make heatmaps to see the effect of each correction, also gridded to
+        pressure levels.
+        Only need to change station name, and sometimes files can be in csv or hdf format.
+        This might need to be adjusted in the main code.
+
+    heatmap_stepbystep:
+        uses output of the previous code and makes heatmaps to see the effect of each correction.
+        Code prints out the x labels on the console, it needs to be adjusted in the plotting function:
+        https://github.com/denizpoyraz/o3s-dqa-homogenization/blob/3bf76b959b4c607e41e72529fe0a646f163b9aa9/aura-mls/heatmap_stepbystep.py#L45        it may start from 2005 for example
+        it may start from 1996, then labels need to be changed for example
+
+
+paper: historical name to process things that may go in eu paper
+    calculate_km_monthly means.py: code to calculate data in each km and make monthly mean data
+    uses output of main homogenization code *all_hom*nors80.*
+    deseasonalize_data.py: deaseasonalize output of previous data that will be used for trend analysis
+
+
+
+

@@ -59,7 +59,7 @@ def station_inone(st_name):
     if st_name == 'madrid':
         pathf = '/home/poyraden/Analysis/Homogenization_public/Files/madrid/'
         dfmetaf = pd.read_csv(pathf + 'Madrid_Metadata.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "CSV/out/MD22*hdf"))
+        allFilesf = sorted(glob.glob(pathf + "CSV/out/*hdf"))
         roc_table_filef = ('/home/poyraden/Analysis/Homogenization_public/Files/sonde_madrid_roc.txt')
         dfmetaf = organize_madrid(dfmetaf)
 
@@ -117,7 +117,7 @@ def station_inone(st_name):
         pathf = f'/home/poyraden/Analysis/Homogenization_public/Files/{st_name}/'
         dfmetaf = pd.read_csv(pathf + 'all_csv_current/metadata/Lerwick_Metadata_combined_final.csv')  #
         dfmetaw = pd.read_csv(pathf + 'all_csv_current/metadata/Lerwick_WOUDC_Metadata.csv')  #
-        allFilesf = sorted(glob.glob(pathf + "all_csv_current/20040324*.csv"))
+        allFilesf = sorted(glob.glob(pathf + "all_csv_current/*.csv"))
         roc_table_filef = (f'/home/poyraden/Analysis/Homogenization_public/Files/sonde_{st_name}_roc.txt')
         dfmetaf = organize_lerwick(dfmetaf, dfmetaw)
 
